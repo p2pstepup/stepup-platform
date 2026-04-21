@@ -10,6 +10,7 @@ import {
 
 export default function TutorDashboard() {
   const [user, setUser] = useState<any>(null)
+  const [profile, setProfile] = useState<any>(null)
   const [students, setStudents] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('overview')
@@ -25,8 +26,12 @@ export default function TutorDashboard() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/'); return }
       setUser(user)
-      const { data: studentData } = await supabase.from('profiles').select('*').eq('role', 'student').order('full_name')
+      const [{ data: studentData }, { data: profileData }] = await Promise.all([
+        supabase.from('profiles').select('*').eq('role', 'student').order('full_name'),
+        supabase.from('profiles').select('full_name').eq('id', user.id).single(),
+      ])
       setStudents(studentData || [])
+      setProfile(profileData)
       setLoading(false)
     }
     init()
@@ -128,10 +133,10 @@ export default function TutorDashboard() {
         <div style={{padding: '12px 14px', borderTop: '0.5px solid rgba(201,168,76,0.14)'}}>
           <div style={{display: 'flex', alignItems: 'center', gap: 8}}>
             <div style={{width: 30, height: 30, borderRadius: '50%', background: '#c9a84c', color: '#0d2340', fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0}}>
-              {user?.email?.charAt(0).toUpperCase()}
+              {(profile?.full_name || user?.email)?.charAt(0).toUpperCase()}
             </div>
             <div style={{flex: 1, minWidth: 0}}>
-              <div style={{fontSize: 12, color: 'white', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>{user?.email?.split('@')[0]}</div>
+              <div style={{fontSize: 12, color: 'white', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>{profile?.full_name || user?.email?.split('@')[0]}</div>
               <div style={{fontSize: 10, color: 'rgba(255,255,255,0.35)'}}>Tutor</div>
             </div>
             <div onClick={handleSignOut} style={{fontSize: 11, color: 'rgba(255,255,255,0.35)', cursor: 'pointer', padding: '4px 8px', borderRadius: 4, border: '0.5px solid rgba(255,255,255,0.15)', flexShrink: 0}}>Out</div>
