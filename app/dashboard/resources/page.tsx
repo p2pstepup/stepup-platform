@@ -49,7 +49,6 @@ export default function ResourceDrive() {
   ]
 
   const categories = [...new Set(resources.map(r => r.category))]
-
   const categoryColors: Record<string, string> = {
     'Study Strategy': '#c9a84c',
     'High Yield References': '#4a8c84',
@@ -126,7 +125,7 @@ export default function ResourceDrive() {
               {catResources.map((item, i) => (
                 <div key={item.id}
                   onClick={() => item.link && window.open(item.link, '_blank')}
-                  style={{display: 'flex', alignItems: 'center', gap: 16, padding: '14px 20px', borderBottom: i < catResources.length-1 ? '0.5px solid #f5f0e8' : 'none', cursor: item.link ? 'pointer' : 'default', background: 'white', transition: 'background 0.15s'}}
+                  style={{display: 'flex', alignItems: 'center', gap: 16, padding: '14px 20px', borderBottom: i < catResources.length-1 ? '0.5px solid #f5f0e8' : 'none', cursor: item.link ? 'pointer' : 'default', background: 'white'}}
                   onMouseEnter={e => item.link && (e.currentTarget.style.background = '#fafaf8')}
                   onMouseLeave={e => (e.currentTarget.style.background = 'white')}>
                   <div style={{width: 40, height: 40, background: `${color}18`, border: `1px solid ${color}40`, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0}}>
@@ -142,4 +141,17 @@ export default function ResourceDrive() {
                   <div style={{display: 'flex', gap: 8, flexShrink: 0, alignItems: 'center'}}>
                     <span style={{fontSize: 11, padding: '2px 8px', borderRadius: 4, background: '#f7f4ee', color: '#8a7d6a'}}>{item.file_type}</span>
                     {item.link ? (
-                      <div style={{padding: '6px 14px', background: '#0d2340', borderRadius: 7, fontSize: 12, color: '#c9a84c', fontWei
+                      <div style={{padding: '6px 14px', background: '#0d2340', borderRadius: 7, fontSize: 12, color: '#c9a84c', fontWeight: 500}}>Open ↗</div>
+                    ) : (
+                      <div style={{padding: '6px 14px', background: '#f7f4ee', borderRadius: 7, fontSize: 12, color: '#a89870', fontStyle: 'italic'}}>Coming soon</div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )
+        })}
+      </div>
+    </main>
+  )
+}
