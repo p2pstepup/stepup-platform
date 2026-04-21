@@ -1345,3 +1345,121 @@ export function ExamReports({ supabase, students }: any) {
     </div>
   )
 }
+
+export function AttendanceLogger({ supabase, students, tutorId }: any) {
+  const [sessions, setSessions] = useState<any[]>([])
+  const [selectedSession, setSelectedSession] = useState('')
+  const [attendance, setAttendance] = useState<Record<string, {status: string, notes: string}>>({})
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+
+  useEffect(() => { loadSessions() }, [])
+
+  async function loadSessions() {
+    const { data } = await supabase.from('schedule').select('*').not('session_date', 'is', null).order('session_date', {ascending: false}).limit(30)
+    setSessions(data || [])
+    setLoading(false)
+  }
+
+  async function loadAttendance(sessionId: string) {
+    const blank: Record<string, {status: string, notes: string}> = {}
+    students.forEach((s: {id: string}) => { blank[s.id] = {status: 'present', notes: ''} })
+    const { data } = await supabase.from('attendance').select('*').eq('session_id', sessionId)
+    ;(data || []).forEach((r: {student_id: string, status: string, notes: string}) => {
+      blank[r.student_id] = {status: r.status, notes: r.notes || ''}
+    })
+    setAttendance(blank)
+  }
+
+  const selectSession = (id: string) => {
+    setSelectedSession(id)
+    setSaved(false)
+    loadAttendance(id)
+  }
+
+  const mark = (studentId: string, status: string) =>
+    setAttendance(prev => ({...prev, [studentId]: {...prev[studentId], status}}))
+
+  const save = async () => {
+    if (!selectedSession) return
+    setSaving(true)
+    for (const [student_id, d] of Object.entries(attendance)) {
+      await supabase.from('attendance').upsert(
+        {session_id: selectedSession, student_id, tutor_id: tutorId, status: d.status, notes: d.notes, log_date: new Date().toISOString().split('T')[0]},
+        {onConflict: 'session_id,student_id'}
+      )
+    }
+    setSaving(false)
+    setSaved(true)
+  }
+
+  const statusStyle = (status: string, active: boolean) => {
+    const styles: Record<string, {bg: string, color: string}> = {
+      present:   {bg: '#f0f7f2', color: '#2d6a4f'},
+      late:      {bg: '#fff8e8', color: '#c07040'},
+      excused:   {bg: '#f0f4ff', color: '#3d5a99'},
+      unexcused: {bg: '#fdf0f0', color: '#c0574a'},
+    }
+    const s = styles[status] || {bg: '#f7f4ee', color: '#8a7d6a'}
+    return active ? {background: s.bg, color: s.color, border: 'none', fontWeight: 600}
+                  : {background: 'white', color: '#a89870', border: '1px solid #e8dfc8', fontWeight: 400}
+  }
+
+  const session = sessions.find(s => s.id === selectedSession)
+
+  if (loading) return <div style={{fontSize: 14, color: '#8a7d6a'}}>Loading...</div>
+
+  return (
+    <div style={{display: 'flex', flexDirection: 'column', gap: 20}}>
+      <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, padding: '20px 24px'}}>
+        <div style={{fontSize: 15, fontWeight: 600, color: '#0d2340', marginBottom: 14}}>Select session to log</div>
+        <select value={selectedSession} onChange={e => selectSession(e.target.value)}
+          style={{width: '100%', height: 42, borderRadius: 8, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 14, padding: '0 12px', color: '#1a1008', outline: 'none'}}>
+          <option value="">Choose a session...</option>
+          {sessions.map(s => (
+            <option key={s.id} value={s.id}>
+              {s.session_date ? new Date(s.session_date).toLocaleDateString('en-US', {weekday: 'short', month: 'short', day: 'numeric'}) : s.day_of_week} — {s.topic} (Wk {s.week_number})
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {selectedSession && students.length > 0 && (
+        <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, overflow: 'hidden'}}>
+          <div style={{background: '#0d2340', padding: '14px 20px'}}>
+            <div style={{fontSize: 14, fontWeight: 600, color: 'white'}}>{session?.topic} · {session?.session_date ? new Date(session.session_date).toLocaleDateString('en-US', {month: 'short', day: 'numeric'}) : ''}</div>
+            <div style={{fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 2}}>Click a status button to mark each student</div>
+          </div>
+          <div style={{padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 10}}>
+            {(students as Array<{id: string, full_name?: string, email: string}>).map(s => {
+              const rec = attendance[s.id] || {status: 'present', notes: ''}
+              return (
+                <div key={s.id} style={{display: 'flex', alignItems: 'center', gap: 12}}>
+                  <div style={{width: 32, height: 32, borderRadius: '50%', background: '#c9a84c', color: '#0d2340', fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0}}>
+                    {(s.full_name || s.email).charAt(0).toUpperCase()}
+                  </div>
+                  <div style={{fontSize: 14, color: '#0d2340', fontWeight: 500, width: 160, flexShrink: 0}}>{s.full_name || s.email.split('@')[0]}</div>
+                  <div style={{display: 'flex', gap: 6}}>
+                    {(['present','late','excused','unexcused'] as const).map(status => (
+                      <button key={status} onClick={() => mark(s.id, status)}
+                        style={{padding: '5px 12px', borderRadius: 8, fontFamily: 'Sora, sans-serif', fontSize: 12, cursor: 'pointer', textTransform: 'capitalize', ...statusStyle(status, rec.status === status)}}>
+                        {status}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+          <div style={{padding: '0 20px 20px'}}>
+            <button onClick={save} disabled={saving}
+              style={{width: '100%', height: 44, background: saved ? '#2d6a4f' : '#0d2340', border: 'none', borderRadius: 9, color: '#c9a84c', fontFamily: 'Sora, sans-serif', fontSize: 14, fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer'}}>
+              {saving ? 'Saving...' : saved ? '✓ Attendance saved' : 'Save attendance ↗'}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}

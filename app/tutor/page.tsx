@@ -5,7 +5,7 @@ import { createClient } from '../../utils/supabase'
 import {
   AnnouncementForm, FeedbackTab, SlidesManager, RecordingsManager,
   NotesManager, ResourcesManager, ScheduleManager, AssignmentsManager,
-  StudyScheduleManager, ExamReports
+  StudyScheduleManager, ExamReports, AttendanceLogger
 } from './components'
 
 export default function TutorDashboard() {
@@ -94,6 +94,7 @@ export default function TutorDashboard() {
       {name: 'Exam Reports', tab: 'examreports'},
     ]},
     {section: 'Reporting', items: [
+      {name: 'Log Attendance', tab: 'attendance'},
       {name: 'Accountability', tab: 'accountability'},
     ]},
   ]
@@ -473,6 +474,16 @@ export default function TutorDashboard() {
               <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>View all student exam sessions · Time reports · Answer sheets</div>
             </div>
             <ExamReports supabase={supabase} students={students} />
+          </div>
+        )}
+
+        {activeTab === 'attendance' && (
+          <div>
+            <div style={{marginBottom: 24}}>
+              <div style={{fontFamily: 'Georgia, serif', fontSize: 28, color: '#0d2340', letterSpacing: -0.5}}>Log Attendance</div>
+              <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>Mark attendance for each session · Reported to admin</div>
+            </div>
+            <AttendanceLogger supabase={supabase} students={students} tutorId={user?.id} />
           </div>
         )}
 
