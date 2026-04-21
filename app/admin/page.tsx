@@ -3,12 +3,12 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '../../utils/supabase'
 import {
-  AnnouncementForm, FeedbackTab, SlidesManager, RecordingsManager,
-  NotesManager, ResourcesManager, ScheduleManager, AssignmentsManager,
-  StudyScheduleManager, ExamReports
-} from './components'
+  StudentProfiles, AnnouncementForm, FeedbackTab, SlidesManager, RecordingsManager,
+  NotesManager, ResourcesManager, ExamsManager, ScheduleManager, AssignmentsManager,
+  StudyScheduleManager, CourseDocsManager, ExamReports
+} from '../tutor/components'
 
-export default function TutorDashboard() {
+export default function AdminDashboard() {
   const [user, setUser] = useState<any>(null)
   const [students, setStudents] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -66,13 +66,14 @@ export default function TutorDashboard() {
 
   if (loading) return (
     <main style={{minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f7f4ee'}}>
-      <div style={{fontFamily: 'Georgia, serif', fontSize: 24, color: '#0d2340'}}>Loading tutor dashboard...</div>
+      <div style={{fontFamily: 'Georgia, serif', fontSize: 24, color: '#0d2340'}}>Loading admin dashboard...</div>
     </main>
   )
 
   const navGroups = [
     {section: 'Home', items: [{name: 'Overview', tab: 'overview'}]},
     {section: 'Students', items: [
+      {name: 'Student Profiles', tab: 'profiles'},
       {name: 'My Students', tab: 'students'},
       {name: 'Send Notifications', tab: 'notifications'},
       {name: 'Log Meetings', tab: 'meetings'},
@@ -87,14 +88,16 @@ export default function TutorDashboard() {
       {name: 'Manage HY Notes', tab: 'notes'},
       {name: 'Manage Resources', tab: 'resources'},
       {name: 'Manage Schedule', tab: 'schedule'},
+      {name: 'Manage Exams', tab: 'exams'},
+      {name: 'Course Documents', tab: 'coursedocs'},
     ]},
     {section: 'Academics', items: [
       {name: 'Assign Tasks', tab: 'assignments'},
       {name: 'Study Schedules', tab: 'studyschedule'},
       {name: 'Exam Reports', tab: 'examreports'},
     ]},
-    {section: 'Reporting', items: [
-      {name: 'Accountability', tab: 'accountability'},
+    {section: 'Reports', items: [
+      {name: 'Accountability Reports', tab: 'accountability'},
     ]},
   ]
 
@@ -108,7 +111,7 @@ export default function TutorDashboard() {
             </div>
             <div style={{fontFamily: 'Georgia, serif', fontSize: 20, color: 'white', fontWeight: 600}}>StepUp</div>
           </div>
-          <div style={{fontSize: 10, color: '#c9a84c', letterSpacing: '0.09em', textTransform: 'uppercase', paddingLeft: 46, marginTop: 3}}>Tutor Dashboard</div>
+          <div style={{fontSize: 10, color: '#c9a84c', letterSpacing: '0.09em', textTransform: 'uppercase', paddingLeft: 46, marginTop: 3}}>Admin Dashboard</div>
         </div>
         <div style={{padding: '8px 10px', flex: 1, overflowY: 'auto'}}>
           {navGroups.map(group => (
@@ -130,7 +133,7 @@ export default function TutorDashboard() {
             </div>
             <div style={{flex: 1, minWidth: 0}}>
               <div style={{fontSize: 12, color: 'white', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>{user?.email?.split('@')[0]}</div>
-              <div style={{fontSize: 10, color: 'rgba(255,255,255,0.35)'}}>Tutor</div>
+              <div style={{fontSize: 10, color: 'rgba(255,255,255,0.35)'}}>Admin</div>
             </div>
             <div onClick={handleSignOut} style={{fontSize: 11, color: 'rgba(255,255,255,0.35)', cursor: 'pointer', padding: '4px 8px', borderRadius: 4, border: '0.5px solid rgba(255,255,255,0.15)', flexShrink: 0}}>Out</div>
           </div>
@@ -145,11 +148,11 @@ export default function TutorDashboard() {
         {activeTab === 'overview' && (
           <div>
             <div style={{marginBottom: 28}}>
-              <div style={{fontFamily: 'Georgia, serif', fontSize: 30, color: '#0d2340', letterSpacing: -0.5}}>Tutor Dashboard</div>
+              <div style={{fontFamily: 'Georgia, serif', fontSize: 30, color: '#0d2340', letterSpacing: -0.5}}>Admin Dashboard</div>
               <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>P2P Mentoring Program · Windsor SOM · May 2026 Cohort</div>
             </div>
             <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 24}}>
-              {[{label: 'Total students', value: students.length.toString(), delta: 'In your cohort'}, {label: 'Program start', value: 'May 4', delta: '2026 · Week 1'}, {label: 'Program end', value: 'Jun 29', delta: '8 weeks total'}].map((m, i) => (
+              {[{label: 'Total students', value: students.length.toString(), delta: 'Enrolled in program'}, {label: 'Program start', value: 'May 4', delta: '2026 · Week 1'}, {label: 'Program end', value: 'Jun 29', delta: '8 weeks total'}].map((m, i) => (
                 <div key={i} style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 10, padding: '16px 18px'}}>
                   <div style={{fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#a89870', marginBottom: 8}}>{m.label}</div>
                   <div style={{fontFamily: 'Georgia, serif', fontSize: 32, color: '#0d2340'}}>{m.value}</div>
@@ -161,15 +164,15 @@ export default function TutorDashboard() {
               <div style={{fontSize: 16, fontWeight: 600, color: '#0d2340', marginBottom: 16}}>Quick actions</div>
               <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12}}>
                 {[
-                  {label: 'Send notification', tab: 'notifications', color: '#c9a84c'},
-                  {label: 'Log a meeting', tab: 'meetings', color: '#4a8c84'},
-                  {label: 'View students', tab: 'students', color: '#6b7c3a'},
+                  {label: 'Student profiles', tab: 'profiles', color: '#c9a84c'},
+                  {label: 'Send notification', tab: 'notifications', color: '#4a8c84'},
                   {label: 'Post announcement', tab: 'announcements', color: '#c0574a'},
-                  {label: 'Respond to feedback', tab: 'feedback', color: '#c07040'},
-                  {label: 'Upload slides', tab: 'slides', color: '#9e2a2a'},
-                  {label: 'Add recording', tab: 'recordings', color: '#4a8c84'},
-                  {label: 'Assign study schedule', tab: 'studyschedule', color: '#6b7c3a'},
-                  {label: 'Accountability report', tab: 'accountability', color: '#c9a84c'},
+                  {label: 'Manage exams', tab: 'exams', color: '#6b7c3a'},
+                  {label: 'Course documents', tab: 'coursedocs', color: '#c07040'},
+                  {label: 'Accountability reports', tab: 'accountability', color: '#9e2a2a'},
+                  {label: 'Exam reports', tab: 'examreports', color: '#4a8c84'},
+                  {label: 'Manage schedule', tab: 'schedule', color: '#6b7c3a'},
+                  {label: 'View feedback', tab: 'feedback', color: '#c9a84c'},
                 ].map((a, i) => (
                   <div key={i} onClick={() => setActiveTab(a.tab)}
                     style={{padding: '12px 14px', background: '#f7f4ee', border: `1px solid ${a.color}`, borderRadius: 10, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10}}>
@@ -197,10 +200,20 @@ export default function TutorDashboard() {
           </div>
         )}
 
+        {activeTab === 'profiles' && (
+          <div>
+            <div style={{marginBottom: 24}}>
+              <div style={{fontFamily: 'Georgia, serif', fontSize: 28, color: '#0d2340', letterSpacing: -0.5}}>Student Profiles</div>
+              <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>View and edit student profile information</div>
+            </div>
+            <StudentProfiles supabase={supabase} students={students} onSuccess={(msg: string) => { setSuccess(msg); setTimeout(() => setSuccess(''), 3000) }} />
+          </div>
+        )}
+
         {activeTab === 'students' && (
           <div>
             <div style={{marginBottom: 24}}>
-              <div style={{fontFamily: 'Georgia, serif', fontSize: 28, color: '#0d2340', letterSpacing: -0.5}}>My Students</div>
+              <div style={{fontFamily: 'Georgia, serif', fontSize: 28, color: '#0d2340', letterSpacing: -0.5}}>Students</div>
               <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>{students.length} students enrolled</div>
             </div>
             {students.length === 0 ? (
@@ -446,6 +459,26 @@ export default function TutorDashboard() {
           </div>
         )}
 
+        {activeTab === 'exams' && (
+          <div>
+            <div style={{marginBottom: 24}}>
+              <div style={{fontFamily: 'Georgia, serif', fontSize: 28, color: '#0d2340', letterSpacing: -0.5}}>Manage Exams</div>
+              <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>Create and manage exam question banks</div>
+            </div>
+            <ExamsManager supabase={supabase} onSuccess={(msg: string) => { setSuccess(msg); setTimeout(() => setSuccess(''), 3000) }} />
+          </div>
+        )}
+
+        {activeTab === 'coursedocs' && (
+          <div>
+            <div style={{marginBottom: 24}}>
+              <div style={{fontFamily: 'Georgia, serif', fontSize: 28, color: '#0d2340', letterSpacing: -0.5}}>Course Documents</div>
+              <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>Upload and manage course document links</div>
+            </div>
+            <CourseDocsManager supabase={supabase} onSuccess={(msg: string) => { setSuccess(msg); setTimeout(() => setSuccess(''), 3000) }} />
+          </div>
+        )}
+
         {activeTab === 'assignments' && (
           <div>
             <div style={{marginBottom: 24}}>
@@ -479,10 +512,10 @@ export default function TutorDashboard() {
         {activeTab === 'accountability' && (
           <div>
             <div style={{marginBottom: 24}}>
-              <div style={{fontFamily: 'Georgia, serif', fontSize: 28, color: '#0d2340', letterSpacing: -0.5}}>Accountability & Student Report</div>
-              <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>Log weekly activity reports for each student · Submitted to admin</div>
+              <div style={{fontFamily: 'Georgia, serif', fontSize: 28, color: '#0d2340', letterSpacing: -0.5}}>Accountability Reports</div>
+              <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>View weekly activity reports submitted by tutors</div>
             </div>
-            <AccountabilityReport supabase={supabase} students={students} tutorId={user?.id} onSuccess={(msg: string) => { setSuccess(msg); setTimeout(() => setSuccess(''), 3000) }} />
+            <AccountabilityReportsAdmin supabase={supabase} students={students} />
           </div>
         )}
       </div>
@@ -490,35 +523,30 @@ export default function TutorDashboard() {
   )
 }
 
-function AccountabilityReport({ supabase, students, tutorId, onSuccess }: any) {
-  const blankForm = {student_id: '', week_number: '1', report_date: new Date().toISOString().split('T')[0], attendance: 'present', participation: '3', performance_notes: '', action_items_completed: '', new_action_items: '', concerns: '', status: 'on_track'}
-  const [form, setForm] = useState(blankForm)
+function AccountabilityReportsAdmin({ supabase, students }: any) {
   const [reports, setReports] = useState<any[]>([])
+  const [tutors, setTutors] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
+  const [filterTutor, setFilterTutor] = useState('all')
+  const [filterStudent, setFilterStudent] = useState('all')
+  const [filterStatus, setFilterStatus] = useState('all')
   const [expanded, setExpanded] = useState<string | null>(null)
 
-  useEffect(() => { load() }, [])
+  useEffect(() => { loadAll() }, [])
 
-  async function load() {
-    const { data } = await supabase.from('accountability_reports').select('*').eq('tutor_id', tutorId).order('created_at', {ascending: false}).limit(40)
-    setReports(data || [])
+  async function loadAll() {
+    const [{ data: reportData }, { data: tutorData }] = await Promise.all([
+      supabase.from('accountability_reports').select('*').order('created_at', {ascending: false}).limit(200),
+      supabase.from('profiles').select('id, full_name, email').eq('role', 'tutor').order('full_name'),
+    ])
+    setReports(reportData || [])
+    setTutors(tutorData || [])
     setLoading(false)
   }
 
-  const submit = async () => {
-    if (!form.student_id) return
-    setSaving(true)
-    await supabase.from('accountability_reports').insert({...form, tutor_id: tutorId, week_number: parseInt(form.week_number), participation: parseInt(form.participation)})
-    setForm(blankForm)
-    await load()
-    setSaving(false)
-    onSuccess('Report submitted!')
-  }
-
-  const studentName = (id: string) => {
-    const s = (students as Array<{id: string; full_name?: string; email: string}>).find(s => s.id === id)
-    return s ? (s.full_name || s.email.split('@')[0]) : 'Unknown'
+  const personName = (list: Array<{id: string; full_name?: string; email: string}>, id: string) => {
+    const p = list.find(x => x.id === id)
+    return p ? (p.full_name || p.email.split('@')[0]) : 'Unknown'
   }
 
   const statusStyle = (status: string) => {
@@ -529,124 +557,100 @@ function AccountabilityReport({ supabase, students, tutorId, onSuccess }: any) {
 
   const statusLabel = (s: string) => s === 'on_track' ? 'On Track' : s === 'needs_attention' ? 'Needs Attention' : 'At Risk'
 
+  const filtered = reports.filter(r =>
+    (filterTutor === 'all' || r.tutor_id === filterTutor) &&
+    (filterStudent === 'all' || r.student_id === filterStudent) &&
+    (filterStatus === 'all' || r.status === filterStatus)
+  )
+
+  const atRiskCount = reports.filter(r => r.status === 'at_risk').length
+  const needsAttentionCount = reports.filter(r => r.status === 'needs_attention').length
+
+  if (loading) return <div style={{fontSize: 14, color: '#8a7d6a'}}>Loading reports...</div>
+
   return (
-    <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, alignItems: 'start'}}>
-      <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, padding: '20px 24px'}}>
-        <div style={{fontSize: 16, fontWeight: 600, color: '#0d2340', marginBottom: 18}}>Submit weekly report</div>
-        <div style={{display: 'grid', gridTemplateColumns: '1fr 80px', gap: 12, marginBottom: 14}}>
-          <div>
-            <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Student</label>
-            <select value={form.student_id} onChange={e => setForm({...form, student_id: e.target.value})}
-              style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 10px', color: '#1a1008', outline: 'none'}}>
-              <option value="">Select student...</option>
-              {students.map((s: any) => <option key={s.id} value={s.id}>{s.full_name || s.email.split('@')[0]}</option>)}
-            </select>
-          </div>
-          <div>
-            <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Week</label>
-            <select value={form.week_number} onChange={e => setForm({...form, week_number: e.target.value})}
-              style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none'}}>
-              {[1,2,3,4,5,6,7,8].map(w => <option key={w} value={w}>Wk {w}</option>)}
-            </select>
-          </div>
+    <div>
+      {(atRiskCount > 0 || needsAttentionCount > 0) && (
+        <div style={{background: '#fdf0f0', border: '1px solid #f5c6c6', borderRadius: 10, padding: '14px 18px', marginBottom: 20, display: 'flex', gap: 20, alignItems: 'center'}}>
+          <div style={{fontSize: 13, fontWeight: 600, color: '#c0574a'}}>Flagged students</div>
+          {atRiskCount > 0 && <div style={{fontSize: 13, color: '#c0574a'}}>{atRiskCount} At Risk</div>}
+          {needsAttentionCount > 0 && <div style={{fontSize: 13, color: '#c07040'}}>{needsAttentionCount} Needs Attention</div>}
         </div>
-        <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 14}}>
-          <div>
-            <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Report date</label>
-            <input type="date" value={form.report_date} onChange={e => setForm({...form, report_date: e.target.value})}
-              style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
-          </div>
-          <div>
-            <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Attendance</label>
-            <select value={form.attendance} onChange={e => setForm({...form, attendance: e.target.value})}
-              style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none'}}>
-              <option value="present">Present</option>
-              <option value="absent">Absent</option>
-              <option value="excused">Excused</option>
-            </select>
-          </div>
-          <div>
-            <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Participation (1–5)</label>
-            <select value={form.participation} onChange={e => setForm({...form, participation: e.target.value})}
-              style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none'}}>
-              {[1,2,3,4,5].map(n => <option key={n} value={n}>{n} — {['','Poor','Below avg','Average','Good','Excellent'][n]}</option>)}
-            </select>
-          </div>
-        </div>
-        <div style={{marginBottom: 14}}>
-          <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Performance notes</label>
-          <textarea value={form.performance_notes} onChange={e => setForm({...form, performance_notes: e.target.value})} placeholder="How is the student performing this week?" rows={3}
-            style={{width: '100%', borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '8px 10px', color: '#1a1008', outline: 'none', boxSizing: 'border-box', resize: 'none'}}/>
-        </div>
-        <div style={{marginBottom: 14}}>
-          <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Previous action items completed?</label>
-          <textarea value={form.action_items_completed} onChange={e => setForm({...form, action_items_completed: e.target.value})} placeholder="Which action items did the student complete?" rows={2}
-            style={{width: '100%', borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '8px 10px', color: '#1a1008', outline: 'none', boxSizing: 'border-box', resize: 'none'}}/>
-        </div>
-        <div style={{marginBottom: 14}}>
-          <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>New action items for student</label>
-          <textarea value={form.new_action_items} onChange={e => setForm({...form, new_action_items: e.target.value})} placeholder="What should the student focus on this week?" rows={2}
-            style={{width: '100%', borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '8px 10px', color: '#1a1008', outline: 'none', boxSizing: 'border-box', resize: 'none'}}/>
-        </div>
-        <div style={{marginBottom: 14}}>
-          <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Concerns or flags</label>
-          <textarea value={form.concerns} onChange={e => setForm({...form, concerns: e.target.value})} placeholder="Any concerns to flag for admin?" rows={2}
-            style={{width: '100%', borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '8px 10px', color: '#1a1008', outline: 'none', boxSizing: 'border-box', resize: 'none'}}/>
-        </div>
-        <div style={{marginBottom: 20}}>
-          <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Overall status</label>
-          <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8}}>
-            {[{v:'on_track',l:'On Track'},{v:'needs_attention',l:'Needs Attention'},{v:'at_risk',l:'At Risk'}].map(opt => (
-              <div key={opt.v} onClick={() => setForm({...form, status: opt.v})}
-                style={{padding: '10px 12px', borderRadius: 8, border: `2px solid ${form.status === opt.v ? (opt.v === 'on_track' ? '#6b7c3a' : opt.v === 'needs_attention' ? '#c07040' : '#c0574a') : '#e8dfc8'}`, background: form.status === opt.v ? (opt.v === 'on_track' ? '#f0f7f2' : opt.v === 'needs_attention' ? '#fff8e8' : '#fdf0f0') : 'white', cursor: 'pointer', textAlign: 'center'}}>
-                <div style={{fontSize: 12, fontWeight: 600, color: form.status === opt.v ? (opt.v === 'on_track' ? '#2d6a4f' : opt.v === 'needs_attention' ? '#c07040' : '#c0574a') : '#8a7d6a'}}>{opt.l}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-        <button onClick={submit} disabled={saving || !form.student_id}
-          style={{width: '100%', height: 46, background: saving || !form.student_id ? '#4a5568' : '#0d2340', border: 'none', borderRadius: 9, color: '#c9a84c', fontFamily: 'Sora, sans-serif', fontSize: 15, fontWeight: 600, cursor: saving || !form.student_id ? 'not-allowed' : 'pointer'}}>
-          {saving ? 'Submitting...' : 'Submit report to admin ↗'}
-        </button>
+      )}
+
+      <div style={{display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap'}}>
+        <select value={filterTutor} onChange={e => setFilterTutor(e.target.value)}
+          style={{height: 38, borderRadius: 8, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 12px', color: '#1a1008', outline: 'none'}}>
+          <option value="all">All tutors</option>
+          {tutors.map((t:any) => <option key={t.id} value={t.id}>{t.full_name || t.email.split('@')[0]}</option>)}
+        </select>
+        <select value={filterStudent} onChange={e => setFilterStudent(e.target.value)}
+          style={{height: 38, borderRadius: 8, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 12px', color: '#1a1008', outline: 'none'}}>
+          <option value="all">All students</option>
+          {(students as Array<{id: string; full_name?: string; email: string}>).map(s => <option key={s.id} value={s.id}>{s.full_name || s.email.split('@')[0]}</option>)}
+        </select>
+        <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
+          style={{height: 38, borderRadius: 8, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 12px', color: '#1a1008', outline: 'none'}}>
+          <option value="all">All statuses</option>
+          <option value="on_track">On Track</option>
+          <option value="needs_attention">Needs Attention</option>
+          <option value="at_risk">At Risk</option>
+        </select>
+        <div style={{fontSize: 13, color: '#8a7d6a', display: 'flex', alignItems: 'center'}}>{filtered.length} report{filtered.length !== 1 ? 's' : ''}</div>
       </div>
 
-      <div style={{display: 'flex', flexDirection: 'column', gap: 12}}>
-        <div style={{background: '#0d2340', borderRadius: 12, padding: '16px 20px'}}>
-          <div style={{fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#c9a84c', marginBottom: 4}}>Your submitted reports</div>
-          <div style={{fontSize: 12, color: 'rgba(255,255,255,0.5)'}}>{reports.length} report{reports.length !== 1 ? 's' : ''} on file</div>
+      {filtered.length === 0 ? (
+        <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, padding: '40px', textAlign: 'center'}}>
+          <div style={{fontSize: 15, color: '#0d2340', fontWeight: 500, marginBottom: 8}}>No reports found</div>
+          <div style={{fontSize: 13, color: '#8a7d6a'}}>Reports submitted by tutors will appear here</div>
         </div>
-        {loading ? (
-          <div style={{fontSize: 14, color: '#8a7d6a'}}>Loading...</div>
-        ) : reports.length === 0 ? (
-          <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, padding: '32px', textAlign: 'center'}}>
-            <div style={{fontSize: 14, color: '#8a7d6a'}}>No reports submitted yet</div>
-          </div>
-        ) : reports.map(r => (
-          <div key={r.id} style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, overflow: 'hidden'}}>
-            <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', cursor: 'pointer'}} onClick={() => setExpanded(expanded === r.id ? null : r.id)}>
-              <div>
-                <div style={{fontSize: 14, fontWeight: 500, color: '#0d2340'}}>{studentName(r.student_id)}</div>
-                <div style={{fontSize: 11, color: '#8a7d6a', marginTop: 2}}>Week {r.week_number} · {new Date(r.report_date).toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}</div>
-              </div>
-              <div style={{display: 'flex', alignItems: 'center', gap: 8}}>
-                <span style={{fontSize: 11, padding: '3px 10px', borderRadius: 10, fontWeight: 500, ...statusStyle(r.status)}}>{statusLabel(r.status)}</span>
-                <span style={{fontSize: 12, color: '#a89870'}}>{expanded === r.id ? '▲' : '▼'}</span>
-              </div>
-            </div>
-            {expanded === r.id && (
-              <div style={{padding: '0 18px 16px', borderTop: '0.5px solid #f5f0e8'}}>
-                <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 12}}>
-                  <div><div style={{fontSize: 10, color: '#a89870', textTransform: 'uppercase', marginBottom: 2}}>Attendance</div><div style={{fontSize: 13, color: '#0d2340'}}>{r.attendance}</div></div>
-                  <div><div style={{fontSize: 10, color: '#a89870', textTransform: 'uppercase', marginBottom: 2}}>Participation</div><div style={{fontSize: 13, color: '#0d2340'}}>{r.participation}/5</div></div>
+      ) : (
+        <div style={{display: 'flex', flexDirection: 'column', gap: 10}}>
+          {filtered.map(r => (
+            <div key={r.id} style={{background: 'white', border: `0.5px solid ${r.status === 'at_risk' ? '#f5c6c6' : r.status === 'needs_attention' ? '#f5dfa0' : '#e8dfc8'}`, borderRadius: 12, overflow: 'hidden'}}>
+              <div onClick={() => setExpanded(expanded === r.id ? null : r.id)}
+                style={{padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 16, cursor: 'pointer'}}>
+                <div style={{flex: 1, display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap'}}>
+                  <div style={{fontSize: 14, fontWeight: 600, color: '#0d2340'}}>{personName(students as Array<{id: string; full_name?: string; email: string}>, r.student_id)}</div>
+                  <div style={{fontSize: 12, color: '#8a7d6a'}}>Week {r.week_number} · {new Date(r.report_date).toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}</div>
+                  <div style={{fontSize: 12, color: '#8a7d6a'}}>Tutor: {personName(tutors, r.tutor_id)}</div>
                 </div>
-                {r.performance_notes && <div style={{marginTop: 10}}><div style={{fontSize: 10, color: '#a89870', textTransform: 'uppercase', marginBottom: 2}}>Performance notes</div><div style={{fontSize: 13, color: '#3d3020', lineHeight: 1.5}}>{r.performance_notes}</div></div>}
-                {r.new_action_items && <div style={{marginTop: 10}}><div style={{fontSize: 10, color: '#a89870', textTransform: 'uppercase', marginBottom: 2}}>Action items</div><div style={{fontSize: 13, color: '#3d3020', lineHeight: 1.5}}>{r.new_action_items}</div></div>}
-                {r.concerns && <div style={{marginTop: 10, background: '#fdf0f0', borderRadius: 7, padding: '8px 10px'}}><div style={{fontSize: 10, color: '#c0574a', textTransform: 'uppercase', marginBottom: 2}}>Concerns flagged</div><div style={{fontSize: 13, color: '#c0574a', lineHeight: 1.5}}>{r.concerns}</div></div>}
+                <span style={{fontSize: 11, padding: '3px 10px', borderRadius: 10, fontWeight: 500, ...statusStyle(r.status)}}>{statusLabel(r.status)}</span>
+                <div style={{fontSize: 11, color: '#8a7d6a'}}>{expanded === r.id ? '▲' : '▼'}</div>
               </div>
-            )}
-          </div>
-        ))}
-      </div>
+              {expanded === r.id && (
+                <div style={{padding: '0 20px 18px', borderTop: '0.5px solid #f5f0e8'}}>
+                  <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 14, paddingTop: 14}}>
+                    <div style={{background: '#f7f4ee', borderRadius: 8, padding: '10px 14px'}}>
+                      <div style={{fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#8a7d6a', marginBottom: 4}}>Attendance</div>
+                      <div style={{fontSize: 14, color: '#0d2340', fontWeight: 500, textTransform: 'capitalize'}}>{r.attendance}</div>
+                    </div>
+                    <div style={{background: '#f7f4ee', borderRadius: 8, padding: '10px 14px'}}>
+                      <div style={{fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#8a7d6a', marginBottom: 4}}>Participation</div>
+                      <div style={{fontSize: 14, color: '#0d2340', fontWeight: 500}}>{r.participation} / 5</div>
+                    </div>
+                    <div style={{background: '#f7f4ee', borderRadius: 8, padding: '10px 14px'}}>
+                      <div style={{fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#8a7d6a', marginBottom: 4}}>Submitted</div>
+                      <div style={{fontSize: 13, color: '#0d2340'}}>{new Date(r.created_at).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'})}</div>
+                    </div>
+                  </div>
+                  {[
+                    {label: 'Performance notes', value: r.performance_notes},
+                    {label: 'Action items completed', value: r.action_items_completed},
+                    {label: 'New action items', value: r.new_action_items},
+                    {label: 'Concerns', value: r.concerns},
+                  ].filter(f => f.value).map(f => (
+                    <div key={f.label} style={{marginBottom: 10}}>
+                      <div style={{fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#8a7d6a', marginBottom: 4}}>{f.label}</div>
+                      <div style={{fontSize: 13, color: '#3d3020', lineHeight: 1.6}}>{f.value}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
