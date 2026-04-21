@@ -23,6 +23,7 @@ export async function POST(req: NextRequest) {
     email,
     password,
     email_confirm: true,
+    user_metadata: { full_name: full_name || null },
   })
 
   if (authError) {
