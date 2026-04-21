@@ -10,13 +10,13 @@ export default function LoginPage() {
     <main className="min-h-screen flex" style={{fontFamily: 'Sora, sans-serif', background: '#f7f4ee'}}>
 
       {/* LEFT PANEL */}
-      <div className="hidden lg:flex flex-col justify-between w-[52%] p-10" style={{background: '#162032'}}>
+      <div className="hidden lg:flex flex-col justify-between w-[52%] p-10" style={{background: '#0d2340'}}>
 
         {/* Logo */}
         <div>
           <div className="flex items-center gap-3 mb-12 pb-6" style={{borderBottom: '0.5px solid rgba(201,168,76,0.2)'}}>
             <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{background: '#c9a84c'}}>
-              <div style={{width: 0, height: 0, borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderBottom: '11px solid #162032'}}/>
+              <div style={{width: 0, height: 0, borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderBottom: '11px solid #0d2340'}}/>
             </div>
             <div>
               <div style={{fontFamily: 'Georgia, serif', fontSize: 22, color: 'white', fontWeight: 600, letterSpacing: -0.3}}>StepUp</div>
@@ -65,7 +65,7 @@ export default function LoginPage() {
 
           {/* Header */}
           <div style={{marginBottom: 32}}>
-            <div style={{fontFamily: 'Georgia, serif', fontSize: 26, color: '#162032', letterSpacing: -0.3, marginBottom: 6}}>Welcome back</div>
+            <div style={{fontFamily: 'Georgia, serif', fontSize: 26, color: '#0d2340', letterSpacing: -0.3, marginBottom: 6}}>Welcome back</div>
             <div style={{fontSize: 13.5, color: '#8a7d6a'}}>Sign in to your StepUp account</div>
           </div>
 
@@ -78,7 +78,7 @@ export default function LoginPage() {
                 style={{
                   flex: 1, padding: '8px 0', borderRadius: 7, border: role === r ? '0.5px solid rgba(201,168,76,0.3)' : 'none',
                   background: role === r ? 'white' : 'transparent',
-                  color: role === r ? '#162032' : '#8a7d6a',
+                  color: role === r ? '#0d2340' : '#8a7d6a',
                   fontFamily: 'Sora, sans-serif', fontSize: 12.5, fontWeight: role === r ? 600 : 400, cursor: 'pointer',
                   textTransform: 'capitalize'
                 }}
@@ -117,7 +117,7 @@ export default function LoginPage() {
 
           {/* Sign in button */}
           <button
-            style={{width: '100%', height: 46, background: '#162032', border: 'none', borderRadius: 10, color: '#c9a84c', fontFamily: 'Sora, sans-serif', fontSize: 14, fontWeight: 600, cursor: 'pointer', letterSpacing: '0.02em', marginBottom: 20}}
+            style={{width: '100%', height: 46, background: '#0d2340', border: 'none', borderRadius: 10, color: '#c9a84c', fontFamily: 'Sora, sans-serif', fontSize: 14, fontWeight: 600, cursor: 'pointer', letterSpacing: '0.02em', marginBottom: 20}}
           >
             Sign in to StepUp
           </button>
@@ -136,7 +136,7 @@ export default function LoginPage() {
           </button>
 
           {/* Next session banner */}
-          <div style={{background: '#162032', borderRadius: 10, padding: '12px 16px', borderLeft: '3px solid #c9a84c'}}>
+          <div style={{background: '#0d2340', borderRadius: 10, padding: '12px 16px', borderLeft: '3px solid #c9a84c'}}>
             <div style={{fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#c9a84c', marginBottom: 3}}>Next session</div>
             <div style={{fontSize: 12.5, color: 'white', fontWeight: 500}}>Cardiovascular HY Review</div>
             <div style={{fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 2}}>Tuesday Apr 22 · 7:00 PM CST · Zoom</div>
