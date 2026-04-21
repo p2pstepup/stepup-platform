@@ -7,15 +7,6 @@ export default function MentorMeetings() {
   const [user, setUser] = useState<any>(null)
   const [meetings, setMeetings] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [submitting, setSubmitting] = useState(false)
-  const [success, setSuccess] = useState(false)
-  const [form, setForm] = useState({
-    meeting_date: new Date().toISOString().split('T')[0],
-    duration_minutes: '30',
-    notes: '',
-    action_items: '',
-    next_meeting: ''
-  })
   const router = useRouter()
   const supabase = createClient()
 
@@ -34,31 +25,6 @@ export default function MentorMeetings() {
     }
     init()
   }, [])
-
-  const handleSubmit = async () => {
-    if (!form.meeting_date) return
-    setSubmitting(true)
-    const { error } = await supabase.from('mentor_meetings').insert({
-      student_id: user.id,
-      meeting_date: form.meeting_date,
-      duration_minutes: parseInt(form.duration_minutes),
-      notes: form.notes,
-      action_items: form.action_items,
-      next_meeting: form.next_meeting || null
-    })
-    if (!error) {
-      setSuccess(true)
-      setForm({meeting_date: new Date().toISOString().split('T')[0], duration_minutes: '30', notes: '', action_items: '', next_meeting: ''})
-      const { data } = await supabase
-        .from('mentor_meetings')
-        .select('*')
-        .eq('student_id', user.id)
-        .order('meeting_date', { ascending: false })
-      setMeetings(data || [])
-      setTimeout(() => setSuccess(false), 3000)
-    }
-    setSubmitting(false)
-  }
 
   const navGroups = [
     {section: 'Overview', items: [{name: 'Dashboard', path: '/dashboard'}]},
@@ -89,7 +55,7 @@ export default function MentorMeetings() {
     </main>
   )
 
-  const nextMeeting = meetings.find(m => m.next_meeting && new Date(m.next_meeting) > new Date())
+  const upcomingMeeting = meetings.find(m => m.next_meeting && new Date(m.next_meeting) > new Date())
 
   return (
     <main style={{minHeight: '100vh', display: 'flex', background: '#f7f4ee', fontFamily: 'Sora, sans-serif', fontSize: '17.6px'}}>
@@ -138,117 +104,81 @@ export default function MentorMeetings() {
 
         <div style={{marginBottom: 28}}>
           <div style={{fontFamily: 'Georgia, serif', fontSize: 30, color: '#0d2340', letterSpacing: -0.5}}>Mentor Meetings</div>
-          <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>Weekly 30-min 1-on-1 sessions · Notes · Action items · Accountability</div>
+          <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>Weekly 30-min 1-on-1 sessions with your assigned mentor</div>
         </div>
 
-        {/* Next meeting banner */}
-        {nextMeeting ? (
-          <div style={{background: '#0d2340', borderRadius: 12, padding: '16px 22px', marginBottom: 24, borderLeft: '4px solid #c9a84c', display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
-            <div>
-              <div style={{fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#c9a84c', marginBottom: 4}}>Next scheduled meeting</div>
-              <div style={{fontSize: 18, color: 'white', fontWeight: 500}}>{new Date(nextMeeting.next_meeting).toLocaleDateString('en-US', {weekday: 'long', month: 'long', day: 'numeric'})} · 30 min</div>
+        {/* Info banner */}
+        <div style={{background: '#f7f4ee', border: '1px solid #c9a84c', borderRadius: 12, padding: '16px 22px', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 14}}>
+          <div style={{width: 40, height: 40, background: '#c9a84c', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0}}>
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 2a7 7 0 100 14A7 7 0 009 2zM9 8v5M9 6h.01" stroke="#0d2340" strokeWidth="1.5" strokeLinecap="round"/></svg>
+          </div>
+          <div>
+            <div style={{fontSize: 14, fontWeight: 600, color: '#0d2340', marginBottom: 3}}>Your mentor logs all meeting notes</div>
+            <div style={{fontSize: 13, color: '#8a7d6a'}}>After each 1-on-1 session, your mentor will log notes and action items — they'll appear here automatically. No action needed from you.</div>
+          </div>
+        </div>
+
+        {/* Upcoming meeting */}
+        {upcomingMeeting ? (
+          <div style={{background: '#0d2340', borderRadius: 12, padding: '18px 24px', marginBottom: 24, borderLeft: '4px solid #c9a84c'}}>
+            <div style={{fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#c9a84c', marginBottom: 6}}>Next scheduled meeting</div>
+            <div style={{fontSize: 20, color: 'white', fontWeight: 500}}>
+              {new Date(upcomingMeeting.next_meeting).toLocaleDateString('en-US', {weekday: 'long', month: 'long', day: 'numeric'})}
             </div>
-            <div style={{fontSize: 13, color: 'rgba(255,255,255,0.5)'}}>With your assigned mentor</div>
+            <div style={{fontSize: 14, color: 'rgba(255,255,255,0.5)', marginTop: 4}}>30 minutes · With your assigned mentor · Zoom</div>
           </div>
         ) : (
-          <div style={{background: '#f7f4ee', border: '0.5px solid #e8dfc8', borderRadius: 12, padding: '16px 22px', marginBottom: 24}}>
-            <div style={{fontSize: 14, color: '#8a7d6a', fontStyle: 'italic'}}>No upcoming meetings scheduled yet. Your mentor will schedule your first 1-on-1 before the program starts.</div>
+          <div style={{background: '#0d2340', borderRadius: 12, padding: '18px 24px', marginBottom: 24, borderLeft: '4px solid rgba(201,168,76,0.3)'}}>
+            <div style={{fontSize: 14, color: 'rgba(255,255,255,0.6)', fontStyle: 'italic'}}>No upcoming meetings scheduled yet. Your mentor will schedule your first 1-on-1 before May 4th.</div>
           </div>
         )}
 
-        <div style={{display: 'grid', gridTemplateColumns: '1fr 300px', gap: 20}}>
+        {/* Meeting history */}
+        <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, padding: '20px 24px'}}>
+          <div style={{fontSize: 16, fontWeight: 600, color: '#0d2340', marginBottom: 18}}>Meeting history</div>
 
-          {/* MEETING HISTORY */}
-          <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, padding: '18px 20px'}}>
-            <div style={{fontSize: 16, fontWeight: 600, color: '#0d2340', marginBottom: 16}}>Meeting history</div>
-            {meetings.length === 0 ? (
-              <div style={{fontSize: 14, color: '#8a7d6a', fontStyle: 'italic', padding: '12px 0'}}>No meetings logged yet. After your first 1-on-1, log your notes and action items here.</div>
-            ) : (
-              <div style={{display: 'flex', flexDirection: 'column', gap: 14}}>
-                {meetings.map((m, i) => (
-                  <div key={m.id} style={{border: '0.5px solid #e8dfc8', borderRadius: 10, overflow: 'hidden'}}>
-                    <div style={{background: '#0d2340', padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
-                      <div style={{fontSize: 14, color: 'white', fontWeight: 500}}>
-                        {new Date(m.meeting_date).toLocaleDateString('en-US', {weekday: 'long', month: 'long', day: 'numeric'})}
-                      </div>
-                      <div style={{fontSize: 12, color: '#c9a84c'}}>{m.duration_minutes} min</div>
+          {meetings.length === 0 ? (
+            <div style={{textAlign: 'center', padding: '40px 0'}}>
+              <div style={{width: 56, height: 56, background: '#f7f4ee', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px'}}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M8 7V3M16 7V3M7 11h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke="#c9a84c" strokeWidth="1.5" strokeLinecap="round"/></svg>
+              </div>
+              <div style={{fontSize: 15, fontWeight: 500, color: '#0d2340', marginBottom: 6}}>No meetings logged yet</div>
+              <div style={{fontSize: 13, color: '#8a7d6a'}}>Your mentor will log notes after your first 1-on-1 session.<br/>They'll appear here automatically.</div>
+            </div>
+          ) : (
+            <div style={{display: 'flex', flexDirection: 'column', gap: 16}}>
+              {meetings.map((m) => (
+                <div key={m.id} style={{border: '0.5px solid #e8dfc8', borderRadius: 10, overflow: 'hidden'}}>
+                  <div style={{background: '#0d2340', padding: '12px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+                    <div style={{fontSize: 15, color: 'white', fontWeight: 500}}>
+                      {new Date(m.meeting_date).toLocaleDateString('en-US', {weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'})}
                     </div>
-                    <div style={{padding: '14px 16px'}}>
-                      {m.notes && (
-                        <div style={{marginBottom: 12}}>
-                          <div style={{fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#a89870', marginBottom: 6}}>Session notes</div>
-                          <div style={{fontSize: 13, color: '#3d3020', lineHeight: 1.6}}>{m.notes}</div>
-                        </div>
-                      )}
-                      {m.action_items && (
-                        <div style={{background: '#f7f4ee', borderRadius: 8, padding: '10px 14px', borderLeft: '3px solid #c9a84c'}}>
-                          <div style={{fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#c9a84c', marginBottom: 6}}>Action items</div>
-                          <div style={{fontSize: 13, color: '#3d3020', lineHeight: 1.6}}>{m.action_items}</div>
-                        </div>
-                      )}
-                      {m.next_meeting && (
-                        <div style={{marginTop: 10, fontSize: 12, color: '#8a7d6a'}}>
-                          Next meeting: {new Date(m.next_meeting).toLocaleDateString('en-US', {weekday: 'long', month: 'long', day: 'numeric'})}
-                        </div>
-                      )}
-                    </div>
+                    <div style={{fontSize: 12, color: '#c9a84c', background: 'rgba(201,168,76,0.15)', padding: '3px 10px', borderRadius: 12}}>{m.duration_minutes} min</div>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* LOG FORM */}
-          <div style={{background: '#0d2340', borderRadius: 12, padding: '20px', height: 'fit-content'}}>
-            <div style={{fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#c9a84c', marginBottom: 16}}>Log a meeting</div>
-
-            {success && (
-              <div style={{background: 'rgba(107,124,58,0.2)', border: '0.5px solid #6b7c3a', borderRadius: 6, padding: '10px 12px', marginBottom: 14, fontSize: 13, color: '#9FE1CB'}}>
-                ✓ Meeting logged!
-              </div>
-            )}
-
-            <div style={{marginBottom: 12}}>
-              <div style={{fontSize: 11, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 5}}>Meeting date</div>
-              <input type="date" value={form.meeting_date} onChange={e => setForm({...form, meeting_date: e.target.value})}
-                style={{width: '100%', height: 38, borderRadius: 7, border: '0.5px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 10px', color: 'white', outline: 'none', boxSizing: 'border-box'}}/>
+                  <div style={{padding: '16px 18px'}}>
+                    {m.notes && (
+                      <div style={{marginBottom: 14}}>
+                        <div style={{fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#a89870', marginBottom: 8}}>Session notes</div>
+                        <div style={{fontSize: 14, color: '#3d3020', lineHeight: 1.7}}>{m.notes}</div>
+                      </div>
+                    )}
+                    {m.action_items && (
+                      <div style={{background: '#f7f4ee', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #c9a84c', marginBottom: 10}}>
+                        <div style={{fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#c9a84c', marginBottom: 8}}>Your action items</div>
+                        <div style={{fontSize: 14, color: '#3d3020', lineHeight: 1.7}}>{m.action_items}</div>
+                      </div>
+                    )}
+                    {m.next_meeting && (
+                      <div style={{fontSize: 13, color: '#8a7d6a', marginTop: 8, display: 'flex', alignItems: 'center', gap: 6}}>
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="2" width="12" height="11" rx="1" stroke="#c9a84c" strokeWidth="1.1"/><path d="M4 1v2M10 1v2M1 6h12" stroke="#c9a84c" strokeWidth="1.1" strokeLinecap="round"/></svg>
+                        Next meeting: <span style={{color: '#0d2340', fontWeight: 500}}>{new Date(m.next_meeting).toLocaleDateString('en-US', {weekday: 'long', month: 'long', day: 'numeric'})}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
-
-            <div style={{marginBottom: 12}}>
-              <div style={{fontSize: 11, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 5}}>Duration</div>
-              <select value={form.duration_minutes} onChange={e => setForm({...form, duration_minutes: e.target.value})}
-                style={{width: '100%', height: 38, borderRadius: 7, border: '0.5px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 10px', color: 'white', outline: 'none'}}>
-                {['15','20','30','45','60'].map(o => <option key={o} value={o} style={{background: '#0d2340'}}>{o} minutes</option>)}
-              </select>
-            </div>
-
-            <div style={{marginBottom: 12}}>
-              <div style={{fontSize: 11, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 5}}>Session notes</div>
-              <textarea value={form.notes} onChange={e => setForm({...form, notes: e.target.value})}
-                placeholder="What did you discuss?"
-                rows={3}
-                style={{width: '100%', borderRadius: 7, border: '0.5px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '8px 10px', color: 'white', outline: 'none', boxSizing: 'border-box', resize: 'none'}}/>
-            </div>
-
-            <div style={{marginBottom: 12}}>
-              <div style={{fontSize: 11, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 5}}>Action items</div>
-              <textarea value={form.action_items} onChange={e => setForm({...form, action_items: e.target.value})}
-                placeholder="What do you need to do before next meeting?"
-                rows={3}
-                style={{width: '100%', borderRadius: 7, border: '0.5px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '8px 10px', color: 'white', outline: 'none', boxSizing: 'border-box', resize: 'none'}}/>
-            </div>
-
-            <div style={{marginBottom: 16}}>
-              <div style={{fontSize: 11, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 5}}>Next meeting date</div>
-              <input type="date" value={form.next_meeting} onChange={e => setForm({...form, next_meeting: e.target.value})}
-                style={{width: '100%', height: 38, borderRadius: 7, border: '0.5px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 10px', color: 'white', outline: 'none', boxSizing: 'border-box'}}/>
-            </div>
-
-            <button onClick={handleSubmit} disabled={submitting}
-              style={{width: '100%', height: 42, background: submitting ? '#4a5568' : '#c9a84c', border: 'none', borderRadius: 8, fontFamily: 'Sora, sans-serif', fontSize: 14, fontWeight: 600, color: '#0d2340', cursor: submitting ? 'not-allowed' : 'pointer'}}>
-              {submitting ? 'Saving...' : 'Log meeting ↗'}
-            </button>
-          </div>
+          )}
         </div>
       </div>
     </main>
