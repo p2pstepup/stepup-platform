@@ -79,7 +79,7 @@ export default function Dashboard() {
           {navGroups.map((group) => (
             <div key={group.section}>
               <div style={{fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'rgba(255,255,255,0.28)', padding: '0 8px', margin: '12px 0 4px'}}>{group.section}</div>
-              {group.items.map((item) => (
+              {group.items.map((item: any) => (
                 <div key={item.name}
                   onClick={() => router.push(item.path)}
                   style={{display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 7, color: item.active ? '#c9a84c' : 'rgba(255,255,255,0.55)', fontSize: 13.5, marginBottom: 2, background: item.active ? 'rgba(255,255,255,0.09)' : 'transparent', cursor: 'pointer'}}>
