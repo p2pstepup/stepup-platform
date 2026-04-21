@@ -148,7 +148,9 @@ export default function DailySchedule() {
                     <div style={{fontSize: 13, color: '#8a7d6a'}}>
                       {session.start_time && `${session.start_time}${session.end_time ? ` — ${session.end_time}` : ''} CST`}
                       {session.session_type && ` · ${session.session_type}`}
+                      {session.instructor && <span style={{color: '#c9a84c'}}> · {session.instructor}</span>}
                     </div>
+                    {session.syllabus && <div style={{fontSize: 12, color: '#8a7d6a', marginTop: 4, lineHeight: 1.5, background: '#f7f4ee', borderRadius: 6, padding: '6px 10px'}}>{session.syllabus}</div>}
                     {session.description && <div style={{fontSize: 12, color: '#a89870', marginTop: 4}}>{session.description}</div>}
                   </div>
                   {session.zoom_link && (
