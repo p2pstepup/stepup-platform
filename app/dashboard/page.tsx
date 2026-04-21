@@ -34,6 +34,31 @@ export default function Dashboard() {
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening'
 
+  const navGroups = [
+    {section: 'Overview', items: [
+      {name: 'Dashboard', path: '/dashboard', active: true},
+    ]},
+    {section: 'My Program', items: [
+      {name: 'Daily Schedule', path: '/dashboard/schedule'},
+      {name: 'Calendar', path: '/dashboard/calendar'},
+      {name: 'Assignments', path: '/dashboard/assignments'},
+      {name: 'Mentor Meetings', path: '/dashboard/mentor'},
+    ]},
+    {section: 'Study Tools', items: [
+      {name: 'Exam Center', path: '/dashboard/exams'},
+      {name: 'Qbank Tracker', path: '/dashboard/qbank'},
+      {name: 'NBME Scores', path: '/dashboard/nbme'},
+      {name: 'Weakness Map', path: '/dashboard/weakness'},
+    ]},
+    {section: 'Resources', items: [
+      {name: 'HY Topic Notes', path: '/dashboard/notes'},
+      {name: 'Session Recordings', path: '/dashboard/recordings'},
+      {name: 'Session Slides', path: '/dashboard/slides'},
+      {name: 'Resource Drive', path: '/dashboard/resources'},
+      {name: 'Live Feedback', path: '/dashboard/feedback'},
+    ]},
+  ]
+
   return (
     <main style={{minHeight: '100vh', display: 'flex', background: '#f7f4ee', fontFamily: 'Sora, sans-serif'}}>
 
@@ -51,16 +76,13 @@ export default function Dashboard() {
         </div>
 
         <div style={{padding: '12px 10px', flex: 1, overflowY: 'auto'}}>
-          {[
-            {section: 'Overview', items: [{name: 'Dashboard', active: true}]},
-            {section: 'My Program', items: [{name: 'Daily Schedule'}, {name: 'Calendar'}, {name: 'Assignments'}, {name: 'Mentor Meetings'}]},
-            {section: 'Study Tools', items: [{name: 'Exam Center'}, {name: 'Qbank Tracker'}, {name: 'NBME Scores'}, {name: 'Weakness Map'}]},
-            {section: 'Resources', items: [{name: 'HY Topic Notes'}, {name: 'Session Recordings'}, {name: 'Session Slides'}, {name: 'Resource Drive'}, {name: 'Live Feedback'}]},
-          ].map((group) => (
+          {navGroups.map((group) => (
             <div key={group.section}>
               <div style={{fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'rgba(255,255,255,0.28)', padding: '0 8px', margin: '12px 0 4px'}}>{group.section}</div>
-              {group.items.map((item: any) => (
-                <div key={item.name} style={{display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 7, color: item.active ? '#c9a84c' : 'rgba(255,255,255,0.55)', fontSize: 13.5, marginBottom: 2, background: item.active ? 'rgba(255,255,255,0.09)' : 'transparent', cursor: 'pointer'}}>
+              {group.items.map((item) => (
+                <div key={item.name}
+                  onClick={() => router.push(item.path)}
+                  style={{display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 7, color: item.active ? '#c9a84c' : 'rgba(255,255,255,0.55)', fontSize: 13.5, marginBottom: 2, background: item.active ? 'rgba(255,255,255,0.09)' : 'transparent', cursor: 'pointer'}}>
                   <div style={{width: 6, height: 6, borderRadius: '50%', background: 'currentColor', flexShrink: 0}}/>
                   {item.name}
                 </div>
@@ -93,7 +115,6 @@ export default function Dashboard() {
       {/* MAIN CONTENT */}
       <div style={{flex: 1, minWidth: 0, overflowY: 'auto', padding: '32px 36px'}}>
 
-        {/* Top bar */}
         <div style={{display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 28}}>
           <div>
             <div style={{fontFamily: 'Georgia, serif', fontSize: 30, color: '#0d2340', letterSpacing: -0.5}}>
@@ -110,7 +131,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Metric cards */}
         <div style={{display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: 12, marginBottom: 22}}>
           {[
             {label: 'Qbank avg', value: '—', delta: 'No sessions yet', color: '#a89870'},
@@ -127,36 +147,32 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* Weakness panel */}
         <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, padding: '18px 22px', marginBottom: 20}}>
           <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12}}>
             <div style={{fontSize: 15, fontWeight: 600, color: '#0d2340'}}>Subject accuracy — weak topics</div>
-            <div style={{fontSize: 12, color: '#c9a84c', cursor: 'pointer'}}>View full weakness map →</div>
+            <div onClick={() => router.push('/dashboard/weakness')} style={{fontSize: 12, color: '#c9a84c', cursor: 'pointer'}}>View full weakness map →</div>
           </div>
           <div style={{fontSize: 14, color: '#8a7d6a', fontStyle: 'italic'}}>
             No Qbank sessions logged yet. Start logging your daily questions to see your weakness analysis here.
           </div>
         </div>
 
-        {/* Bottom grid */}
         <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 18}}>
 
-          {/* Today's tasks */}
           <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, padding: '16px 18px'}}>
             <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12}}>
               <div style={{fontSize: 15, fontWeight: 600, color: '#0d2340'}}>Today's to-do list</div>
-              <div style={{fontSize: 12, color: '#c9a84c'}}>Full schedule →</div>
+              <div onClick={() => router.push('/dashboard/schedule')} style={{fontSize: 12, color: '#c9a84c', cursor: 'pointer'}}>Full schedule →</div>
             </div>
             <div style={{fontSize: 13, color: '#8a7d6a', fontStyle: 'italic', padding: '10px 0'}}>
               No tasks assigned yet. Your tutor will assign your daily schedule before the program starts.
             </div>
           </div>
 
-          {/* Upcoming deadlines */}
           <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, padding: '16px 18px'}}>
             <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12}}>
               <div style={{fontSize: 15, fontWeight: 600, color: '#0d2340'}}>Upcoming deadlines</div>
-              <div style={{fontSize: 12, color: '#c9a84c'}}>Calendar →</div>
+              <div onClick={() => router.push('/dashboard/calendar')} style={{fontSize: 12, color: '#c9a84c', cursor: 'pointer'}}>Calendar →</div>
             </div>
             {[
               {date: 'May 4', text: 'Program begins — Week 1', tag: 'Start'},
@@ -171,7 +187,6 @@ export default function Dashboard() {
             ))}
           </div>
 
-          {/* Score + motivation */}
           <div style={{display: 'flex', flexDirection: 'column', gap: 14}}>
             <div style={{background: '#0d2340', borderRadius: 12, padding: '16px 18px', flex: 1}}>
               <div style={{fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#c9a84c', marginBottom: 8}}>Predicted Step 1 score</div>
