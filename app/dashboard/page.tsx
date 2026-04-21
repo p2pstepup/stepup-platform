@@ -142,6 +142,9 @@ export default function Dashboard() {
       </nav>
 
       {/* MAIN CONTENT */}
+      </nav>
+
+      {/* MAIN CONTENT */}
       <div style={{flex: 1, minWidth: 0, overflowY: 'auto', padding: '32px 36px'}}>
 
         {/* TOP BAR WITH NOTIFICATIONS */}
