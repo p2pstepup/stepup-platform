@@ -6,13 +6,40 @@ import { createClient } from '../../utils/supabase'
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [notifications, setNotifications] = useState<any[]>([])
+  const [showNotifications, setShowNotifications] = useState(false)
   const router = useRouter()
   const supabase = createClient()
+
+  const unreadCount = notifications.filter(n => !n.read).length
+
+  const markAllRead = async () => {
+    if (!user) return
+    await supabase.from('notifications').update({read: true}).eq('student_id', user.id)
+    setNotifications(notifications.map(n => ({...n, read: true})))
+  }
+
+  const markRead = async (id: string) => {
+    await supabase.from('notifications').update({read: true}).eq('id', id)
+    setNotifications(notifications.map(n => n.id === id ? {...n, read: true} : n))
+  }
 
   useEffect(() => {
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push('/') } else { setUser(user); setLoading(false) }
+      if (!user) {
+        router.push('/')
+      } else {
+        setUser(user)
+        const { data: notifs } = await supabase
+          .from('notifications')
+          .select('*')
+          .eq('student_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(20)
+        setNotifications(notifs || [])
+        setLoading(false)
+      }
     }
     getUser()
   }, [])
@@ -35,9 +62,7 @@ export default function Dashboard() {
   const greeting = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening'
 
   const navGroups = [
-    {section: 'Overview', items: [
-      {name: 'Dashboard', path: '/dashboard', active: true},
-    ]},
+    {section: 'Overview', items: [{name: 'Dashboard', path: '/dashboard', active: true}]},
     {section: 'My Program', items: [
       {name: 'Daily Schedule', path: '/dashboard/schedule'},
       {name: 'Calendar', path: '/dashboard/calendar'},
@@ -60,11 +85,10 @@ export default function Dashboard() {
   ]
 
   return (
-    <main style={{minHeight: '100vh', display: 'flex', background: '#f7f4ee', fontFamily: 'Sora, sans-serif', fontSize: '17.6px'}}>
+    <main style={{minHeight: '100vh', display: 'flex', background: '#f7f4ee', fontFamily: 'Sora, sans-serif', fontSize: '17.6px', position: 'relative'}}>
 
       {/* SIDEBAR */}
       <nav style={{width: 220, flexShrink: 0, background: '#0d2340', display: 'flex', flexDirection: 'column', height: '100vh', position: 'sticky', top: 0}}>
-
         <div style={{padding: '20px 18px 16px', borderBottom: '0.5px solid rgba(201,168,76,0.2)'}}>
           <div style={{display: 'flex', alignItems: 'center', gap: 10}}>
             <div style={{width: 36, height: 36, background: '#c9a84c', borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0}}>
@@ -80,8 +104,7 @@ export default function Dashboard() {
             <div key={group.section}>
               <div style={{fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'rgba(255,255,255,0.28)', padding: '0 8px', margin: '12px 0 4px'}}>{group.section}</div>
               {group.items.map((item: any) => (
-                <div key={item.name}
-                  onClick={() => router.push(item.path)}
+                <div key={item.name} onClick={() => router.push(item.path)}
                   style={{display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 7, color: item.active ? '#c9a84c' : 'rgba(255,255,255,0.55)', fontSize: 13.5, marginBottom: 2, background: item.active ? 'rgba(255,255,255,0.09)' : 'transparent', cursor: 'pointer'}}>
                   <div style={{width: 6, height: 6, borderRadius: '50%', background: 'currentColor', flexShrink: 0}}/>
                   {item.name}
@@ -115,6 +138,7 @@ export default function Dashboard() {
       {/* MAIN CONTENT */}
       <div style={{flex: 1, minWidth: 0, overflowY: 'auto', padding: '32px 36px'}}>
 
+        {/* TOP BAR WITH NOTIFICATIONS */}
         <div style={{display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 28}}>
           <div>
             <div style={{fontFamily: 'Georgia, serif', fontSize: 30, color: '#0d2340', letterSpacing: -0.5}}>
@@ -124,13 +148,62 @@ export default function Dashboard() {
               {new Date().toLocaleDateString('en-US', {weekday: 'long', month: 'long', day: 'numeric'})} · Week 1 of 8 · Step 1 in 196 days
             </div>
           </div>
-          <div style={{background: '#0d2340', borderRadius: 10, padding: '12px 18px', textAlign: 'right', borderLeft: '3px solid #c9a84c', flexShrink: 0}}>
-            <div style={{fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#c9a84c', marginBottom: 3}}>Next session</div>
-            <div style={{fontSize: 14, color: 'white', fontWeight: 500}}>Psychiatry HY — Week 1</div>
-            <div style={{fontSize: 12, color: 'rgba(255,255,255,0.45)', marginTop: 2}}>Tonight · 7:00 PM CST · Zoom</div>
+
+          <div style={{display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, position: 'relative'}}>
+
+            {/* NOTIFICATION BELL */}
+            <div onClick={() => setShowNotifications(!showNotifications)}
+              style={{position: 'relative', width: 44, height: 44, background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer'}}>
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M10 2a6 6 0 00-6 6v3l-1.5 2.5h15L16 11V8a6 6 0 00-6-6zM8 16a2 2 0 004 0" stroke="#0d2340" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+              {unreadCount > 0 && (
+                <div style={{position: 'absolute', top: -6, right: -6, width: 20, height: 20, background: '#c0574a', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: 'white'}}>
+                  {unreadCount}
+                </div>
+              )}
+            </div>
+
+            {/* NOTIFICATION DROPDOWN */}
+            {showNotifications && (
+              <div style={{position: 'absolute', top: 52, right: 0, width: 360, background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, boxShadow: '0 8px 32px rgba(0,0,0,0.12)', zIndex: 200}}>
+                <div style={{padding: '14px 18px', borderBottom: '0.5px solid #f0ece0', display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+                  <div style={{fontSize: 15, fontWeight: 600, color: '#0d2340'}}>Notifications</div>
+                  {unreadCount > 0 && (
+                    <div onClick={markAllRead} style={{fontSize: 12, color: '#c9a84c', cursor: 'pointer'}}>Mark all read</div>
+                  )}
+                </div>
+                {notifications.length === 0 ? (
+                  <div style={{padding: '28px 18px', textAlign: 'center', fontSize: 14, color: '#8a7d6a', fontStyle: 'italic'}}>No notifications yet</div>
+                ) : (
+                  <div style={{maxHeight: 360, overflowY: 'auto'}}>
+                    {notifications.map(n => (
+                      <div key={n.id}
+                        onClick={() => { markRead(n.id); if(n.link) router.push(n.link); setShowNotifications(false) }}
+                        style={{padding: '14px 18px', borderBottom: '0.5px solid #f5f0e8', cursor: 'pointer', background: n.read ? 'white' : '#fffdf5', display: 'flex', gap: 12, alignItems: 'flex-start'}}>
+                        <div style={{width: 8, height: 8, borderRadius: '50%', background: n.read ? '#e8dfc8' : '#c9a84c', flexShrink: 0, marginTop: 6}}/>
+                        <div style={{flex: 1}}>
+                          <div style={{fontSize: 14, fontWeight: n.read ? 400 : 600, color: '#0d2340', marginBottom: 4}}>{n.title}</div>
+                          {n.message && <div style={{fontSize: 13, color: '#8a7d6a', lineHeight: 1.5}}>{n.message}</div>}
+                          <div style={{fontSize: 11, color: '#a89870', marginTop: 5}}>{new Date(n.created_at).toLocaleDateString('en-US', {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'})}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* NEXT SESSION BANNER */}
+            <div style={{background: '#0d2340', borderRadius: 10, padding: '12px 18px', textAlign: 'right', borderLeft: '3px solid #c9a84c'}}>
+              <div style={{fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#c9a84c', marginBottom: 3}}>Next session</div>
+              <div style={{fontSize: 14, color: 'white', fontWeight: 500}}>Psychiatry HY — Week 1</div>
+              <div style={{fontSize: 12, color: 'rgba(255,255,255,0.45)', marginTop: 2}}>Tonight · 7:00 PM CST · Zoom</div>
+            </div>
           </div>
         </div>
 
+        {/* METRIC CARDS */}
         <div style={{display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: 12, marginBottom: 22}}>
           {[
             {label: 'Qbank avg', value: '—', delta: 'No sessions yet', color: '#a89870'},
@@ -147,6 +220,7 @@ export default function Dashboard() {
           ))}
         </div>
 
+        {/* WEAKNESS PANEL */}
         <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, padding: '18px 22px', marginBottom: 20}}>
           <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12}}>
             <div style={{fontSize: 15, fontWeight: 600, color: '#0d2340'}}>Subject accuracy — weak topics</div>
@@ -157,6 +231,7 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* BOTTOM GRID */}
         <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 18}}>
 
           <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, padding: '16px 18px'}}>
