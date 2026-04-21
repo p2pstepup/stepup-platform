@@ -137,8 +137,6 @@ export default function Dashboard() {
               style={{fontSize: 11, color: 'rgba(255,255,255,0.35)', cursor: 'pointer', padding: '4px 8px', borderRadius: 4, border: '0.5px solid rgba(255,255,255,0.15)'}}>Sign out</div>
           </div>
         </div>
-          </div>
-        </div>
       </nav>
 
       {/* MAIN CONTENT */}
