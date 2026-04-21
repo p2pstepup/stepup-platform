@@ -10,13 +10,13 @@ export default function LoginPage() {
     <main className="min-h-screen flex" style={{fontFamily: 'Sora, sans-serif', background: '#f7f4ee'}}>
 
       {/* LEFT PANEL */}
-      <div className="hidden lg:flex flex-col justify-between w-[52%] p-10" style={{background: '#1a1150'}}>
+      <div className="hidden lg:flex flex-col justify-between w-[52%] p-10" style={{background: '#162032'}}>
 
         {/* Logo */}
         <div>
           <div className="flex items-center gap-3 mb-12 pb-6" style={{borderBottom: '0.5px solid rgba(201,168,76,0.2)'}}>
             <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{background: '#c9a84c'}}>
-              <div style={{width: 0, height: 0, borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderBottom: '11px solid #1a1150'}}/>
+              <div style={{width: 0, height: 0, borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderBottom: '11px solid #162032'}}/>
             </div>
             <div>
               <div style={{fontFamily: 'Georgia, serif', fontSize: 22, color: 'white', fontWeight: 600, letterSpacing: -0.3}}>StepUp</div>
