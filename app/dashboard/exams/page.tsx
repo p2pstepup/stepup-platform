@@ -31,6 +31,25 @@ export default function ExamCenter() {
       ])
       setExams(examData || [])
       setPastSessions(sessionData || [])
+
+      // Resume any in-progress session
+      const inProgress = sessionData?.find((s: any) => s.status === 'in_progress')
+      if (inProgress) {
+        const sheet = inProgress.answer_sheets?.[0]
+        if (sheet) {
+          const startedAt = new Date(inProgress.started_at)
+          const now = new Date()
+          const elapsedSeconds = Math.round((now.getTime() - startedAt.getTime()) / 1000)
+          const totalSeconds = (inProgress.time_limit_minutes || 240) * 60
+          const remaining = Math.max(0, totalSeconds - elapsedSeconds)
+          setActiveSession(inProgress)
+          setActiveSheet(sheet)
+          setAnswers(sheet.answers || {})
+          setTimeLeft(remaining)
+          setCurrentPage(1)
+        }
+      }
+
       setLoading(false)
     }
     init()
