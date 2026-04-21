@@ -201,9 +201,11 @@ export default function ExamCenter() {
   )
 
   // ACTIVE EXAM VIEW
+  if (activeSession && !submitted) {// ACTIVE EXAM VIEW
   if (activeSession && !submitted) {
     const pageStart = (currentPage - 1) * QUESTIONS_PER_PAGE + 1
     const pageEnd = Math.min(currentPage * QUESTIONS_PER_PAGE, totalQuestions)
+    const currentExam = exams.find(e => e.id === activeSession.exam_id)
 
     return (
       <main style={{minHeight: '100vh', background: '#f7f4ee', fontFamily: 'Sora, sans-serif', fontSize: '17.6px'}}>
@@ -213,6 +215,12 @@ export default function ExamCenter() {
           <div style={{display: 'flex', alignItems: 'center', gap: 16}}>
             <div style={{fontFamily: 'Georgia, serif', fontSize: 18, color: 'white', fontWeight: 600}}>{activeSession.exam_name}</div>
             <div style={{fontSize: 13, color: 'rgba(255,255,255,0.5)'}}>Answer Sheet</div>
+            {currentExam?.link && (
+              <a href={currentExam.link} target="_blank" rel="noopener noreferrer"
+                style={{padding: '4px 12px', background: 'rgba(201,168,76,0.2)', border: '1px solid rgba(201,168,76,0.4)', borderRadius: 6, fontSize: 12, color: '#c9a84c', textDecoration: 'none', fontWeight: 500}}>
+                Reopen exam ↗
+              </a>
+            )}
           </div>
           <div style={{display: 'flex', alignItems: 'center', gap: 24}}>
             <div style={{textAlign: 'center'}}>
