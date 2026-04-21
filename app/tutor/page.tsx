@@ -492,7 +492,8 @@ export default function TutorDashboard() {
             </div>
             <ExamReports supabase={supabase} students={students} />
           </div>
-        )}function RecordingsManager({ supabase, onSuccess }: any) {
+        )}
+        function RecordingsManager({ supabase, onSuccess }: any) {
   const [recordings, setRecordings] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [newRec, setNewRec] = useState({week_number: '1', session_date: '', topic: '', link: '', duration: '', available: false})
