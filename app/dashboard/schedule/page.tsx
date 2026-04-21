@@ -152,7 +152,17 @@ export default function DailySchedule() {
                       {session.session_type && ` · ${session.session_type}`}
                       {session.instructor && <span style={{color: '#c9a84c'}}> · {session.instructor}</span>}
                     </div>
-                    {session.syllabus && <div style={{fontSize: 12, color: '#8a7d6a', marginTop: 4, lineHeight: 1.5, background: '#f7f4ee', borderRadius: 6, padding: '6px 10px'}}>{session.syllabus}</div>}
+                    {(session.syllabus || session.syllabus_link) && (
+                      <div style={{fontSize: 12, color: '#8a7d6a', marginTop: 4, lineHeight: 1.5, background: '#f7f4ee', borderRadius: 6, padding: '6px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10}}>
+                        <span>{session.syllabus}</span>
+                        {session.syllabus_link && (
+                          <a href={session.syllabus_link} target="_blank" rel="noopener noreferrer"
+                            style={{fontSize: 11, color: '#c9a84c', textDecoration: 'none', fontWeight: 500, flexShrink: 0}}>
+                            View syllabus ↗
+                          </a>
+                        )}
+                      </div>
+                    )}
                     {session.description && <div style={{fontSize: 12, color: '#a89870', marginTop: 4}}>{session.description}</div>}
                   </div>
                   {session.zoom_link && (

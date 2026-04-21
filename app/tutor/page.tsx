@@ -483,8 +483,7 @@ export default function TutorDashboard() {
             <StudentProfiles supabase={supabase} students={students} onSuccess={(msg: string) => { setSuccess(msg); setTimeout(() => setSuccess(''), 3000) }} />
           </div>
         )}
-
-      </div>
+        </div>
     </main>
   )
 }
@@ -573,8 +572,21 @@ function StudentProfiles({ supabase, students, onSuccess }: any) {
     </div>
   )
 }
+          </div>
+        )}{activeTab === 'profiles' && (
+          <div>
+            <div style={{marginBottom: 24}}>
+              <div style={{fontFamily: 'Georgia, serif', fontSize: 28, color: '#0d2340', letterSpacing: -0.5}}>Student Profiles</div>
+              <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>Assign mentor names · Update student info</div>
+            </div>
+            <StudentProfiles supabase={supabase} students={students} onSuccess={(msg: string) => { setSuccess(msg); setTimeout(() => setSuccess(''), 3000) }} />
+          </div>
+        )}
 
-function AnnouncementForm({ students, supabase, onSuccess }: any) {
+      </div>
+    </main>
+  )
+}function AnnouncementForm({ students, supabase, onSuccess }: any) {
   const [form, setForm] = useState({title: '', body: ''})
   const [sending, setSending] = useState(false)
   const [announcements, setAnnouncements] = useState<any[]>([])
@@ -1189,7 +1201,7 @@ function ExamsManager({ supabase, onSuccess }: any) {
 function ScheduleManager({ supabase, onSuccess }: any) {
   const [sessions, setSessions] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [newSession, setNewSession] = useState({week_number: '1', day_of_week: 'Monday', session_date: '', start_time: '7:00 PM', end_time: '9:00 PM', topic: '', description: '', zoom_link: '', session_type: 'Live Session', instructor: '', syllabus: ''})
+  const [newSession, setNewSession] = useState({week_number: '1', day_of_week: 'Monday', session_date: '', start_time: '7:00 PM', end_time: '9:00 PM', topic: '', description: '', zoom_link: '', session_type: 'Live Session', instructor: '', syllabus: '', syllabus_link: ''})
   const [adding, setAdding] = useState(false)
 
   useEffect(() => { load() }, [])
@@ -1284,8 +1296,13 @@ function ScheduleManager({ supabase, onSuccess }: any) {
               style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
           </div>
           <div>
-            <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Syllabus</label>
-            <input type="text" value={newSession.syllabus} onChange={e => setNewSession({...newSession, syllabus: e.target.value})} placeholder="Topics, readings..."
+            <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Syllabus notes</label>
+            <input type="text" value={newSession.syllabus} onChange={e => setNewSession({...newSession, syllabus: e.target.value})} placeholder="Topics, readings, prep notes..."
+              style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
+          </div>
+          <div>
+            <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Syllabus link</label>
+            <input type="text" value={newSession.syllabus_link || ''} onChange={e => setNewSession({...newSession, syllabus_link: e.target.value})} placeholder="https://docs.google.com/..."
               style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
           </div>
         </div>
@@ -1318,9 +1335,14 @@ function ScheduleManager({ supabase, onSuccess }: any) {
                   if (input) updateSession(session.id, {zoom_link: input.value})
                 }} style={{height: 34, padding: '0 10px', background: '#0d2340', border: 'none', borderRadius: 6, color: '#c9a84c', fontFamily: 'Sora, sans-serif', fontSize: 12, fontWeight: 600, cursor: 'pointer'}}>Save</button>
               </div>
-              <input type="text" defaultValue={session.syllabus || ''} placeholder="Syllabus..."
-                onBlur={e => { if (e.target.value !== (session.syllabus || '')) updateSession(session.id, {syllabus: e.target.value}) }}
-                style={{height: 34, borderRadius: 6, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 12, padding: '0 8px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
+              <div style={{display: 'flex', flexDirection: 'column', gap: 4}}>
+                <input type="text" defaultValue={session.syllabus || ''} placeholder="Syllabus notes..."
+                  onBlur={e => { if (e.target.value !== (session.syllabus || '')) updateSession(session.id, {syllabus: e.target.value}) }}
+                  style={{height: 34, borderRadius: 6, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 12, padding: '0 8px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
+                <input type="text" defaultValue={session.syllabus_link || ''} placeholder="Syllabus link..."
+                  onBlur={e => { if (e.target.value !== (session.syllabus_link || '')) updateSession(session.id, {syllabus_link: e.target.value}) }}
+                  style={{height: 34, borderRadius: 6, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 12, padding: '0 8px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
+              </div>
               <div onClick={() => deleteSession(session.id)} style={{fontSize: 11, color: '#c0574a', cursor: 'pointer', padding: '4px 8px'}}>Remove</div>
             </div>
           </div>
