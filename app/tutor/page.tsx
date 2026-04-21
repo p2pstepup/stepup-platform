@@ -68,8 +68,12 @@ export default function TutorDashboard() {
     {name: 'Announcements', tab: 'announcements'},
     {name: 'Student Feedback', tab: 'feedback'},
     {name: 'Manage Slides', tab: 'slides'},
+    {name: 'Manage Recordings', tab: 'recordings'},
+    {name: 'Manage HY Notes', tab: 'notes'},
     {name: 'Manage Resources', tab: 'resources'},
     {name: 'Manage Exams', tab: 'exams'},
+    {name: 'Manage Schedule', tab: 'schedule'},
+    {name: 'Assign Tasks', tab: 'assignments'},
   ]
 
   return (
@@ -415,6 +419,48 @@ export default function TutorDashboard() {
               <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>Edit exam names · Set deadlines · Add links · Toggle availability</div>
             </div>
             <ExamsManager supabase={supabase} onSuccess={(msg: string) => { setSuccess(msg); setTimeout(() => setSuccess(''), 3000) }} />
+          </div>
+        )}{/* MANAGE RECORDINGS */}
+        {activeTab === 'recordings' && (
+          <div>
+            <div style={{marginBottom: 24}}>
+              <div style={{fontFamily: 'Georgia, serif', fontSize: 28, color: '#0d2340', letterSpacing: -0.5}}>Manage Recordings</div>
+              <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>Upload recording links · Toggle availability · Students see changes instantly</div>
+            </div>
+            <RecordingsManager supabase={supabase} onSuccess={(msg: string) => { setSuccess(msg); setTimeout(() => setSuccess(''), 3000) }} />
+          </div>
+        )}
+
+        {/* MANAGE HY NOTES */}
+        {activeTab === 'notes' && (
+          <div>
+            <div style={{marginBottom: 24}}>
+              <div style={{fontFamily: 'Georgia, serif', fontSize: 28, color: '#0d2340', letterSpacing: -0.5}}>Manage HY Notes</div>
+              <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>Add note links for each topic · Students click to open</div>
+            </div>
+            <NotesManager supabase={supabase} onSuccess={(msg: string) => { setSuccess(msg); setTimeout(() => setSuccess(''), 3000) }} />
+          </div>
+        )}
+
+        {/* MANAGE SCHEDULE */}
+        {activeTab === 'schedule' && (
+          <div>
+            <div style={{marginBottom: 24}}>
+              <div style={{fontFamily: 'Georgia, serif', fontSize: 28, color: '#0d2340', letterSpacing: -0.5}}>Manage Schedule</div>
+              <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>Add sessions · Update Zoom links · Manage the program calendar</div>
+            </div>
+            <ScheduleManager supabase={supabase} onSuccess={(msg: string) => { setSuccess(msg); setTimeout(() => setSuccess(''), 3000) }} />
+          </div>
+        )}
+
+        {/* ASSIGN TASKS */}
+        {activeTab === 'assignments' && (
+          <div>
+            <div style={{marginBottom: 24}}>
+              <div style={{fontFamily: 'Georgia, serif', fontSize: 28, color: '#0d2340', letterSpacing: -0.5}}>Assign Tasks</div>
+              <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>Assign Qbank blocks, readings, and tasks to individual students</div>
+            </div>
+            <AssignmentsManager supabase={supabase} students={students} onSuccess={(msg: string) => { setSuccess(msg); setTimeout(() => setSuccess(''), 3000) }} />
           </div>
         )}
 
@@ -931,6 +977,497 @@ function ExamsManager({ supabase, onSuccess }: any) {
               </div>
               <div onClick={() => deleteExam(exam.id)} style={{fontSize: 11, color: '#c0574a', cursor: 'pointer', padding: '4px 8px'}}>Remove</div>
             </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}function RecordingsManager({ supabase, onSuccess }: any) {
+  const [recordings, setRecordings] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [newRec, setNewRec] = useState({week_number: '1', session_date: '', topic: '', link: '', duration: '', available: false})
+  const [adding, setAdding] = useState(false)
+
+  useEffect(() => { load() }, [])
+
+  const load = async () => {
+    const { data } = await supabase.from('recordings').select('*').order('sort_order', {ascending: true})
+    setRecordings(data || [])
+    setLoading(false)
+  }
+
+  const updateRecording = async (id: string, updates: any) => {
+    await supabase.from('recordings').update(updates).eq('id', id)
+    await load()
+    onSuccess('Recording updated!')
+  }
+
+  const addRecording = async () => {
+    if (!newRec.session_date || !newRec.topic) return
+    setAdding(true)
+    const maxOrder = Math.max(...recordings.map(r => r.sort_order || 0), 0)
+    await supabase.from('recordings').insert({...newRec, week_number: parseInt(newRec.week_number), sort_order: maxOrder + 1})
+    setNewRec({week_number: '1', session_date: '', topic: '', link: '', duration: '', available: false})
+    await load()
+    setAdding(false)
+    onSuccess('Recording added!')
+  }
+
+  const deleteRecording = async (id: string) => {
+    await supabase.from('recordings').delete().eq('id', id)
+    await load()
+    onSuccess('Recording removed!')
+  }
+
+  if (loading) return <div style={{fontSize: 14, color: '#8a7d6a'}}>Loading...</div>
+
+  return (
+    <div style={{display: 'flex', flexDirection: 'column', gap: 20}}>
+      <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, padding: '20px 24px'}}>
+        <div style={{fontSize: 16, fontWeight: 600, color: '#0d2340', marginBottom: 18}}>Add new recording</div>
+        <div style={{display: 'grid', gridTemplateColumns: '80px 160px 1fr 1fr 100px auto', gap: 10, alignItems: 'end'}}>
+          <div>
+            <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Week</label>
+            <select value={newRec.week_number} onChange={e => setNewRec({...newRec, week_number: e.target.value})}
+              style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none'}}>
+              {[1,2,3,4,5,6,7,8].map(w => <option key={w} value={w}>Week {w}</option>)}
+            </select>
+          </div>
+          <div>
+            <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Date</label>
+            <input type="date" value={newRec.session_date} onChange={e => setNewRec({...newRec, session_date: e.target.value})}
+              style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
+          </div>
+          <div>
+            <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Topic</label>
+            <input type="text" value={newRec.topic} onChange={e => setNewRec({...newRec, topic: e.target.value})}
+              placeholder="e.g. Cardiology HY Review"
+              style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
+          </div>
+          <div>
+            <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Recording link</label>
+            <input type="text" value={newRec.link} onChange={e => setNewRec({...newRec, link: e.target.value})}
+              placeholder="https://zoom.us/rec/..."
+              style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
+          </div>
+          <div>
+            <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Duration</label>
+            <input type="text" value={newRec.duration} onChange={e => setNewRec({...newRec, duration: e.target.value})}
+              placeholder="2h 15m"
+              style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
+          </div>
+          <button onClick={addRecording} disabled={adding}
+            style={{height: 40, padding: '0 16px', background: '#0d2340', border: 'none', borderRadius: 7, color: '#c9a84c', fontFamily: 'Sora, sans-serif', fontSize: 13, fontWeight: 600, cursor: 'pointer'}}>
+            {adding ? '...' : 'Add →'}
+          </button>
+        </div>
+      </div>
+
+      <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, overflow: 'hidden'}}>
+        <div style={{background: '#0d2340', padding: '12px 20px'}}>
+          <div style={{fontSize: 14, fontWeight: 600, color: 'white'}}>All recordings ({recordings.length})</div>
+        </div>
+        {recordings.length === 0 ? (
+          <div style={{padding: '24px', fontSize: 14, color: '#8a7d6a', fontStyle: 'italic'}}>No recordings yet. Add your first recording above.</div>
+        ) : recordings.map((rec, i) => (
+          <div key={rec.id} style={{display: 'grid', gridTemplateColumns: '80px 120px 1fr 1fr auto auto', gap: 10, alignItems: 'center', padding: '12px 20px', borderBottom: i < recordings.length-1 ? '0.5px solid #f5f0e8' : 'none'}}>
+            <div style={{fontSize: 12, color: '#c9a84c', background: '#f7f4ee', borderRadius: 4, padding: '3px 6px', textAlign: 'center'}}>Week {rec.week_number}</div>
+            <div style={{fontSize: 12, color: '#8a7d6a'}}>{new Date(rec.session_date).toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}</div>
+            <div style={{fontSize: 13, color: '#0d2340', fontWeight: 500}}>{rec.topic}</div>
+            <div style={{display: 'flex', gap: 6}}>
+              <input type="text" defaultValue={rec.link || ''} placeholder="Paste recording link..."
+                id={`rec-link-${rec.id}`}
+                style={{flex: 1, height: 34, borderRadius: 6, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 12, padding: '0 8px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
+              <button onClick={() => {
+                const input = document.getElementById(`rec-link-${rec.id}`) as HTMLInputElement
+                if (input) updateRecording(rec.id, {link: input.value, available: input.value ? true : rec.available})
+              }} style={{height: 34, padding: '0 10px', background: '#0d2340', border: 'none', borderRadius: 6, color: '#c9a84c', fontFamily: 'Sora, sans-serif', fontSize: 12, fontWeight: 600, cursor: 'pointer'}}>Save</button>
+            </div>
+            <div style={{display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer'}}
+              onClick={() => updateRecording(rec.id, {available: !rec.available})}>
+              <div style={{width: 36, height: 20, borderRadius: 10, background: rec.available ? '#6b7c3a' : '#e8dfc8', position: 'relative'}}>
+                <div style={{position: 'absolute', top: 2, left: rec.available ? 18 : 2, width: 16, height: 16, borderRadius: '50%', background: 'white'}}/>
+              </div>
+              <span style={{fontSize: 11, color: rec.available ? '#6b7c3a' : '#a89870'}}>{rec.available ? 'Live' : 'Hidden'}</span>
+            </div>
+            <div onClick={() => deleteRecording(rec.id)} style={{fontSize: 11, color: '#c0574a', cursor: 'pointer', padding: '4px 8px'}}>Remove</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function NotesManager({ supabase, onSuccess }: any) {
+  const [notes, setNotes] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [newNote, setNewNote] = useState({topic: '', category: '', description: '', link: '', available: true})
+  const [adding, setAdding] = useState(false)
+
+  useEffect(() => { load() }, [])
+
+  const load = async () => {
+    const { data } = await supabase.from('hy_notes').select('*').order('sort_order', {ascending: true})
+    setNotes(data || [])
+    setLoading(false)
+  }
+
+  const updateNote = async (id: string, updates: any) => {
+    await supabase.from('hy_notes').update(updates).eq('id', id)
+    await load()
+    onSuccess('Notes updated!')
+  }
+
+  const addNote = async () => {
+    if (!newNote.topic) return
+    setAdding(true)
+    const maxOrder = Math.max(...notes.map(n => n.sort_order || 0), 0)
+    await supabase.from('hy_notes').insert({...newNote, sort_order: maxOrder + 1})
+    setNewNote({topic: '', category: '', description: '', link: '', available: true})
+    await load()
+    setAdding(false)
+    onSuccess('Notes added!')
+  }
+
+  const deleteNote = async (id: string) => {
+    await supabase.from('hy_notes').delete().eq('id', id)
+    await load()
+    onSuccess('Notes removed!')
+  }
+
+  if (loading) return <div style={{fontSize: 14, color: '#8a7d6a'}}>Loading...</div>
+
+  return (
+    <div style={{display: 'flex', flexDirection: 'column', gap: 20}}>
+      <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, padding: '20px 24px'}}>
+        <div style={{fontSize: 16, fontWeight: 600, color: '#0d2340', marginBottom: 18}}>Add new HY notes</div>
+        <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr auto', gap: 10, alignItems: 'end'}}>
+          <div>
+            <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Topic</label>
+            <input type="text" value={newNote.topic} onChange={e => setNewNote({...newNote, topic: e.target.value})}
+              placeholder="e.g. Cardiology HY Review"
+              style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
+          </div>
+          <div>
+            <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Category</label>
+            <input type="text" value={newNote.category} onChange={e => setNewNote({...newNote, category: e.target.value})}
+              placeholder="e.g. Cardiology"
+              style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
+          </div>
+          <div>
+            <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Description</label>
+            <input type="text" value={newNote.description} onChange={e => setNewNote({...newNote, description: e.target.value})}
+              placeholder="Brief description"
+              style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
+          </div>
+          <div>
+            <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Link</label>
+            <input type="text" value={newNote.link} onChange={e => setNewNote({...newNote, link: e.target.value})}
+              placeholder="https://..."
+              style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
+          </div>
+          <button onClick={addNote} disabled={adding || !newNote.topic}
+            style={{height: 40, padding: '0 16px', background: '#0d2340', border: 'none', borderRadius: 7, color: '#c9a84c', fontFamily: 'Sora, sans-serif', fontSize: 13, fontWeight: 600, cursor: 'pointer'}}>
+            {adding ? '...' : 'Add →'}
+          </button>
+        </div>
+      </div>
+
+      <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, overflow: 'hidden'}}>
+        <div style={{background: '#0d2340', padding: '12px 20px'}}>
+          <div style={{fontSize: 14, fontWeight: 600, color: 'white'}}>All HY notes ({notes.length})</div>
+        </div>
+        {notes.map((note, i) => (
+          <div key={note.id} style={{display: 'grid', gridTemplateColumns: '1fr 120px 1fr auto auto', gap: 10, alignItems: 'center', padding: '12px 20px', borderBottom: i < notes.length-1 ? '0.5px solid #f5f0e8' : 'none'}}>
+            <div>
+              <div style={{fontSize: 13, color: '#0d2340', fontWeight: 500}}>{note.topic}</div>
+              <div style={{fontSize: 11, color: '#8a7d6a'}}>{note.category}</div>
+            </div>
+            <span style={{fontSize: 11, padding: '2px 8px', borderRadius: 4, background: '#f7f4ee', color: '#8a7d6a', textAlign: 'center'}}>{note.category}</span>
+            <div style={{display: 'flex', gap: 6}}>
+              <input type="text" defaultValue={note.link || ''} placeholder="Paste notes link..."
+                id={`note-link-${note.id}`}
+                style={{flex: 1, height: 34, borderRadius: 6, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 12, padding: '0 8px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
+              <button onClick={() => {
+                const input = document.getElementById(`note-link-${note.id}`) as HTMLInputElement
+                if (input) updateNote(note.id, {link: input.value})
+              }} style={{height: 34, padding: '0 10px', background: '#0d2340', border: 'none', borderRadius: 6, color: '#c9a84c', fontFamily: 'Sora, sans-serif', fontSize: 12, fontWeight: 600, cursor: 'pointer'}}>Save</button>
+            </div>
+            <div style={{display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer'}}
+              onClick={() => updateNote(note.id, {available: !note.available})}>
+              <div style={{width: 36, height: 20, borderRadius: 10, background: note.available ? '#6b7c3a' : '#e8dfc8', position: 'relative'}}>
+                <div style={{position: 'absolute', top: 2, left: note.available ? 18 : 2, width: 16, height: 16, borderRadius: '50%', background: 'white'}}/>
+              </div>
+              <span style={{fontSize: 11, color: note.available ? '#6b7c3a' : '#a89870'}}>{note.available ? 'Live' : 'Hidden'}</span>
+            </div>
+            <div onClick={() => deleteNote(note.id)} style={{fontSize: 11, color: '#c0574a', cursor: 'pointer', padding: '4px 8px'}}>Remove</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function ScheduleManager({ supabase, onSuccess }: any) {
+  const [sessions, setSessions] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [newSession, setNewSession] = useState({week_number: '1', day_of_week: 'Monday', session_date: '', start_time: '7:00 PM', end_time: '9:00 PM', topic: '', description: '', zoom_link: '', session_type: 'Live Session'})
+  const [adding, setAdding] = useState(false)
+
+  useEffect(() => { load() }, [])
+
+  const load = async () => {
+    const { data } = await supabase.from('schedule').select('*').order('sort_order', {ascending: true})
+    setSessions(data || [])
+    setLoading(false)
+  }
+
+  const updateSession = async (id: string, updates: any) => {
+    await supabase.from('schedule').update(updates).eq('id', id)
+    await load()
+    onSuccess('Session updated!')
+  }
+
+  const addSession = async () => {
+    if (!newSession.topic) return
+    setAdding(true)
+    const maxOrder = Math.max(...sessions.map(s => s.sort_order || 0), 0)
+    await supabase.from('schedule').insert({...newSession, week_number: parseInt(newSession.week_number), sort_order: maxOrder + 1, session_date: newSession.session_date || null})
+    setNewSession({week_number: '1', day_of_week: 'Monday', session_date: '', start_time: '7:00 PM', end_time: '9:00 PM', topic: '', description: '', zoom_link: '', session_type: 'Live Session'})
+    await load()
+    setAdding(false)
+    onSuccess('Session added!')
+  }
+
+  const deleteSession = async (id: string) => {
+    await supabase.from('schedule').delete().eq('id', id)
+    await load()
+    onSuccess('Session removed!')
+  }
+
+  if (loading) return <div style={{fontSize: 14, color: '#8a7d6a'}}>Loading...</div>
+
+  return (
+    <div style={{display: 'flex', flexDirection: 'column', gap: 20}}>
+      <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, padding: '20px 24px'}}>
+        <div style={{fontSize: 16, fontWeight: 600, color: '#0d2340', marginBottom: 18}}>Add new session</div>
+        <div style={{display: 'grid', gridTemplateColumns: '80px 120px 160px 1fr 1fr', gap: 10, marginBottom: 10}}>
+          <div>
+            <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Week</label>
+            <select value={newSession.week_number} onChange={e => setNewSession({...newSession, week_number: e.target.value})}
+              style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none'}}>
+              {[1,2,3,4,5,6,7,8].map(w => <option key={w} value={w}>Week {w}</option>)}
+            </select>
+          </div>
+          <div>
+            <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Day</label>
+            <select value={newSession.day_of_week} onChange={e => setNewSession({...newSession, day_of_week: e.target.value})}
+              style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none'}}>
+              {['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'].map(d => <option key={d} value={d}>{d}</option>)}
+            </select>
+          </div>
+          <div>
+            <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Date</label>
+            <input type="date" value={newSession.session_date} onChange={e => setNewSession({...newSession, session_date: e.target.value})}
+              style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
+          </div>
+          <div>
+            <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Topic</label>
+            <input type="text" value={newSession.topic} onChange={e => setNewSession({...newSession, topic: e.target.value})}
+              placeholder="e.g. Cardiology HY Review"
+              style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
+          </div>
+          <div>
+            <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Type</label>
+            <select value={newSession.session_type} onChange={e => setNewSession({...newSession, session_type: e.target.value})}
+              style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none'}}>
+              {['Live Session','Mentor Meeting','Exam','Study Day','Rest Day'].map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
+          </div>
+        </div>
+        <div style={{display: 'grid', gridTemplateColumns: '120px 120px 1fr 1fr auto', gap: 10, alignItems: 'end'}}>
+          <div>
+            <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Start time</label>
+            <input type="text" value={newSession.start_time} onChange={e => setNewSession({...newSession, start_time: e.target.value})}
+              placeholder="7:00 PM"
+              style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
+          </div>
+          <div>
+            <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>End time</label>
+            <input type="text" value={newSession.end_time} onChange={e => setNewSession({...newSession, end_time: e.target.value})}
+              placeholder="9:00 PM"
+              style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
+          </div>
+          <div>
+            <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Zoom link</label>
+            <input type="text" value={newSession.zoom_link} onChange={e => setNewSession({...newSession, zoom_link: e.target.value})}
+              placeholder="https://zoom.us/j/..."
+              style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
+          </div>
+          <div>
+            <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Description</label>
+            <input type="text" value={newSession.description} onChange={e => setNewSession({...newSession, description: e.target.value})}
+              placeholder="Optional notes"
+              style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
+          </div>
+          <button onClick={addSession} disabled={adding || !newSession.topic}
+            style={{height: 40, padding: '0 16px', background: '#0d2340', border: 'none', borderRadius: 7, color: '#c9a84c', fontFamily: 'Sora, sans-serif', fontSize: 13, fontWeight: 600, cursor: 'pointer'}}>
+            {adding ? '...' : 'Add →'}
+          </button>
+        </div>
+      </div>
+
+      <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, overflow: 'hidden'}}>
+        <div style={{background: '#0d2340', padding: '12px 20px'}}>
+          <div style={{fontSize: 14, fontWeight: 600, color: 'white'}}>All sessions ({sessions.length})</div>
+        </div>
+        {sessions.map((session, i) => (
+          <div key={session.id} style={{padding: '12px 20px', borderBottom: i < sessions.length-1 ? '0.5px solid #f5f0e8' : 'none'}}>
+            <div style={{display: 'grid', gridTemplateColumns: '80px 140px 1fr 1fr 1fr auto', gap: 10, alignItems: 'center'}}>
+              <div style={{fontSize: 12, color: '#c9a84c', background: '#f7f4ee', borderRadius: 4, padding: '3px 6px', textAlign: 'center'}}>Wk {session.week_number}</div>
+              <div style={{fontSize: 12, color: '#8a7d6a'}}>{session.day_of_week} {session.session_date && new Date(session.session_date).toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}</div>
+              <input type="text" defaultValue={session.topic}
+                onBlur={e => { if (e.target.value !== session.topic) updateSession(session.id, {topic: e.target.value}) }}
+                style={{height: 34, borderRadius: 6, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#0d2340', fontWeight: 500, outline: 'none', boxSizing: 'border-box'}}/>
+              <div style={{display: 'flex', gap: 6}}>
+                <input type="text" defaultValue={session.zoom_link || ''} placeholder="Zoom link..."
+                  id={`zoom-${session.id}`}
+                  style={{flex: 1, height: 34, borderRadius: 6, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 12, padding: '0 8px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
+                <button onClick={() => {
+                  const input = document.getElementById(`zoom-${session.id}`) as HTMLInputElement
+                  if (input) updateSession(session.id, {zoom_link: input.value})
+                }} style={{height: 34, padding: '0 10px', background: '#0d2340', border: 'none', borderRadius: 6, color: '#c9a84c', fontFamily: 'Sora, sans-serif', fontSize: 12, fontWeight: 600, cursor: 'pointer'}}>Save</button>
+              </div>
+              <div style={{fontSize: 12, color: '#8a7d6a'}}>{session.start_time} — {session.end_time}</div>
+              <div onClick={() => deleteSession(session.id)} style={{fontSize: 11, color: '#c0574a', cursor: 'pointer', padding: '4px 8px'}}>Remove</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function AssignmentsManager({ supabase, students, onSuccess }: any) {
+  const [assignments, setAssignments] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [newAssignment, setNewAssignment] = useState({student_id: 'all', title: '', description: '', due_date: '', due_time: '11:59 PM', tag: 'Qbank'})
+  const [adding, setAdding] = useState(false)
+
+  useEffect(() => { load() }, [])
+
+  const load = async () => {
+    const { data } = await supabase.from('assignments').select('*, profiles(full_name, email)').order('created_at', {ascending: false}).limit(50)
+    setAssignments(data || [])
+    setLoading(false)
+  }
+
+  const addAssignment = async () => {
+    if (!newAssignment.title) return
+    setAdding(true)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (newAssignment.student_id === 'all') {
+      for (const student of students) {
+        await supabase.from('assignments').insert({
+          student_id: student.id, assigned_by: user.id,
+          title: newAssignment.title, description: newAssignment.description,
+          due_date: newAssignment.due_date || null, due_time: newAssignment.due_time, tag: newAssignment.tag
+        })
+        await supabase.from('notifications').insert({
+          student_id: student.id, title: `New assignment: ${newAssignment.title}`,
+          message: newAssignment.description || `Due ${newAssignment.due_date || 'soon'}`, type: 'assignment', link: '/dashboard/assignments'
+        })
+      }
+    } else {
+      await supabase.from('assignments').insert({
+        student_id: newAssignment.student_id, assigned_by: user.id,
+        title: newAssignment.title, description: newAssignment.description,
+        due_date: newAssignment.due_date || null, due_time: newAssignment.due_time, tag: newAssignment.tag
+      })
+      await supabase.from('notifications').insert({
+        student_id: newAssignment.student_id, title: `New assignment: ${newAssignment.title}`,
+        message: newAssignment.description || `Due ${newAssignment.due_date || 'soon'}`, type: 'assignment', link: '/dashboard/assignments'
+      })
+    }
+    setNewAssignment({student_id: 'all', title: '', description: '', due_date: '', due_time: '11:59 PM', tag: 'Qbank'})
+    await load()
+    setAdding(false)
+    onSuccess('Assignment assigned and students notified!')
+  }
+
+  const deleteAssignment = async (id: string) => {
+    await supabase.from('assignments').delete().eq('id', id)
+    await load()
+    onSuccess('Assignment removed!')
+  }
+
+  if (loading) return <div style={{fontSize: 14, color: '#8a7d6a'}}>Loading...</div>
+
+  return (
+    <div style={{display: 'flex', flexDirection: 'column', gap: 20}}>
+      <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, padding: '20px 24px'}}>
+        <div style={{fontSize: 16, fontWeight: 600, color: '#0d2340', marginBottom: 18}}>New assignment</div>
+        <div style={{display: 'grid', gridTemplateColumns: '1fr 200px 140px', gap: 12, marginBottom: 12}}>
+          <div>
+            <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Assign to</label>
+            <select value={newAssignment.student_id} onChange={e => setNewAssignment({...newAssignment, student_id: e.target.value})}
+              style={{width: '100%', height: 42, borderRadius: 8, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 14, padding: '0 12px', color: '#1a1008', outline: 'none'}}>
+              <option value="all">All students ({students.length})</option>
+              {students.map((s: any) => <option key={s.id} value={s.id}>{s.full_name || s.email.split('@')[0]}</option>)}
+            </select>
+          </div>
+          <div>
+            <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Due date</label>
+            <input type="date" value={newAssignment.due_date} onChange={e => setNewAssignment({...newAssignment, due_date: e.target.value})}
+              style={{width: '100%', height: 42, borderRadius: 8, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 14, padding: '0 12px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
+          </div>
+          <div>
+            <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Tag</label>
+            <select value={newAssignment.tag} onChange={e => setNewAssignment({...newAssignment, tag: e.target.value})}
+              style={{width: '100%', height: 42, borderRadius: 8, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 14, padding: '0 12px', color: '#1a1008', outline: 'none'}}>
+              {['Qbank','NBME','Reading','Review','General'].map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
+          </div>
+        </div>
+        <div style={{marginBottom: 12}}>
+          <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Assignment title</label>
+          <input type="text" value={newAssignment.title} onChange={e => setNewAssignment({...newAssignment, title: e.target.value})}
+            placeholder="e.g. Complete 40 UWorld Cardiology questions — Timed mode"
+            style={{width: '100%', height: 42, borderRadius: 8, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 14, padding: '0 12px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
+        </div>
+        <div style={{marginBottom: 16}}>
+          <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Description (optional)</label>
+          <textarea value={newAssignment.description} onChange={e => setNewAssignment({...newAssignment, description: e.target.value})}
+            placeholder="Additional instructions..."
+            rows={2}
+            style={{width: '100%', borderRadius: 8, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 14, padding: '10px 12px', color: '#1a1008', outline: 'none', boxSizing: 'border-box', resize: 'none'}}/>
+        </div>
+        <button onClick={addAssignment} disabled={adding || !newAssignment.title}
+          style={{width: '100%', height: 46, background: '#0d2340', border: 'none', borderRadius: 9, color: '#c9a84c', fontFamily: 'Sora, sans-serif', fontSize: 15, fontWeight: 600, cursor: 'pointer'}}>
+          {adding ? 'Assigning...' : `Assign to ${newAssignment.student_id === 'all' ? 'all students' : 'student'} & notify ↗`}
+        </button>
+      </div>
+
+      <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, overflow: 'hidden'}}>
+        <div style={{background: '#0d2340', padding: '12px 20px'}}>
+          <div style={{fontSize: 14, fontWeight: 600, color: 'white'}}>Recent assignments ({assignments.length})</div>
+        </div>
+        {assignments.length === 0 ? (
+          <div style={{padding: '24px', fontSize: 14, color: '#8a7d6a', fontStyle: 'italic'}}>No assignments yet.</div>
+        ) : assignments.map((a, i) => (
+          <div key={a.id} style={{display: 'flex', alignItems: 'center', gap: 14, padding: '14px 20px', borderBottom: i < assignments.length-1 ? '0.5px solid #f5f0e8' : 'none'}}>
+            <div style={{flex: 1}}>
+              <div style={{display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3}}>
+                <div style={{fontSize: 14, fontWeight: 500, color: a.completed ? '#8a7d6a' : '#0d2340', textDecoration: a.completed ? 'line-through' : 'none'}}>{a.title}</div>
+                <span style={{fontSize: 11, padding: '2px 8px', borderRadius: 10, background: '#f7f4ee', color: '#8a7d6a'}}>{a.tag}</span>
+                {a.completed && <span style={{fontSize: 11, padding: '2px 8px', borderRadius: 10, background: '#f0f7f2', color: '#2d6a4f'}}>Done ✓</span>}
+              </div>
+              <div style={{fontSize: 12, color: '#8a7d6a'}}>
+                {a.profiles?.full_name || a.profiles?.email?.split('@')[0] || 'Student'}
+                {a.due_date && ` · Due ${new Date(a.due_date).toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}`}
+              </div>
+            </div>
+            <div onClick={() => deleteAssignment(a.id)} style={{fontSize: 11, color: '#c0574a', cursor: 'pointer', padding: '4px 8px', flexShrink: 0}}>Remove</div>
           </div>
         ))}
       </div>
