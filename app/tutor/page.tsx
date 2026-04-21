@@ -99,18 +99,6 @@ export default function TutorDashboard() {
               <div style={{width: 6, height: 6, borderRadius: '50%', background: 'currentColor', flexShrink: 0}}/>{item.name}
             </div>
           ))}
-    </div>
-  )
-}
-
-              {user?.email?.charAt(0).toUpperCase()}
-            </div>
-            <div style={{flex: 1, minWidth: 0}}>
-              <div style={{fontSize: 13, color: 'white', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>{user?.email?.split('@')[0]}</div>
-              <div style={{fontSize: 10, color: '#c9a84c'}}>Tutor · P2P Program</div>
-            </div>
-            <div onClick={async () => { await supabase.auth.signOut(); router.push('/') }}
-              style={{fontSize: 11, color: 'rgba(255,255,255,0.35)', cursor: 'pointer', padding: '4px 8px', borderRadius: 4, border: '0.5px solid rgba(255,255,255,0.15)'}}>Out</div>
           </div>
         </div>
       </nav>
