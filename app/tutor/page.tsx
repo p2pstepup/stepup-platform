@@ -491,9 +491,13 @@ export default function TutorDashboard() {
               <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>View all student exam sessions · Time reports · Answer sheets</div>
             </div>
             <ExamReports supabase={supabase} students={students} />
-          </div>
-        )}
-        function RecordingsManager({ supabase, onSuccess }: any) {
+         )}
+      </div>
+    </main>
+  )
+}
+
+function RecordingsManager({ supabase, onSuccess }: any) {
   const [recordings, setRecordings] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [newRec, setNewRec] = useState({week_number: '1', session_date: '', topic: '', link: '', duration: '', available: false})
