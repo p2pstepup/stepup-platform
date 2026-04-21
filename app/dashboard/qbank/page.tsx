@@ -82,7 +82,7 @@ export default function QbankTracker() {
   )
 
   return (
-    <main style={{minHeight: '100vh', display: 'flex', background: '#f7f4ee', fontFamily: 'Sora, sans-serif'}}>
+    <main style={{minHeight: '100vh', display: 'flex', background: '#f7f4ee', fontFamily: 'Sora, sans-serif', fontSize: '1rem'}}>
 
       {/* SIDEBAR */}
       <nav style={{width: 175, flexShrink: 0, background: '#0d2340', display: 'flex', flexDirection: 'column', height: '100vh', position: 'sticky', top: 0}}>

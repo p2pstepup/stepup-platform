@@ -25,7 +25,7 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen flex" style={{fontFamily: 'Sora, sans-serif', background: '#f7f4ee'}}>
+    <main className="min-h-screen flex" style={{fontFamily: 'Sora, sans-serif', background: '#f7f4ee', fontSize: '1rem'}}>
 
       {/* LEFT PANEL */}
       <div className="hidden lg:flex flex-col justify-between w-[52%] p-10" style={{background: '#0d2340'}}>
