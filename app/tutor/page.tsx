@@ -99,10 +99,10 @@ export default function TutorDashboard() {
               <div style={{width: 6, height: 6, borderRadius: '50%', background: 'currentColor', flexShrink: 0}}/>{item.name}
             </div>
           ))}
-        </div>
-        <div style={{padding: '12px 14px', borderTop: '0.5px solid rgba(201,168,76,0.14)'}}>
-          <div style={{display: 'flex', alignItems: 'center', gap: 8}}>
-            <div style={{width: 30, height: 30, borderRadius: '50%', background: '#c9a84c', color: '#0d2340', fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0}}>
+    </div>
+  )
+}
+
               {user?.email?.charAt(0).toUpperCase()}
             </div>
             <div style={{flex: 1, minWidth: 0}}>
@@ -571,9 +571,6 @@ function StudentProfiles({ supabase, students, onSuccess }: any) {
       ))}
     </div>
   )
-
-
-      </div>
     </main>
   )
 }
