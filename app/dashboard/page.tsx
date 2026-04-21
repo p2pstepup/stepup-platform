@@ -5,6 +5,7 @@ import { createClient } from '../../utils/supabase'
 
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null)
+  const [profile, setProfile] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [notifications, setNotifications] = useState<any[]>([])
   const [showNotifications, setShowNotifications] = useState(false)
@@ -64,7 +65,8 @@ export default function Dashboard() {
   const navGroups = [
     {section: 'Overview', items: [{name: 'Dashboard', path: '/dashboard', active: true}]},
     {section: 'My Program', items: [
-      {name: 'Daily Schedule', path: '/dashboard/schedule'},
+      {name: 'Daily Course Schedule', path: '/dashboard/schedule'},
+      {name: 'My Study Schedule', path: '/dashboard/studyschedule'},
       {name: 'Calendar', path: '/dashboard/calendar'},
       {name: 'Assignments', path: '/dashboard/assignments'},
       {name: 'Mentor Meetings', path: '/dashboard/mentor'},
@@ -80,6 +82,7 @@ export default function Dashboard() {
       {name: 'Session Recordings', path: '/dashboard/recordings'},
       {name: 'Session Slides', path: '/dashboard/slides'},
       {name: 'Resource Drive', path: '/dashboard/resources'},
+      {name: 'Course Documents', path: '/dashboard/documents'},
       {name: 'Live Feedback', path: '/dashboard/feedback'},
     ]},
   ]
@@ -115,22 +118,25 @@ export default function Dashboard() {
         </div>
 
         <div style={{padding: '12px 14px', borderTop: '0.5px solid rgba(201,168,76,0.14)'}}>
-          <div style={{background: 'rgba(201,168,76,0.1)', border: '0.5px solid rgba(201,168,76,0.22)', borderRadius: 8, padding: '9px 12px', marginBottom: 10}}>
-            <div style={{fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#c9a84c', marginBottom: 3}}>Current phase</div>
-            <div style={{fontSize: 13, color: 'white', fontWeight: 500}}>Week 1 — HY Topics</div>
-            <div style={{height: 3, background: 'rgba(255,255,255,0.1)', borderRadius: 2, marginTop: 6, overflow: 'hidden'}}>
-              <div style={{height: '100%', background: '#c9a84c', width: '12.5%'}}/>
+          {profile?.mentor_name && (
+            <div style={{background: 'rgba(201,168,76,0.1)', border: '0.5px solid rgba(201,168,76,0.22)', borderRadius: 8, padding: '9px 12px', marginBottom: 10}}>
+              <div style={{fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#c9a84c', marginBottom: 3}}>Your mentor</div>
+              <div style={{fontSize: 13, color: 'white', fontWeight: 500}}>{profile.mentor_name}</div>
+              {profile.mentor_email && <div style={{fontSize: 10, color: 'rgba(255,255,255,0.4)', marginTop: 2}}>{profile.mentor_email}</div>}
             </div>
-          </div>
+          )}
           <div style={{display: 'flex', alignItems: 'center', gap: 8}}>
             <div style={{width: 30, height: 30, borderRadius: '50%', background: '#c9a84c', color: '#0d2340', fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0}}>
               {user?.email?.charAt(0).toUpperCase()}
             </div>
             <div style={{flex: 1, minWidth: 0}}>
-              <div style={{fontSize: 13, color: 'white', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>{user?.email?.split('@')[0]}</div>
+              <div style={{fontSize: 13, color: 'white', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>{profile?.full_name || user?.email?.split('@')[0]}</div>
               <div style={{fontSize: 10, color: 'rgba(255,255,255,0.35)'}}>Windsor SOM</div>
             </div>
-            <div onClick={handleSignOut} style={{fontSize: 11, color: 'rgba(255,255,255,0.35)', cursor: 'pointer', padding: '4px 8px', borderRadius: 4, border: '0.5px solid rgba(255,255,255,0.15)'}}>Sign out</div>
+            <div onClick={async () => { await supabase.auth.signOut(); router.push('/') }}
+              style={{fontSize: 11, color: 'rgba(255,255,255,0.35)', cursor: 'pointer', padding: '4px 8px', borderRadius: 4, border: '0.5px solid rgba(255,255,255,0.15)'}}>Sign out</div>
+          </div>
+        </div>
           </div>
         </div>
       </nav>

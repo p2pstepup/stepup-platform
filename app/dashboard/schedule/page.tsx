@@ -26,7 +26,8 @@ export default function DailySchedule() {
   const navGroups = [
     {section: 'Overview', items: [{name: 'Dashboard', path: '/dashboard'}]},
     {section: 'My Program', items: [
-      {name: 'Daily Schedule', path: '/dashboard/schedule', active: true},
+      {name: 'Daily Course Schedule', path: '/dashboard/schedule', active: true},
+      {name: 'My Study Schedule', path: '/dashboard/studyschedule'},
       {name: 'Calendar', path: '/dashboard/calendar'},
       {name: 'Assignments', path: '/dashboard/assignments'},
       {name: 'Mentor Meetings', path: '/dashboard/mentor'},
@@ -42,6 +43,7 @@ export default function DailySchedule() {
       {name: 'Session Recordings', path: '/dashboard/recordings'},
       {name: 'Session Slides', path: '/dashboard/slides'},
       {name: 'Resource Drive', path: '/dashboard/resources'},
+      {name: 'Course Documents', path: '/dashboard/documents'},
       {name: 'Live Feedback', path: '/dashboard/feedback'},
     ]},
   ]
@@ -107,7 +109,7 @@ export default function DailySchedule() {
 
       <div style={{flex: 1, minWidth: 0, overflowY: 'auto', padding: '32px 36px'}}>
         <div style={{marginBottom: 24}}>
-          <div style={{fontFamily: 'Georgia, serif', fontSize: 30, color: '#0d2340', letterSpacing: -0.5}}>Daily Schedule</div>
+          <div style={{fontFamily: 'Georgia, serif', fontSize: 30, color: '#0d2340', letterSpacing: -0.5}}>Daily Course Schedule</div>
           <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>Full program schedule · Week by week · All times CST</div>
         </div>
 
