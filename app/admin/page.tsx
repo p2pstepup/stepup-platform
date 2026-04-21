@@ -80,6 +80,7 @@ export default function AdminDashboard() {
       {name: 'Student Profiles', tab: 'profiles'},
       {name: 'Assign Tasks', tab: 'assignments'},
       {name: 'Study Schedules', tab: 'studyschedule'},
+      {name: 'User Management', tab: 'usermanagement'},
     ]},
   ]
 
@@ -283,6 +284,16 @@ export default function AdminDashboard() {
         {activeTab === 'profiles'    && <div><div style={{marginBottom:24}}><div style={{fontFamily:'Georgia,serif',fontSize:28,color:'#0d2340',letterSpacing:-0.5}}>Student Profiles</div></div><StudentProfiles supabase={supabase} students={students} onSuccess={flash}/></div>}
         {activeTab === 'assignments' && <div><div style={{marginBottom:24}}><div style={{fontFamily:'Georgia,serif',fontSize:28,color:'#0d2340',letterSpacing:-0.5}}>Assign Tasks</div></div><AssignmentsManager supabase={supabase} students={students} onSuccess={flash}/></div>}
         {activeTab === 'studyschedule' && <div><div style={{marginBottom:24}}><div style={{fontFamily:'Georgia,serif',fontSize:28,color:'#0d2340',letterSpacing:-0.5}}>Study Schedules</div></div><StudyScheduleManager supabase={supabase} students={students} onSuccess={flash}/></div>}
+
+        {activeTab === 'usermanagement' && (
+          <div>
+            <div style={{marginBottom: 24}}>
+              <div style={{fontFamily: 'Georgia, serif', fontSize: 28, color: '#0d2340', letterSpacing: -0.5}}>User Management</div>
+              <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>Create new student, tutor, or admin accounts directly from the platform</div>
+            </div>
+            <UserManagementAdmin onSuccess={flash} />
+          </div>
+        )}
       </div>
     </main>
   )
@@ -1008,6 +1019,133 @@ function AssignmentProgressAdmin({ supabase, students }: any) {
             })}
           </tbody>
         </table>
+      </div>
+    </div>
+  )
+}
+
+// ─── User Management ─────────────────────────────────────────────────────────
+
+function UserManagementAdmin({ onSuccess }: { onSuccess: (msg: string) => void }) {
+  const [form, setForm] = useState({ email: '', password: '', full_name: '', role: 'student' })
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
+  const [recentlyCreated, setRecentlyCreated] = useState<Array<{email: string; role: string; full_name: string}>>([])
+
+  const handleCreate = async () => {
+    if (!form.email || !form.password) { setError('Email and password are required'); return }
+    if (form.password.length < 6) { setError('Password must be at least 6 characters'); return }
+    setSubmitting(true)
+    setError('')
+    try {
+      const res = await fetch('/api/create-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      })
+      const data = await res.json()
+      if (!res.ok) { setError(data.error || 'Failed to create user'); setSubmitting(false); return }
+      setRecentlyCreated(prev => [{ email: form.email, role: form.role, full_name: form.full_name }, ...prev])
+      setForm({ email: '', password: '', full_name: '', role: 'student' })
+      onSuccess(`Account created for ${form.email}!`)
+    } catch {
+      setError('Network error — check your connection')
+    }
+    setSubmitting(false)
+  }
+
+  const roleColors: Record<string, string> = { student: '#4a7a2a', tutor: '#1a4a7a', admin: '#9e2a2a' }
+
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, alignItems: 'start' }}>
+
+      {/* Create form */}
+      <div style={{ background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, padding: '24px 28px' }}>
+        <div style={{ fontSize: 15, fontWeight: 600, color: '#0d2340', marginBottom: 20 }}>Create new account</div>
+
+        {error && (
+          <div style={{ background: '#fdf0f0', border: '1px solid #f5c6c6', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#c0574a' }}>
+            {error}
+          </div>
+        )}
+
+        <div style={{ marginBottom: 14 }}>
+          <label style={{ fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.07em' }}>Role</label>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {(['student', 'tutor', 'admin'] as const).map(r => (
+              <button key={r} onClick={() => setForm(p => ({ ...p, role: r }))}
+                style={{ flex: 1, height: 40, border: form.role === r ? 'none' : '1px solid #e8dfc8', borderRadius: 8, fontFamily: 'Sora, sans-serif', fontSize: 13, fontWeight: 600, cursor: 'pointer', textTransform: 'capitalize',
+                  background: form.role === r ? '#0d2340' : 'white', color: form.role === r ? '#c9a84c' : '#6a5e4a' }}>
+                {r}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {[
+          { label: 'Full name', key: 'full_name', placeholder: 'e.g. Jane Smith', type: 'text', required: false },
+          { label: 'Email address', key: 'email', placeholder: 'jane@example.com', type: 'email', required: true },
+          { label: 'Password', key: 'password', placeholder: 'Min 6 characters', type: 'password', required: true },
+        ].map(f => (
+          <div key={f.key} style={{ marginBottom: 14 }}>
+            <label style={{ fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+              {f.label}{f.required && <span style={{ color: '#c0574a', marginLeft: 2 }}>*</span>}
+            </label>
+            <input type={f.type} value={(form as Record<string, string>)[f.key]}
+              onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))}
+              placeholder={f.placeholder}
+              style={{ width: '100%', height: 42, borderRadius: 8, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 14, padding: '0 12px', color: '#1a1008', outline: 'none', boxSizing: 'border-box' }}/>
+          </div>
+        ))}
+
+        <button onClick={handleCreate} disabled={submitting || !form.email || !form.password}
+          style={{ width: '100%', height: 46, background: submitting ? '#4a5568' : '#0d2340', border: 'none', borderRadius: 9, color: '#c9a84c', fontFamily: 'Sora, sans-serif', fontSize: 15, fontWeight: 600, cursor: submitting ? 'not-allowed' : 'pointer', marginTop: 6 }}>
+          {submitting ? 'Creating account...' : `Create ${form.role} account ↗`}
+        </button>
+
+        <div style={{ marginTop: 14, fontSize: 12, color: '#a89870', lineHeight: 1.6 }}>
+          The user will be able to sign in immediately with the credentials you set. They can change their password from their profile settings.
+        </div>
+      </div>
+
+      {/* Right panel */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+
+        {/* Role guide */}
+        <div style={{ background: '#0d2340', borderRadius: 12, padding: '20px 22px' }}>
+          <div style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#c9a84c', marginBottom: 14 }}>Role permissions</div>
+          {[
+            { role: 'Student', desc: 'Access to dashboard, schedule, study tools, and resources. Cannot see other student data.' },
+            { role: 'Tutor', desc: 'Access to tutor dashboard. Can manage sessions, log attendance, submit reports, and view assigned students.' },
+            { role: 'Admin', desc: 'Full access to admin dashboard. Can view all student and tutor data, create accounts, and manage content.' },
+          ].map(r => (
+            <div key={r.role} style={{ marginBottom: 12, paddingBottom: 12, borderBottom: '0.5px solid rgba(255,255,255,0.1)' }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#c9a84c', marginBottom: 3 }}>{r.role}</div>
+              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', lineHeight: 1.5 }}>{r.desc}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Recently created */}
+        {recentlyCreated.length > 0 && (
+          <div style={{ background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, padding: '18px 22px' }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: '#0d2340', marginBottom: 12 }}>Created this session</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {recentlyCreated.map((u, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#f7f4ee', border: '1px solid #e8dfc8', color: '#0d2340', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    {(u.full_name || u.email).charAt(0).toUpperCase()}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, color: '#0d2340', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.full_name || u.email.split('@')[0]}</div>
+                    <div style={{ fontSize: 11, color: '#8a7d6a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.email}</div>
+                  </div>
+                  <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 10, fontWeight: 600, background: `${roleColors[u.role]}22`, color: roleColors[u.role], textTransform: 'capitalize' }}>{u.role}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

@@ -25,7 +25,8 @@ export default function SessionRecordings() {
   const navGroups = [
     {section: 'Overview', items: [{name: 'Dashboard', path: '/dashboard'}]},
     {section: 'My Program', items: [
-      {name: 'Daily Schedule', path: '/dashboard/schedule'},
+      {name: 'Daily Course Schedule', path: '/dashboard/schedule'},
+      {name: 'My Study Schedule', path: '/dashboard/studyschedule'},
       {name: 'Calendar', path: '/dashboard/calendar'},
       {name: 'Assignments', path: '/dashboard/assignments'},
       {name: 'Mentor Meetings', path: '/dashboard/mentor'},
@@ -33,7 +34,7 @@ export default function SessionRecordings() {
     {section: 'Study Tools', items: [
       {name: 'Exam Center', path: '/dashboard/exams'},
       {name: 'Qbank Tracker', path: '/dashboard/qbank'},
-      {name: 'NBME Scores', path: '/dashboard/nbme'},
+      {name: 'NBME Score Tracker', path: '/dashboard/nbme'},
       {name: 'Weakness Map', path: '/dashboard/weakness'},
     ]},
     {section: 'Resources', items: [
@@ -41,6 +42,7 @@ export default function SessionRecordings() {
       {name: 'Session Recordings', path: '/dashboard/recordings', active: true},
       {name: 'Session Slides', path: '/dashboard/slides'},
       {name: 'Resource Drive', path: '/dashboard/resources'},
+      {name: 'Course Documents', path: '/dashboard/documents'},
       {name: 'Live Feedback', path: '/dashboard/feedback'},
     ]},
   ]

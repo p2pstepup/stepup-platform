@@ -48,7 +48,7 @@ export default function StudySchedule() {
     {section: 'Study Tools', items: [
       {name: 'Exam Center', path: '/dashboard/exams'},
       {name: 'Qbank Tracker', path: '/dashboard/qbank'},
-      {name: 'NBME Scores', path: '/dashboard/nbme'},
+      {name: 'NBME Score Tracker', path: '/dashboard/nbme'},
       {name: 'Weakness Map', path: '/dashboard/weakness'},
     ]},
     {section: 'Resources', items: [
