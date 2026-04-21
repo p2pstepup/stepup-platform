@@ -28,7 +28,7 @@ export default function LoginPage() {
           <div style={{fontFamily: 'Georgia, serif', fontSize: 38, color: 'white', lineHeight: 1.2, letterSpacing: -0.5, marginBottom: 16}}>
             Your Step 1 command <span style={{color: '#c9a84c'}}>center.</span>
           </div>
-          <div style={{fontSize: 14, color: '#c4b5fd', lineHeight: 1.7, maxWidth: 380, marginBottom: 48, color: 'rgba(255,255,255,0.6)'}}>
+          <div style={{fontSize: 14, lineHeight: 1.7, maxWidth: 380, marginBottom: 48, color: 'rgba(255,255,255,0.6)'}}>
             Everything you need for 8 weeks of focused, structured, high-yield preparation — in one place.
           </div>
 
