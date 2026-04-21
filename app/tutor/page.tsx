@@ -77,6 +77,7 @@ export default function TutorDashboard() {
     {name: 'Study Schedules', tab: 'studyschedule'},
     {name: 'Course Documents', tab: 'coursedocs'},
     {name: 'Exam Reports', tab: 'examreports'},
+    {name: 'Student Profiles', tab: 'profiles'},
   ]
 
   return (
@@ -470,7 +471,98 @@ export default function TutorDashboard() {
               <div style={{fontFamily: 'Georgia, serif', fontSize: 28, color: '#0d2340', letterSpacing: -0.5}}>Exam Reports</div>
               <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>View all student exam sessions · Time reports · Answer sheets</div>
             </div>
-            <ExamReports supabase={supabase} students={students} />
+            <ExamReports supabase={supabase} students={students} />function StudentProfiles({ supabase, students, onSuccess }: any) {
+  const [profiles, setProfiles] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState('')
+
+  useEffect(() => { load() }, [])
+
+  const load = async () => {
+    const { data } = await supabase.from('profiles').select('*').eq('role', 'student').order('full_name')
+    setProfiles(data || [])
+    setLoading(false)
+  }
+
+  const updateProfile = async (id: string, updates: any) => {
+    setSaving(id)
+    await supabase.from('profiles').update(updates).eq('id', id)
+    await load()
+    setSaving('')
+    onSuccess('Profile updated!')
+  }
+
+  if (loading) return <div style={{fontSize: 14, color: '#8a7d6a'}}>Loading...</div>
+
+  return (
+    <div style={{display: 'flex', flexDirection: 'column', gap: 16}}>
+      <div style={{background: '#0d2340', borderRadius: 12, padding: '14px 20px', marginBottom: 4}}>
+        <div style={{fontSize: 13, color: 'rgba(255,255,255,0.7)', lineHeight: 1.6}}>
+          Add mentor names and emails here — they'll appear automatically in each student's dashboard sidebar.
+        </div>
+      </div>
+      {profiles.length === 0 ? (
+        <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, padding: '40px', textAlign: 'center'}}>
+          <div style={{fontSize: 15, color: '#8a7d6a'}}>No students yet.</div>
+        </div>
+      ) : profiles.map(profile => (
+        <div key={profile.id} style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, padding: '20px 24px'}}>
+          <div style={{display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16}}>
+            <div style={{width: 40, height: 40, borderRadius: '50%', background: '#c9a84c', color: '#0d2340', fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0}}>
+              {(profile.full_name || profile.email).charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <div style={{fontSize: 15, fontWeight: 600, color: '#0d2340'}}>{profile.full_name || profile.email.split('@')[0]}</div>
+              <div style={{fontSize: 12, color: '#8a7d6a'}}>{profile.email}</div>
+            </div>
+            {saving === profile.id && <div style={{fontSize: 12, color: '#c9a84c', marginLeft: 'auto'}}>Saving...</div>}
+          </div>
+          <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12}}>
+            <div>
+              <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Full name</label>
+              <input type="text" defaultValue={profile.full_name || ''}
+                id={`name-${profile.id}`}
+                placeholder="Student full name"
+                style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 10px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
+            </div>
+            <div>
+              <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Mentor name</label>
+              <input type="text" defaultValue={profile.mentor_name || ''}
+                id={`mentor-name-${profile.id}`}
+                placeholder="e.g. Dr. Rivera"
+                style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 10px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
+            </div>
+            <div>
+              <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Mentor email</label>
+              <input type="text" defaultValue={profile.mentor_email || ''}
+                id={`mentor-email-${profile.id}`}
+                placeholder="mentor@email.com"
+                style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 10px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
+            </div>
+            <div style={{display: 'flex', alignItems: 'flex-end'}}>
+              <button onClick={() => {
+                const name = (document.getElementById(`name-${profile.id}`) as HTMLInputElement)?.value
+                const mentorName = (document.getElementById(`mentor-name-${profile.id}`) as HTMLInputElement)?.value
+                const mentorEmail = (document.getElementById(`mentor-email-${profile.id}`) as HTMLInputElement)?.value
+                updateProfile(profile.id, {full_name: name, mentor_name: mentorName, mentor_email: mentorEmail})
+              }} style={{width: '100%', height: 40, background: '#0d2340', border: 'none', borderRadius: 7, color: '#c9a84c', fontFamily: 'Sora, sans-serif', fontSize: 13, fontWeight: 600, cursor: 'pointer'}}>
+                Save ↗
+              </button>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+          </div>
+        )}{activeTab === 'profiles' && (
+          <div>
+            <div style={{marginBottom: 24}}>
+              <div style={{fontFamily: 'Georgia, serif', fontSize: 28, color: '#0d2340', letterSpacing: -0.5}}>Student Profiles</div>
+              <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>Assign mentor names · Update student info</div>
+            </div>
+            <StudentProfiles supabase={supabase} students={students} onSuccess={(msg: string) => { setSuccess(msg); setTimeout(() => setSuccess(''), 3000) }} />
           </div>
         )}
 
