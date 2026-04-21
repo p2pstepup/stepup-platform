@@ -474,7 +474,7 @@ export default function TutorDashboard() {
             <ExamReports supabase={supabase} students={students} />
           </div>
         )}
-{activeTab === 'profiles' && (
+        {activeTab === 'profiles' && (
           <div>
             <div style={{marginBottom: 24}}>
               <div style={{fontFamily: 'Georgia, serif', fontSize: 28, color: '#0d2340', letterSpacing: -0.5}}>Student Profiles</div>
@@ -483,7 +483,7 @@ export default function TutorDashboard() {
             <StudentProfiles supabase={supabase} students={students} onSuccess={(msg: string) => { setSuccess(msg); setTimeout(() => setSuccess(''), 3000) }} />
           </div>
         )}
-        </div>
+</div>
     </main>
   )
 }
@@ -572,15 +572,6 @@ function StudentProfiles({ supabase, students, onSuccess }: any) {
     </div>
   )
 
-        {activeTab === 'profiles' && (
-          <div>
-            <div style={{marginBottom: 24}}>
-              <div style={{fontFamily: 'Georgia, serif', fontSize: 28, color: '#0d2340', letterSpacing: -0.5}}>Student Profiles</div>
-              <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>Assign mentor names · Update student info</div>
-            </div>
-            <StudentProfiles supabase={supabase} students={students} onSuccess={(msg: string) => { setSuccess(msg); setTimeout(() => setSuccess(''), 3000) }} />
-          </div>
-        )}
 
       </div>
     </main>
