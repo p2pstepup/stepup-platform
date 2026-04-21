@@ -483,7 +483,7 @@ export default function TutorDashboard() {
             <StudentProfiles supabase={supabase} students={students} onSuccess={(msg: string) => { setSuccess(msg); setTimeout(() => setSuccess(''), 3000) }} />
           </div>
         )}
-</div>
+      </div>
     </main>
   )
 }
