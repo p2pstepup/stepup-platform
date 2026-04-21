@@ -29,12 +29,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: authError.message }, { status: 400 })
   }
 
-  const { error: profileError } = await supabaseAdmin.from('profiles').upsert({
+  // Upsert creates the row if a trigger hasn't already; update ensures
+  // full_name and role are set even if a trigger created the row first.
+  await supabaseAdmin.from('profiles').upsert({
     id: authData.user.id,
     email,
     role,
     full_name: full_name || null,
-  })
+  }, { onConflict: 'id' })
+
+  const { error: profileError } = await supabaseAdmin
+    .from('profiles')
+    .update({ email, role, full_name: full_name || null })
+    .eq('id', authData.user.id)
 
   if (profileError) {
     return NextResponse.json({ error: profileError.message }, { status: 400 })
