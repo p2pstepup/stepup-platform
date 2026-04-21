@@ -571,9 +571,8 @@ function StudentProfiles({ supabase, students, onSuccess }: any) {
       ))}
     </div>
   )
-}
-          </div>
-        )}{activeTab === 'profiles' && (
+
+        {activeTab === 'profiles' && (
           <div>
             <div style={{marginBottom: 24}}>
               <div style={{fontFamily: 'Georgia, serif', fontSize: 28, color: '#0d2340', letterSpacing: -0.5}}>Student Profiles</div>
@@ -586,7 +585,9 @@ function StudentProfiles({ supabase, students, onSuccess }: any) {
       </div>
     </main>
   )
-}function AnnouncementForm({ students, supabase, onSuccess }: any) {
+}
+
+function AnnouncementForm({ students, supabase, onSuccess }: any) {
   const [form, setForm] = useState({title: '', body: ''})
   const [sending, setSending] = useState(false)
   const [announcements, setAnnouncements] = useState<any[]>([])
