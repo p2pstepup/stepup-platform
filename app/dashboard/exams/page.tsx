@@ -32,7 +32,6 @@ export default function ExamCenter() {
       setExams(examData || [])
       setPastSessions(sessionData || [])
 
-      // Resume any in-progress session
       const inProgress = sessionData?.find((s: any) => s.status === 'in_progress')
       if (inProgress) {
         const sheet = inProgress.answer_sheets?.[0]
@@ -49,7 +48,6 @@ export default function ExamCenter() {
           setCurrentPage(1)
         }
       }
-
       setLoading(false)
     }
     init()
@@ -59,10 +57,7 @@ export default function ExamCenter() {
     if (activeSession && timeLeft > 0) {
       timerRef.current = setInterval(() => {
         setTimeLeft(prev => {
-          if (prev <= 1) {
-            clearInterval(timerRef.current)
-            return 0
-          }
+          if (prev <= 1) { clearInterval(timerRef.current); return 0 }
           return prev - 1
         })
       }, 1000)
@@ -73,29 +68,19 @@ export default function ExamCenter() {
   const startExam = async (exam: any) => {
     const timeLimitMinutes = parseTimeLimit(exam.time_limit)
     const { data: session } = await supabase.from('exam_sessions').insert({
-      student_id: user.id,
-      exam_id: exam.id,
-      exam_name: exam.name,
-      started_at: new Date().toISOString(),
-      time_limit_minutes: timeLimitMinutes,
-      status: 'in_progress'
+      student_id: user.id, exam_id: exam.id, exam_name: exam.name,
+      started_at: new Date().toISOString(), time_limit_minutes: timeLimitMinutes, status: 'in_progress'
     }).select().single()
-
     const { data: sheet } = await supabase.from('answer_sheets').insert({
-      exam_session_id: session.id,
-      student_id: user.id,
-      exam_name: exam.name,
-      total_questions: exam.questions,
-      answers: {}
+      exam_session_id: session.id, student_id: user.id, exam_name: exam.name,
+      total_questions: exam.questions, answers: {}
     }).select().single()
-
     setActiveSession(session)
     setActiveSheet(sheet)
     setTimeLeft(timeLimitMinutes * 60)
     setAnswers({})
     setCurrentPage(1)
     setSubmitted(false)
-
     if (exam.link) window.open(exam.link, '_blank')
   }
 
@@ -119,24 +104,13 @@ export default function ExamCenter() {
     const startedAt = new Date(activeSession.started_at)
     const actualMinutes = Math.round((submittedAt.getTime() - startedAt.getTime()) / 60000)
     const withinLimit = activeSession.time_limit_minutes ? actualMinutes <= activeSession.time_limit_minutes : true
-    const answeredCount = Object.keys(answers).length
-
     await supabase.from('exam_sessions').update({
-      submitted_at: submittedAt.toISOString(),
-      actual_minutes: actualMinutes,
-      within_limit: withinLimit,
-      status: 'submitted'
+      submitted_at: submittedAt.toISOString(), actual_minutes: actualMinutes,
+      within_limit: withinLimit, status: 'submitted'
     }).eq('id', activeSession.id)
-
     await supabase.from('answer_sheets').update({answers}).eq('id', activeSheet.id)
-
-    const { data: sessionData } = await supabase
-      .from('exam_sessions')
-      .select('*, answer_sheets(*)')
-      .eq('student_id', user.id)
-      .order('created_at', {ascending: false})
+    const { data: sessionData } = await supabase.from('exam_sessions').select('*, answer_sheets(*)').eq('student_id', user.id).order('created_at', {ascending: false})
     setPastSessions(sessionData || [])
-
     setSubmitted(true)
     setSubmitting(false)
     setActiveSession({...activeSession, actual_minutes: actualMinutes, within_limit: withinLimit, submitted_at: submittedAt.toISOString()})
@@ -201,7 +175,6 @@ export default function ExamCenter() {
   )
 
   // ACTIVE EXAM VIEW
-  if (activeSession && !submitted) {// ACTIVE EXAM VIEW
   if (activeSession && !submitted) {
     const pageStart = (currentPage - 1) * QUESTIONS_PER_PAGE + 1
     const pageEnd = Math.min(currentPage * QUESTIONS_PER_PAGE, totalQuestions)
@@ -209,8 +182,6 @@ export default function ExamCenter() {
 
     return (
       <main style={{minHeight: '100vh', background: '#f7f4ee', fontFamily: 'Sora, sans-serif', fontSize: '17.6px'}}>
-
-        {/* Timer bar */}
         <div style={{position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000, background: timeWarning ? '#9e2a2a' : '#0d2340', padding: '10px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
           <div style={{display: 'flex', alignItems: 'center', gap: 16}}>
             <div style={{fontFamily: 'Georgia, serif', fontSize: 18, color: 'white', fontWeight: 600}}>{activeSession.exam_name}</div>
@@ -240,16 +211,13 @@ export default function ExamCenter() {
           </div>
         </div>
 
-        {/* Time up warning */}
         {timeUp && (
           <div style={{position: 'fixed', top: 60, left: 0, right: 0, zIndex: 999, background: '#9e2a2a', padding: '12px 24px', textAlign: 'center'}}>
-            <div style={{fontSize: 16, color: 'white', fontWeight: 600}}>⏰ Time is up! Please submit your exam now and stop answering questions.</div>
+            <div style={{fontSize: 16, color: 'white', fontWeight: 600}}>⏰ Time is up! Please submit your exam now.</div>
           </div>
         )}
 
-        <div style={{paddingTop: 80, padding: '80px 24px 24px'}}>
-
-          {/* Progress bar */}
+        <div style={{padding: '80px 24px 24px'}}>
           <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 10, padding: '12px 18px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 14}}>
             <div style={{flex: 1, height: 6, background: '#f0ece0', borderRadius: 3, overflow: 'hidden'}}>
               <div style={{height: '100%', background: '#6b7c3a', borderRadius: 3, width: `${(answeredCount/totalQuestions)*100}%`, transition: 'width 0.3s'}}/>
@@ -257,7 +225,6 @@ export default function ExamCenter() {
             <div style={{fontSize: 13, color: '#8a7d6a', flexShrink: 0}}>{Math.round((answeredCount/totalQuestions)*100)}% complete</div>
           </div>
 
-          {/* Page navigation */}
           <div style={{display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap'}}>
             {Array.from({length: totalPages}).map((_, i) => {
               const pageNum = i + 1
@@ -274,7 +241,6 @@ export default function ExamCenter() {
             })}
           </div>
 
-          {/* Answer grid */}
           <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, overflow: 'hidden', marginBottom: 16}}>
             <div style={{background: '#0d2340', padding: '12px 20px'}}>
               <div style={{fontSize: 14, fontWeight: 600, color: 'white'}}>Questions {pageStart}–{pageEnd}</div>
@@ -302,7 +268,6 @@ export default function ExamCenter() {
             </div>
           </div>
 
-          {/* Page controls */}
           <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
             <button onClick={() => setCurrentPage(Math.max(1, currentPage-1))} disabled={currentPage === 1}
               style={{padding: '10px 20px', background: currentPage === 1 ? '#f7f4ee' : '#0d2340', border: 'none', borderRadius: 8, color: currentPage === 1 ? '#a89870' : '#c9a84c', fontFamily: 'Sora, sans-serif', fontSize: 14, fontWeight: 600, cursor: currentPage === 1 ? 'not-allowed' : 'pointer'}}>
@@ -417,7 +382,6 @@ export default function ExamCenter() {
           <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>Start a timed exam · Fill your answer sheet · Track your time · Log your score</div>
         </div>
 
-        {/* How it works */}
         <div style={{background: '#0d2340', borderRadius: 12, padding: '16px 22px', marginBottom: 24, borderLeft: '4px solid #c9a84c'}}>
           <div style={{fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#c9a84c', marginBottom: 10}}>How it works</div>
           <div style={{display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16}}>
@@ -435,7 +399,6 @@ export default function ExamCenter() {
           </div>
         </div>
 
-        {/* Exam list */}
         <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, overflow: 'hidden', marginBottom: 24}}>
           <div style={{background: '#0d2340', padding: '14px 20px'}}>
             <div style={{fontSize: 14, fontWeight: 600, color: 'white'}}>Available exams</div>
@@ -482,7 +445,6 @@ export default function ExamCenter() {
           </table>
         </div>
 
-        {/* Past sessions */}
         {pastSessions.length > 0 && (
           <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, overflow: 'hidden'}}>
             <div style={{background: '#0d2340', padding: '14px 20px'}}>
