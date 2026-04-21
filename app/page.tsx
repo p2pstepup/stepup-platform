@@ -15,13 +15,16 @@ export default function LoginPage() {
   const handleLogin = async () => {
     setLoading(true)
     setError('')
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) {
       setError(error.message)
       setLoading(false)
-    } else {
-      router.push('/dashboard')
+      return
     }
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', data.user.id).single()
+    if (profile?.role === 'tutor') router.push('/tutor')
+    else if (profile?.role === 'admin') router.push('/admin')
+    else router.push('/dashboard')
   }
 
   return (
