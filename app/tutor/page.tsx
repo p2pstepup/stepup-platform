@@ -99,7 +99,6 @@ export default function TutorDashboard() {
               <div style={{width: 6, height: 6, borderRadius: '50%', background: 'currentColor', flexShrink: 0}}/>{item.name}
             </div>
           ))}
-          </div>
         </div>
       </nav>
 
@@ -558,8 +557,6 @@ function StudentProfiles({ supabase, students, onSuccess }: any) {
         </div>
       ))}
     </div>
-  )
-    </main>
   )
 }
 
