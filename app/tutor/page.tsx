@@ -5,7 +5,7 @@ import { createClient } from '../../utils/supabase'
 import {
   AnnouncementForm, FeedbackTab, SlidesManager, RecordingsManager,
   NotesManager, ResourcesManager, ScheduleManager, AssignmentsManager,
-  StudyScheduleManager, ExamReports, AttendanceLogger
+  StudyScheduleManager, ExamReports, AttendanceLogger, StudentPerformance
 } from './components'
 
 export default function TutorDashboard() {
@@ -92,6 +92,7 @@ export default function TutorDashboard() {
       {name: 'Assign Tasks', tab: 'assignments'},
       {name: 'Study Schedules', tab: 'studyschedule'},
       {name: 'Exam Reports', tab: 'examreports'},
+      {name: 'Student Performance', tab: 'studentperformance'},
     ]},
     {section: 'Reporting', items: [
       {name: 'Log Attendance', tab: 'attendance'},
@@ -474,6 +475,16 @@ export default function TutorDashboard() {
               <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>View all student exam sessions · Time reports · Answer sheets</div>
             </div>
             <ExamReports supabase={supabase} students={students} />
+          </div>
+        )}
+
+        {activeTab === 'studentperformance' && (
+          <div>
+            <div style={{marginBottom: 24}}>
+              <div style={{fontFamily: 'Georgia, serif', fontSize: 28, color: '#0d2340', letterSpacing: -0.5}}>Student Performance</div>
+              <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>Qbank accuracy · Question log analysis · Weakness breakdown by topic</div>
+            </div>
+            <StudentPerformance supabase={supabase} students={students} />
           </div>
         )}
 

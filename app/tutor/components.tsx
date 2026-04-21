@@ -1463,3 +1463,198 @@ export function AttendanceLogger({ supabase, students, tutorId }: any) {
     </div>
   )
 }
+
+// ─── Student Performance (Weakness Map for tutors/admin) ─────────────────────
+
+const PERF_TOPICS = ['Cardiology','Psychiatry','Renal','Biochemistry','Pharmacology','Microbiology','Anatomy','Pathology','Physiology','Reproductive','Neurology','Endocrinology','Immunology','Mixed']
+const PERF_REASONS = ['Knowledge','Knowledge Gap','Silly Mistake','Luck']
+
+export function StudentPerformance({ supabase, students }: any) {
+  const [selectedStudent, setSelectedStudent] = useState('')
+  const [sessions, setSessions] = useState<any[]>([])
+  const [logs, setLogs] = useState<any[]>([])
+  const [loading, setLoading] = useState(false)
+
+  async function loadData(studentId: string) {
+    if (!studentId) return
+    setLoading(true)
+    const [{ data: sessionsData }, { data: nbmeData }] = await Promise.all([
+      supabase.from('qbank_sessions').select('id, topic, questions_total, questions_correct').eq('student_id', studentId),
+      supabase.from('nbme_scores').select('id').eq('student_id', studentId),
+    ])
+    setSessions(sessionsData || [])
+    const sessionIds = (sessionsData || []).map((s: any) => s.id)
+    const examIds = (nbmeData || []).map((s: any) => s.id)
+    const [qRes, nRes] = await Promise.all([
+      sessionIds.length > 0
+        ? supabase.from('qbank_question_logs').select('topic, answer, reason').in('session_id', sessionIds)
+        : Promise.resolve({ data: [] }),
+      examIds.length > 0
+        ? supabase.from('nbme_question_logs').select('topic, answer, reason').in('exam_id', examIds)
+        : Promise.resolve({ data: [] }),
+    ])
+    setLogs([
+      ...((qRes.data || []).map((l: any) => ({ ...l, source: 'qbank' }))),
+      ...((nRes.data || []).map((l: any) => ({ ...l, source: 'nbme' }))),
+    ])
+    setLoading(false)
+  }
+
+  function handleSelect(id: string) {
+    setSelectedStudent(id)
+    setSessions([])
+    setLogs([])
+    loadData(id)
+  }
+
+  const getAccColor = (acc: number) => {
+    if (acc >= 75) return '#6b7c3a'
+    if (acc >= 65) return '#c9a84c'
+    if (acc >= 55) return '#c07040'
+    return '#9e2a2a'
+  }
+
+  const sessionStats = (topic: string) => {
+    const ts = sessions.filter((s: any) => s.topic === topic)
+    if (ts.length === 0) return null
+    const total = ts.reduce((a: number, s: any) => a + s.questions_total, 0)
+    const correct = ts.reduce((a: number, s: any) => a + s.questions_correct, 0)
+    return { total, correct, acc: Math.round((correct / total) * 100), sessions: ts.length }
+  }
+
+  const logStats = (topic: string) => {
+    const tl = logs.filter((l: any) => l.topic === topic)
+    if (tl.length === 0) return null
+    const wrong = tl.filter((l: any) => l.answer === 'Wrong').length
+    const correct = tl.filter((l: any) => l.answer === 'Correct').length
+    const total = tl.length
+    const qbankCount = tl.filter((l: any) => l.source === 'qbank').length
+    const nbmeCount = tl.filter((l: any) => l.source === 'nbme').length
+    const reasons: Record<string, number> = {}
+    tl.filter((l: any) => l.answer === 'Wrong' && l.reason).forEach((l: any) => {
+      reasons[l.reason] = (reasons[l.reason] || 0) + 1
+    })
+    return { total, correct, wrong, acc: total > 0 ? Math.round((correct / total) * 100) : 0, qbankCount, nbmeCount, reasons }
+  }
+
+  const topicsWithSessions = PERF_TOPICS.filter(t => sessionStats(t) !== null)
+  const topicsWithLogs = PERF_TOPICS.filter(t => logStats(t) !== null)
+  const sortedBySessions = [...topicsWithSessions].sort((a, b) => (sessionStats(a)?.acc || 0) - (sessionStats(b)?.acc || 0))
+  const sortedByLogs = [...topicsWithLogs].sort((a, b) => (logStats(b)?.wrong || 0) - (logStats(a)?.wrong || 0))
+  const totalLogged = logs.length
+  const totalWrong = logs.filter((l: any) => l.answer === 'Wrong').length
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+        <select value={selectedStudent} onChange={e => handleSelect(e.target.value)}
+          style={{ height: 42, borderRadius: 8, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 14, padding: '0 14px', color: '#1a1008', outline: 'none', minWidth: 240 }}>
+          <option value="">Select a student...</option>
+          {(students as any[]).map((s: any) => (
+            <option key={s.id} value={s.id}>{s.full_name || s.email.split('@')[0]}</option>
+          ))}
+        </select>
+        {loading && <div style={{ fontSize: 13, color: '#8a7d6a' }}>Loading...</div>}
+      </div>
+
+      {selectedStudent && !loading && sessions.length === 0 && logs.length === 0 && (
+        <div style={{ background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, padding: '32px', textAlign: 'center', fontSize: 14, color: '#8a7d6a', fontStyle: 'italic' }}>
+          No Qbank sessions or question logs recorded yet for this student.
+        </div>
+      )}
+
+      {!loading && (topicsWithSessions.length > 0 || topicsWithLogs.length > 0) && (
+        <>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+            {[
+              { label: 'Qbank sessions', value: sessions.length.toString(), delta: `${sessions.reduce((a: number, s: any) => a + s.questions_total, 0)} total questions` },
+              { label: 'Questions logged', value: totalLogged.toString(), delta: `${logs.filter((l:any)=>l.source==='qbank').length} Qbank · ${logs.filter((l:any)=>l.source==='nbme').length} NBME` },
+              { label: 'Wrong answers logged', value: totalWrong.toString(), delta: totalLogged > 0 ? `${Math.round((totalWrong/totalLogged)*100)}% error rate` : 'No logs yet' },
+            ].map((m, i) => (
+              <div key={i} style={{ background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 10, padding: '14px 16px' }}>
+                <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#a89870', marginBottom: 6 }}>{m.label}</div>
+                <div style={{ fontFamily: 'Georgia, serif', fontSize: 26, color: '#0d2340' }}>{m.value}</div>
+                <div style={{ fontSize: 12, color: '#a89870', marginTop: 3 }}>{m.delta}</div>
+              </div>
+            ))}
+          </div>
+
+          {topicsWithSessions.length > 0 && (
+            <div style={{ background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, padding: '18px 22px' }}>
+              <div style={{ fontSize: 15, fontWeight: 600, color: '#0d2340', marginBottom: 4 }}>Session accuracy by subject</div>
+              <div style={{ fontSize: 12, color: '#8a7d6a', marginBottom: 14 }}>Based on Qbank session blocks</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+                {sortedBySessions.map(topic => {
+                  const s = sessionStats(topic)!
+                  return (
+                    <div key={topic} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <div style={{ width: 110, fontSize: 13, color: '#3d3020', flexShrink: 0 }}>{topic}</div>
+                      <div style={{ flex: 1, height: 7, background: '#f0ece0', borderRadius: 4, overflow: 'hidden' }}>
+                        <div style={{ height: '100%', background: getAccColor(s.acc), width: `${s.acc}%`, borderRadius: 4 }}/>
+                      </div>
+                      <div style={{ width: 36, fontSize: 13, fontWeight: 700, color: getAccColor(s.acc), textAlign: 'right', flexShrink: 0 }}>{s.acc}%</div>
+                      <div style={{ fontSize: 11, color: '#a89870', width: 90, flexShrink: 0 }}>{s.total}Q · {s.sessions} sessions</div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {topicsWithLogs.length > 0 && (
+            <div style={{ background: '#0d2340', borderRadius: 12, padding: '18px 22px' }}>
+              <div style={{ fontSize: 15, fontWeight: 600, color: 'white', marginBottom: 4 }}>Question Log Analysis</div>
+              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 16 }}>Per-question data from Qbank + NBME logs · sorted by most wrong answers</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {sortedByLogs.map(topic => {
+                  const ls = logStats(topic)!
+                  const maxWrong = Math.max(...sortedByLogs.map(t => logStats(t)?.wrong || 0))
+                  return (
+                    <div key={topic} style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 10, padding: '13px 15px', border: '0.5px solid rgba(255,255,255,0.08)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: Object.keys(ls.reasons).length > 0 ? 10 : 0 }}>
+                        <div style={{ width: 110, flexShrink: 0 }}>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: 'white' }}>{topic}</div>
+                          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', marginTop: 2 }}>
+                            {ls.qbankCount > 0 && `${ls.qbankCount}Q`}{ls.qbankCount > 0 && ls.nbmeCount > 0 && ' · '}{ls.nbmeCount > 0 && `${ls.nbmeCount} NBME`}
+                          </div>
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', gap: 2, height: 7, borderRadius: 4, overflow: 'hidden', marginBottom: 4 }}>
+                            <div style={{ background: '#4a7a2a', width: `${(ls.correct / ls.total) * 100}%` }}/>
+                            <div style={{ background: '#9e2a2a', width: `${(ls.wrong / ls.total) * 100}%` }}/>
+                          </div>
+                          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>{ls.correct} correct · {ls.wrong} wrong</div>
+                        </div>
+                        <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                          <div style={{ fontSize: 15, fontWeight: 700, color: getAccColor(ls.acc) }}>{ls.acc}%</div>
+                          <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)' }}>{ls.total} logged</div>
+                        </div>
+                        {maxWrong > 0 && ls.wrong > 0 && (
+                          <div style={{ width: 70, flexShrink: 0 }}>
+                            <div style={{ height: 5, background: 'rgba(255,255,255,0.1)', borderRadius: 3, overflow: 'hidden' }}>
+                              <div style={{ height: '100%', background: '#c0574a', width: `${(ls.wrong / maxWrong) * 100}%` }}/>
+                            </div>
+                            <div style={{ fontSize: 10, color: '#f5a0a0', marginTop: 2 }}>{ls.wrong} wrong</div>
+                          </div>
+                        )}
+                      </div>
+                      {Object.keys(ls.reasons).length > 0 && (
+                        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', paddingTop: 8, borderTop: '0.5px solid rgba(255,255,255,0.08)' }}>
+                          {PERF_REASONS.filter(r => ls.reasons[r]).map(r => (
+                            <span key={r} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 20, background: 'rgba(201,168,76,0.15)', color: '#c9a84c', border: '0.5px solid rgba(201,168,76,0.3)' }}>
+                              {r}: {ls.reasons[r]}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  )
+}

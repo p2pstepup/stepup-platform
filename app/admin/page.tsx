@@ -5,7 +5,7 @@ import { createClient } from '../../utils/supabase'
 import {
   StudentProfiles, AnnouncementForm, FeedbackTab, SlidesManager, RecordingsManager,
   NotesManager, ResourcesManager, ExamsManager, ScheduleManager, AssignmentsManager,
-  StudyScheduleManager, CourseDocsManager, ExamReports
+  StudyScheduleManager, CourseDocsManager, ExamReports, StudentPerformance
 } from '../tutor/components'
 
 const label = (style: object, children: React.ReactNode) =>
@@ -51,6 +51,7 @@ export default function AdminDashboard() {
     {section: 'Overview', items: [{name: 'Command Center', tab: 'overview'}]},
     {section: 'Monitor · Students', items: [
       {name: 'Student Roster', tab: 'roster'},
+      {name: 'Student Performance', tab: 'studentperformance'},
       {name: 'Exam Performance', tab: 'examperformance'},
       {name: 'Attendance Report', tab: 'attendancereport'},
       {name: 'Assignment Progress', tab: 'assignmentprogress'},
@@ -161,6 +162,16 @@ export default function AdminDashboard() {
                 </tbody>
               </table>
             </div>
+          </div>
+        )}
+
+        {activeTab === 'studentperformance' && (
+          <div>
+            <div style={{marginBottom: 24}}>
+              <div style={{fontFamily: 'Georgia, serif', fontSize: 28, color: '#0d2340', letterSpacing: -0.5}}>Student Performance</div>
+              <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>Qbank accuracy · Question log analysis · Weakness breakdown by topic</div>
+            </div>
+            <StudentPerformance supabase={supabase} students={students} />
           </div>
         )}
 
