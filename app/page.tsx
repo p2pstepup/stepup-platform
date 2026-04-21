@@ -9,8 +9,25 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [forgotMode, setForgotMode] = useState(false)
+  const [forgotEmail, setForgotEmail] = useState('')
+  const [forgotSent, setForgotSent] = useState(false)
+  const [forgotLoading, setForgotLoading] = useState(false)
+  const [forgotError, setForgotError] = useState('')
   const router = useRouter()
   const supabase = createClient()
+
+  const handleForgotPassword = async () => {
+    if (!forgotEmail) { setForgotError('Please enter your email address.'); return }
+    setForgotLoading(true)
+    setForgotError('')
+    const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
+      redirectTo: window.location.origin + '/reset-password',
+    })
+    setForgotLoading(false)
+    if (error) { setForgotError(error.message); return }
+    setForgotSent(true)
+  }
 
   const handleLogin = async () => {
     setLoading(true)
@@ -119,8 +136,37 @@ export default function LoginPage() {
           </div>
 
           <div style={{textAlign: 'right', marginBottom: 24}}>
-            <span style={{fontSize: 14, color: '#c9a84c', cursor: 'pointer'}}>Forgot password?</span>
+            <span onClick={() => { setForgotMode(true); setForgotSent(false); setForgotError(''); setForgotEmail(email) }} style={{fontSize: 14, color: '#c9a84c', cursor: 'pointer'}}>Forgot password?</span>
           </div>
+
+          {forgotMode && (
+            <div style={{background: '#f7f4ee', border: '0.5px solid #e0d8c4', borderRadius: 10, padding: '18px 20px', marginBottom: 18}}>
+              <div style={{fontSize: 14, fontWeight: 600, color: '#0d2340', marginBottom: 10}}>Reset your password</div>
+              {forgotSent ? (
+                <div>
+                  <div style={{fontSize: 14, color: '#3a6b3a', marginBottom: 10}}>Reset link sent! Check your inbox.</div>
+                  <span onClick={() => setForgotMode(false)} style={{fontSize: 13, color: '#c9a84c', cursor: 'pointer'}}>Back to sign in</span>
+                </div>
+              ) : (
+                <div>
+                  <input type="email" value={forgotEmail} onChange={e => setForgotEmail(e.target.value)}
+                    placeholder="your@email.com"
+                    style={{width: '100%', height: 42, borderRadius: 8, border: '1px solid #e8dfc8', background: 'white', fontFamily: 'Sora, sans-serif', fontSize: 14, padding: '0 14px', color: '#1a1008', outline: 'none', boxSizing: 'border-box', marginBottom: 10}}/>
+                  {forgotError && <div style={{fontSize: 13, color: '#c0574a', marginBottom: 8}}>{forgotError}</div>}
+                  <div style={{display: 'flex', gap: 10}}>
+                    <button onClick={handleForgotPassword} disabled={forgotLoading}
+                      style={{flex: 1, height: 38, background: '#0d2340', border: 'none', borderRadius: 8, color: '#c9a84c', fontFamily: 'Sora, sans-serif', fontSize: 13, fontWeight: 600, cursor: 'pointer'}}>
+                      {forgotLoading ? 'Sending...' : 'Send reset link'}
+                    </button>
+                    <button onClick={() => setForgotMode(false)}
+                      style={{height: 38, padding: '0 14px', background: 'white', border: '0.5px solid #e0d8c4', borderRadius: 8, fontFamily: 'Sora, sans-serif', fontSize: 13, color: '#8a7d6a', cursor: 'pointer'}}>
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {error && (
             <div style={{background: '#fdf2ed', border: '0.5px solid #e8c4a8', borderRadius: 8, padding: '12px 16px', marginBottom: 18, fontSize: 14, color: '#6b3010'}}>
