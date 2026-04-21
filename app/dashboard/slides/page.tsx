@@ -5,6 +5,7 @@ import { createClient } from '../../../utils/supabase'
 
 export default function SessionSlides() {
   const [user, setUser] = useState<any>(null)
+  const [slides, setSlides] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const router = useRouter()
   const supabase = createClient()
@@ -14,6 +15,11 @@ export default function SessionSlides() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/'); return }
       setUser(user)
+      const { data } = await supabase
+        .from('slides')
+        .select('*')
+        .order('sort_order', { ascending: true })
+      setSlides(data || [])
       setLoading(false)
     }
     init()
@@ -42,24 +48,7 @@ export default function SessionSlides() {
     ]},
   ]
 
-  const slides = [
-    {week: 'Week 1', sessions: [
-      {date: 'May 4', topic: 'Psychiatry HY Review', available: false},
-      {date: 'May 5', topic: 'Cardiology HY Review', available: false},
-      {date: 'May 6', topic: 'Renal HY Review', available: false},
-      {date: 'May 7', topic: 'Biochemistry HY Review', available: false},
-      {date: 'May 8', topic: 'Pharmacology HY Review', available: false},
-      {date: 'May 9', topic: 'Microbiology HY Review', available: false},
-    ]},
-    {week: 'Week 2', sessions: [
-      {date: 'May 11', topic: 'Anatomy HY Review', available: false},
-      {date: 'May 12', topic: 'Pathology HY Review', available: false},
-      {date: 'May 13', topic: 'Physiology HY Review', available: false},
-      {date: 'May 14', topic: 'Reproductive HY Review', available: false},
-      {date: 'May 15', topic: 'Neurology HY Review', available: false},
-      {date: 'May 16', topic: 'Endocrinology HY Review', available: false},
-    ]},
-  ]
+  const weeks = [...new Set(slides.map(s => s.week_number))].sort()
 
   if (loading) return (
     <main style={{minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f7f4ee'}}>
@@ -69,8 +58,6 @@ export default function SessionSlides() {
 
   return (
     <main style={{minHeight: '100vh', display: 'flex', background: '#f7f4ee', fontFamily: 'Sora, sans-serif', fontSize: '17.6px'}}>
-
-      {/* SIDEBAR */}
       <nav style={{width: 220, flexShrink: 0, background: '#0d2340', display: 'flex', flexDirection: 'column', height: '100vh', position: 'sticky', top: 0}}>
         <div style={{padding: '20px 18px 16px', borderBottom: '0.5px solid rgba(201,168,76,0.2)'}}>
           <div style={{display: 'flex', alignItems: 'center', gap: 10}}>
@@ -109,11 +96,10 @@ export default function SessionSlides() {
         </div>
       </nav>
 
-      {/* MAIN */}
       <div style={{flex: 1, minWidth: 0, overflowY: 'auto', padding: '32px 36px'}}>
         <div style={{marginBottom: 28}}>
           <div style={{fontFamily: 'Georgia, serif', fontSize: 30, color: '#0d2340', letterSpacing: -0.5}}>Session Slides</div>
-          <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>Slides are uploaded after each session · Check back after class</div>
+          <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>Slides are uploaded after each session · You'll be notified when new slides are available</div>
         </div>
 
         <div style={{background: '#0d2340', borderRadius: 12, padding: '16px 22px', marginBottom: 24, borderLeft: '4px solid #c9a84c'}}>
@@ -122,21 +108,27 @@ export default function SessionSlides() {
           </div>
         </div>
 
-        {slides.map((week) => (
-          <div key={week.week} style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, overflow: 'hidden', marginBottom: 16}}>
+        {weeks.map((week) => (
+          <div key={week} style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, overflow: 'hidden', marginBottom: 16}}>
             <div style={{background: '#0d2340', padding: '12px 20px'}}>
-              <div style={{fontSize: 14, fontWeight: 600, color: 'white'}}>{week.week}</div>
+              <div style={{fontSize: 14, fontWeight: 600, color: 'white'}}>Week {week}</div>
             </div>
             <div style={{padding: '8px 0'}}>
-              {week.sessions.map((session, i) => (
-                <div key={i} style={{display: 'flex', alignItems: 'center', gap: 16, padding: '12px 20px', borderBottom: i < week.sessions.length-1 ? '0.5px solid #f5f0e8' : 'none'}}>
-                  <div style={{width: 52, fontSize: 12, fontWeight: 600, color: '#c9a84c', background: '#f7f4ee', borderRadius: 5, padding: '3px 6px', textAlign: 'center', flexShrink: 0}}>{session.date}</div>
+              {slides.filter(s => s.week_number === week).map((session, i, arr) => (
+                <div key={session.id} style={{display: 'flex', alignItems: 'center', gap: 16, padding: '12px 20px', borderBottom: i < arr.length-1 ? '0.5px solid #f5f0e8' : 'none'}}>
+                  <div style={{width: 60, fontSize: 12, fontWeight: 600, color: '#c9a84c', background: '#f7f4ee', borderRadius: 5, padding: '3px 6px', textAlign: 'center', flexShrink: 0}}>
+                    {new Date(session.session_date).toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}
+                  </div>
                   <div style={{flex: 1, fontSize: 14, color: '#0d2340'}}>{session.topic}</div>
-                  {session.available ? (
+                  {session.available && session.link ? (
                     <div style={{display: 'flex', gap: 8}}>
-                      <div style={{padding: '6px 14px', background: '#0d2340', borderRadius: 7, fontSize: 12, color: '#c9a84c', fontWeight: 500, cursor: 'pointer'}}>Download PDF</div>
-                      <div style={{padding: '6px 14px', background: '#f7f4ee', border: '0.5px solid #e8dfc8', borderRadius: 7, fontSize: 12, color: '#3d3020', cursor: 'pointer'}}>View slides</div>
+                      <a href={session.link} target="_blank" rel="noopener noreferrer"
+                        style={{padding: '6px 14px', background: '#0d2340', borderRadius: 7, fontSize: 12, color: '#c9a84c', fontWeight: 500, textDecoration: 'none'}}>
+                        View slides ↗
+                      </a>
                     </div>
+                  ) : session.available ? (
+                    <div style={{padding: '6px 14px', background: '#f7f4ee', borderRadius: 7, fontSize: 12, color: '#6b7c3a', fontWeight: 500}}>Available</div>
                   ) : (
                     <div style={{fontSize: 12, color: '#a89870', fontStyle: 'italic'}}>Available after session</div>
                   )}

@@ -5,6 +5,7 @@ import { createClient } from '../../../utils/supabase'
 
 export default function ResourceDrive() {
   const [user, setUser] = useState<any>(null)
+  const [resources, setResources] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const router = useRouter()
   const supabase = createClient()
@@ -14,6 +15,11 @@ export default function ResourceDrive() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/'); return }
       setUser(user)
+      const { data } = await supabase
+        .from('resources')
+        .select('*')
+        .order('sort_order', { ascending: true })
+      setResources(data || [])
       setLoading(false)
     }
     init()
@@ -42,25 +48,13 @@ export default function ResourceDrive() {
     ]},
   ]
 
-  const resources = [
-    {category: 'Study Strategy', color: '#c9a84c', items: [
-      {name: 'StepUp Study Blueprint', type: 'PDF', desc: '8-week comprehensive study plan with daily targets'},
-      {name: 'How to use UWorld effectively', type: 'PDF', desc: 'Timed vs tutor mode, review strategy, note-taking'},
-      {name: 'NBME scoring guide', type: 'PDF', desc: 'How to interpret your scores and predict Step 1'},
-      {name: 'Active recall techniques', type: 'PDF', desc: 'Spaced repetition, Anki tips, self-quizzing'},
-    ]},
-    {category: 'High Yield References', color: '#4a8c84', items: [
-      {name: 'First Aid 2024 — key pages', type: 'PDF', desc: 'Most tested topics flagged by past Step 1 takers'},
-      {name: 'Pathoma chapter summaries', type: 'PDF', desc: 'HY pathology concepts condensed'},
-      {name: 'Sketchy mnemonics guide', type: 'PDF', desc: 'How to maximize Sketchy for micro and pharm'},
-      {name: 'Rapid Review tables', type: 'PDF', desc: 'Classic presentations, buzzwords, must-know associations'},
-    ]},
-    {category: 'Wellness & Performance', color: '#6b7c3a', items: [
-      {name: 'Managing test anxiety', type: 'PDF', desc: 'Evidence-based strategies for peak exam performance'},
-      {name: 'Sleep and study optimization', type: 'PDF', desc: 'How to study smarter with better rest'},
-      {name: 'Burnout prevention guide', type: 'PDF', desc: 'Recognizing and recovering from study burnout'},
-    ]},
-  ]
+  const categories = [...new Set(resources.map(r => r.category))]
+
+  const categoryColors: Record<string, string> = {
+    'Study Strategy': '#c9a84c',
+    'High Yield References': '#4a8c84',
+    'Wellness & Performance': '#6b7c3a',
+  }
 
   if (loading) return (
     <main style={{minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f7f4ee'}}>
@@ -70,8 +64,6 @@ export default function ResourceDrive() {
 
   return (
     <main style={{minHeight: '100vh', display: 'flex', background: '#f7f4ee', fontFamily: 'Sora, sans-serif', fontSize: '17.6px'}}>
-
-      {/* SIDEBAR */}
       <nav style={{width: 220, flexShrink: 0, background: '#0d2340', display: 'flex', flexDirection: 'column', height: '100vh', position: 'sticky', top: 0}}>
         <div style={{padding: '20px 18px 16px', borderBottom: '0.5px solid rgba(201,168,76,0.2)'}}>
           <div style={{display: 'flex', alignItems: 'center', gap: 10}}>
@@ -110,7 +102,6 @@ export default function ResourceDrive() {
         </div>
       </nav>
 
-      {/* MAIN */}
       <div style={{flex: 1, minWidth: 0, overflowY: 'auto', padding: '32px 36px'}}>
         <div style={{marginBottom: 28}}>
           <div style={{fontFamily: 'Georgia, serif', fontSize: 30, color: '#0d2340', letterSpacing: -0.5}}>Resource Drive</div>
@@ -119,36 +110,36 @@ export default function ResourceDrive() {
 
         <div style={{background: '#0d2340', borderRadius: 12, padding: '16px 22px', marginBottom: 24, borderLeft: '4px solid #c9a84c'}}>
           <div style={{fontSize: 14, color: 'rgba(255,255,255,0.7)', lineHeight: 1.6}}>
-            All resources below will be linked to their actual files before May 4th. Click any resource to download or view it. New resources are added throughout the program.
+            Click any resource to open it. New resources are added throughout the program — you'll be notified when something new is available.
           </div>
         </div>
 
-        {resources.map((cat) => (
-          <div key={cat.category} style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, overflow: 'hidden', marginBottom: 16}}>
-            <div style={{background: '#0d2340', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: 10}}>
-              <div style={{width: 10, height: 10, borderRadius: '50%', background: cat.color}}/>
-              <div style={{fontSize: 14, fontWeight: 600, color: 'white'}}>{cat.category}</div>
-            </div>
-            {cat.items.map((item, i) => (
-              <div key={i} style={{display: 'flex', alignItems: 'center', gap: 16, padding: '14px 20px', borderBottom: i < cat.items.length-1 ? '0.5px solid #f5f0e8' : 'none', cursor: 'pointer'}}
-                onMouseEnter={e => (e.currentTarget.style.background = '#fafaf8')}
-                onMouseLeave={e => (e.currentTarget.style.background = 'white')}>
-                <div style={{width: 40, height: 40, background: `${cat.color}18`, border: `1px solid ${cat.color}40`, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0}}>
-                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M10 2H4a1 1 0 00-1 1v12a1 1 0 001 1h10a1 1 0 001-1V6l-5-4z" stroke={cat.color} strokeWidth="1.2" strokeLinecap="round"/><path d="M10 2v4h4" stroke={cat.color} strokeWidth="1.2" strokeLinecap="round"/></svg>
-                </div>
-                <div style={{flex: 1}}>
-                  <div style={{fontSize: 14, fontWeight: 500, color: '#0d2340', marginBottom: 3}}>{item.name}</div>
-                  <div style={{fontSize: 12, color: '#8a7d6a'}}>{item.desc}</div>
-                </div>
-                <div style={{display: 'flex', gap: 8, flexShrink: 0}}>
-                  <span style={{fontSize: 11, padding: '2px 8px', borderRadius: 4, background: '#f7f4ee', color: '#8a7d6a'}}>{item.type}</span>
-                  <div style={{padding: '6px 14px', background: '#0d2340', borderRadius: 7, fontSize: 12, color: '#c9a84c', fontWeight: 500}}>Download</div>
-                </div>
+        {categories.map((cat) => {
+          const color = categoryColors[cat] || '#c9a84c'
+          const catResources = resources.filter(r => r.category === cat)
+          return (
+            <div key={cat} style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, overflow: 'hidden', marginBottom: 16}}>
+              <div style={{background: '#0d2340', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: 10}}>
+                <div style={{width: 10, height: 10, borderRadius: '50%', background: color}}/>
+                <div style={{fontSize: 14, fontWeight: 600, color: 'white'}}>{cat}</div>
               </div>
-            ))}
-          </div>
-        ))}
-      </div>
-    </main>
-  )
-}
+              {catResources.map((item, i) => (
+                <div key={item.id}
+                  onClick={() => item.link && window.open(item.link, '_blank')}
+                  style={{display: 'flex', alignItems: 'center', gap: 16, padding: '14px 20px', borderBottom: i < catResources.length-1 ? '0.5px solid #f5f0e8' : 'none', cursor: item.link ? 'pointer' : 'default', background: 'white', transition: 'background 0.15s'}}
+                  onMouseEnter={e => item.link && (e.currentTarget.style.background = '#fafaf8')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'white')}>
+                  <div style={{width: 40, height: 40, background: `${color}18`, border: `1px solid ${color}40`, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0}}>
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                      <path d="M10 2H4a1 1 0 00-1 1v12a1 1 0 001 1h10a1 1 0 001-1V6l-5-4z" stroke={color} strokeWidth="1.2" strokeLinecap="round"/>
+                      <path d="M10 2v4h4" stroke={color} strokeWidth="1.2" strokeLinecap="round"/>
+                    </svg>
+                  </div>
+                  <div style={{flex: 1}}>
+                    <div style={{fontSize: 14, fontWeight: 500, color: '#0d2340', marginBottom: 3}}>{item.name}</div>
+                    <div style={{fontSize: 12, color: '#8a7d6a'}}>{item.description}</div>
+                  </div>
+                  <div style={{display: 'flex', gap: 8, flexShrink: 0, alignItems: 'center'}}>
+                    <span style={{fontSize: 11, padding: '2px 8px', borderRadius: 4, background: '#f7f4ee', color: '#8a7d6a'}}>{item.file_type}</span>
+                    {item.link ? (
+                      <div style={{padding: '6px 14px', background: '#0d2340', borderRadius: 7, fontSize: 12, color: '#c9a84c', fontWei

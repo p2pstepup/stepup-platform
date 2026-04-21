@@ -5,6 +5,7 @@ import { createClient } from '../../../utils/supabase'
 
 export default function ExamCenter() {
   const [user, setUser] = useState<any>(null)
+  const [exams, setExams] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const router = useRouter()
   const supabase = createClient()
@@ -14,6 +15,11 @@ export default function ExamCenter() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/'); return }
       setUser(user)
+      const { data } = await supabase
+        .from('exams')
+        .select('*')
+        .order('sort_order', { ascending: true })
+      setExams(data || [])
       setLoading(false)
     }
     init()
@@ -42,26 +48,6 @@ export default function ExamCenter() {
     ]},
   ]
 
-  if (loading) return (
-    <main style={{minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f7f4ee'}}>
-      <div style={{fontFamily: 'Georgia, serif', fontSize: 24, color: '#0d2340'}}>Loading...</div>
-    </main>
-  )
-
-  const exams = [
-    {name: 'NBME 25', questions: 200, time: '4 hrs', difficulty: 'Baseline', available: true, tag: 'Start here'},
-    {name: 'NBME 26', questions: 200, time: '4 hrs', difficulty: 'Moderate', available: true, tag: 'Week 2'},
-    {name: 'NBME 27', questions: 200, time: '4 hrs', difficulty: 'Moderate', available: true, tag: 'Week 3'},
-    {name: 'NBME 28', questions: 200, time: '4 hrs', difficulty: 'Hard', available: true, tag: 'Week 4'},
-    {name: 'NBME 29', questions: 200, time: '4 hrs', difficulty: 'Hard', available: true, tag: 'Week 5'},
-    {name: 'NBME 30', questions: 200, time: '4 hrs', difficulty: 'Hard', available: true, tag: 'Week 6'},
-    {name: 'NBME 31', questions: 200, time: '4 hrs', difficulty: 'Hardest', available: true, tag: 'Week 7'},
-    {name: 'Free 120', questions: 120, time: '2.5 hrs', difficulty: 'Moderate', available: true, tag: 'Any time'},
-    {name: 'UWSA 1', questions: 280, time: '5.5 hrs', difficulty: 'Hard', available: true, tag: 'Week 6'},
-    {name: 'UWSA 2', questions: 280, time: '5.5 hrs', difficulty: 'Hardest', available: true, tag: 'Week 7'},
-    {name: 'StepUp 200Q', questions: 200, time: '4 hrs', difficulty: 'Custom', available: false, tag: 'Week 2 — May 18'},
-  ]
-
   const diffColor = (d: string) => {
     if (d === 'Baseline') return '#4a8c84'
     if (d === 'Moderate') return '#6b7c3a'
@@ -70,10 +56,16 @@ export default function ExamCenter() {
     return '#c9a84c'
   }
 
+  if (loading) return (
+    <main style={{minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f7f4ee'}}>
+      <div style={{fontFamily: 'Georgia, serif', fontSize: 24, color: '#0d2340'}}>Loading...</div>
+    </main>
+  )
+
+  const upcomingExam = exams.find(e => e.deadline && new Date(e.deadline) > new Date())
+
   return (
     <main style={{minHeight: '100vh', display: 'flex', background: '#f7f4ee', fontFamily: 'Sora, sans-serif', fontSize: '17.6px'}}>
-
-      {/* SIDEBAR */}
       <nav style={{width: 220, flexShrink: 0, background: '#0d2340', display: 'flex', flexDirection: 'column', height: '100vh', position: 'sticky', top: 0}}>
         <div style={{padding: '20px 18px 16px', borderBottom: '0.5px solid rgba(201,168,76,0.2)'}}>
           <div style={{display: 'flex', alignItems: 'center', gap: 10}}>
@@ -112,25 +104,33 @@ export default function ExamCenter() {
         </div>
       </nav>
 
-      {/* MAIN */}
       <div style={{flex: 1, minWidth: 0, overflowY: 'auto', padding: '32px 36px'}}>
-
         <div style={{marginBottom: 28}}>
           <div style={{fontFamily: 'Georgia, serif', fontSize: 30, color: '#0d2340', letterSpacing: -0.5}}>Exam Center</div>
           <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>NBME practice exams · UWSA · Free 120 · StepUp assessments</div>
         </div>
 
-        {/* StepUp 200Q banner */}
-        <div style={{background: '#0d2340', borderRadius: 12, padding: '18px 24px', marginBottom: 24, borderLeft: '4px solid #c9a84c', display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
-          <div>
-            <div style={{fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#c9a84c', marginBottom: 6}}>Upcoming — Week 2 Assessment</div>
-            <div style={{fontSize: 20, color: 'white', fontWeight: 500}}>StepUp 200Q Diagnostic</div>
-            <div style={{fontSize: 14, color: 'rgba(255,255,255,0.5)', marginTop: 4}}>Sunday May 18 · 200 questions · 4 hours · Timed</div>
+        {upcomingExam && (
+          <div style={{background: '#0d2340', borderRadius: 12, padding: '18px 24px', marginBottom: 24, borderLeft: '4px solid #c9a84c', display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+            <div>
+              <div style={{fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#c9a84c', marginBottom: 6}}>Upcoming deadline</div>
+              <div style={{fontSize: 20, color: 'white', fontWeight: 500}}>{upcomingExam.name}</div>
+              <div style={{fontSize: 14, color: 'rgba(255,255,255,0.5)', marginTop: 4}}>
+                Due {new Date(upcomingExam.deadline).toLocaleDateString('en-US', {weekday: 'long', month: 'long', day: 'numeric'})} · {upcomingExam.questions} questions · {upcomingExam.time_limit}
+              </div>
+              {upcomingExam.notes && <div style={{fontSize: 13, color: 'rgba(255,255,255,0.4)', marginTop: 4}}>{upcomingExam.notes}</div>}
+            </div>
+            {upcomingExam.link ? (
+              <a href={upcomingExam.link} target="_blank" rel="noopener noreferrer"
+                style={{background: '#c9a84c', borderRadius: 10, padding: '10px 18px', fontSize: 13, color: '#0d2340', fontWeight: 600, textDecoration: 'none', flexShrink: 0}}>
+                Take exam ↗
+              </a>
+            ) : (
+              <div style={{background: 'rgba(201,168,76,0.15)', border: '1px solid rgba(201,168,76,0.3)', borderRadius: 10, padding: '10px 18px', fontSize: 13, color: '#c9a84c', fontWeight: 500, flexShrink: 0}}>Scheduled</div>
+            )}
           </div>
-          <div style={{background: 'rgba(201,168,76,0.15)', border: '1px solid rgba(201,168,76,0.3)', borderRadius: 10, padding: '10px 18px', fontSize: 13, color: '#c9a84c', fontWeight: 500}}>Scheduled</div>
-        </div>
+        )}
 
-        {/* Exam grid */}
         <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, overflow: 'hidden', marginBottom: 24}}>
           <div style={{background: '#0d2340', padding: '14px 20px'}}>
             <div style={{fontSize: 14, fontWeight: 600, color: 'white'}}>Available practice exams</div>
@@ -139,29 +139,38 @@ export default function ExamCenter() {
           <table style={{width: '100%', borderCollapse: 'collapse'}}>
             <thead>
               <tr>
-                {['Exam', 'Questions', 'Time', 'Difficulty', 'Recommended', 'Action'].map(h => (
+                {['Exam', 'Questions', 'Time limit', 'Difficulty', 'Recommended', 'Deadline', 'Action'].map(h => (
                   <th key={h} style={{fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#a89870', padding: '12px 16px', textAlign: 'left', borderBottom: '0.5px solid #f0ece0'}}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {exams.map((exam, i) => (
-                <tr key={exam.name} style={{borderBottom: i < exams.length-1 ? '0.5px solid #f5f0e8' : 'none', opacity: exam.available ? 1 : 0.6}}>
+                <tr key={exam.id} style={{borderBottom: i < exams.length-1 ? '0.5px solid #f5f0e8' : 'none', opacity: exam.available ? 1 : 0.6}}>
                   <td style={{padding: '14px 16px'}}>
                     <div style={{fontSize: 14, fontWeight: 600, color: '#0d2340'}}>{exam.name}</div>
+                    {exam.notes && <div style={{fontSize: 11, color: '#8a7d6a', marginTop: 2}}>{exam.notes}</div>}
                   </td>
                   <td style={{fontSize: 13, color: '#3d3020', padding: '14px 16px'}}>{exam.questions}Q</td>
-                  <td style={{fontSize: 13, color: '#3d3020', padding: '14px 16px'}}>{exam.time}</td>
+                  <td style={{fontSize: 13, color: '#3d3020', padding: '14px 16px'}}>{exam.time_limit}</td>
                   <td style={{padding: '14px 16px'}}>
                     <span style={{fontSize: 12, padding: '3px 10px', borderRadius: 10, background: `${diffColor(exam.difficulty)}18`, color: diffColor(exam.difficulty), fontWeight: 500}}>{exam.difficulty}</span>
                   </td>
                   <td style={{padding: '14px 16px'}}>
-                    <span style={{fontSize: 12, padding: '3px 10px', borderRadius: 10, background: '#f7f4ee', color: '#8a7d6a'}}>{exam.tag}</span>
+                    <span style={{fontSize: 12, padding: '3px 10px', borderRadius: 10, background: '#f7f4ee', color: '#8a7d6a'}}>{exam.recommended_week}</span>
+                  </td>
+                  <td style={{fontSize: 13, color: exam.deadline ? '#c0574a' : '#a89870', padding: '14px 16px', fontWeight: exam.deadline ? 500 : 400}}>
+                    {exam.deadline ? new Date(exam.deadline).toLocaleDateString('en-US', {month: 'short', day: 'numeric'}) : '—'}
                   </td>
                   <td style={{padding: '14px 16px'}}>
-                    {exam.available ? (
+                    {exam.available && exam.link ? (
+                      <a href={exam.link} target="_blank" rel="noopener noreferrer"
+                        style={{display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', background: '#0d2340', borderRadius: 7, fontSize: 12, color: '#c9a84c', fontWeight: 500, textDecoration: 'none'}}>
+                        Take exam ↗
+                      </a>
+                    ) : exam.available ? (
                       <div onClick={() => router.push('/dashboard/nbme')}
-                        style={{display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', background: '#0d2340', borderRadius: 7, fontSize: 12, color: '#c9a84c', fontWeight: 500, cursor: 'pointer'}}>
+                        style={{display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', background: '#f7f4ee', border: '0.5px solid #e8dfc8', borderRadius: 7, fontSize: 12, color: '#3d3020', cursor: 'pointer'}}>
                         Log score →
                       </div>
                     ) : (
@@ -174,14 +183,13 @@ export default function ExamCenter() {
           </table>
         </div>
 
-        {/* Tips */}
         <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16}}>
           <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, padding: '18px 22px'}}>
             <div style={{fontSize: 15, fontWeight: 600, color: '#0d2340', marginBottom: 14}}>How to take a practice exam</div>
             {[
-              'Go to NBME.org or UWorld and start your exam in a fresh, distraction-free environment',
+              'Go to NBME.org or UWorld and start your exam in a fresh distraction-free environment',
               'Complete the full exam in one sitting — timed, exam conditions only',
-              'After finishing, come back here and log your score in NBME Scores',
+              'After finishing come back here and log your score in NBME Scores',
               'Review every wrong answer before your next session',
               'Discuss your weak areas with your mentor in your next 1-on-1',
             ].map((tip, i) => (
