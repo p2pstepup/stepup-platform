@@ -180,17 +180,6 @@ export default function LoginPage() {
             {loading ? 'Signing in...' : 'Sign in to StepUp'}
           </button>
 
-          <div style={{display: 'flex', alignItems: 'center', gap: 14, marginBottom: 22}}>
-            <div style={{flex: 1, height: 0.5, background: '#e8dfc8'}}/>
-            <span style={{fontSize: 13, color: '#a89870'}}>or continue with</span>
-            <div style={{flex: 1, height: 0.5, background: '#e8dfc8'}}/>
-          </div>
-
-          <button style={{width: '100%', height: 48, border: '0.5px solid #e8dfc8', borderRadius: 10, background: 'white', fontFamily: 'Sora, sans-serif', fontSize: 15, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, color: '#3d3020', marginBottom: 28}}>
-            <div style={{width: 20, height: 20, borderRadius: '50%', background: '#EA4335', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 12, fontWeight: 700}}>G</div>
-            Sign in with Google
-          </button>
-
           <div style={{background: '#0d2340', borderRadius: 10, padding: '14px 18px', borderLeft: '3px solid #c9a84c'}}>
             <div style={{fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#c9a84c', marginBottom: 4}}>Next session</div>
             <div style={{fontSize: 15, color: 'white', fontWeight: 500}}>Cardiovascular HY Review</div>
