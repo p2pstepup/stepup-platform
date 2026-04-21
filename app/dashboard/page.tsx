@@ -84,6 +84,9 @@ export default function Dashboard() {
       {name: 'Course Documents', path: '/dashboard/documents'},
       {name: 'Live Feedback', path: '/dashboard/feedback'},
     ]},
+    {section: 'Community', items: [
+      {name: '💬 Step 1 WhatsApp Group', path: 'https://chat.whatsapp.com/F7XhRjY0wV18uEms7mZrBi?mode=gi_t', external: true},
+    ]},
   ]
 
   return (
@@ -104,7 +107,7 @@ export default function Dashboard() {
             <div key={group.section}>
               <div style={{fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'rgba(255,255,255,0.28)', padding: '0 8px', margin: '12px 0 4px'}}>{group.section}</div>
               {group.items.map((item: any) => (
-                <div key={item.name} onClick={() => router.push(item.path)}
+                <div key={item.name} onClick={() => item.external ? window.open(item.path, '_blank') : router.push(item.path)}
                   style={{display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 7, color: item.active ? '#c9a84c' : 'rgba(255,255,255,0.55)', fontSize: 13.5, marginBottom: 2, background: item.active ? 'rgba(255,255,255,0.09)' : 'transparent', cursor: 'pointer'}}>
                   <div style={{width: 6, height: 6, borderRadius: '50%', background: 'currentColor', flexShrink: 0}}/>
                   {item.name}
