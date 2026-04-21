@@ -483,6 +483,12 @@ export default function TutorDashboard() {
             <StudentProfiles supabase={supabase} students={students} onSuccess={(msg: string) => { setSuccess(msg); setTimeout(() => setSuccess(''), 3000) }} />
           </div>
         )}
+
+      </div>
+    </main>
+  )
+}
+
 function StudentProfiles({ supabase, students, onSuccess }: any) {
   const [profiles, setProfiles] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
