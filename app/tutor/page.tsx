@@ -1197,7 +1197,7 @@ function ScheduleManager({ supabase, onSuccess }: any) {
     setAdding(true)
     const maxOrder = Math.max(...sessions.map(s => s.sort_order || 0), 0)
     await supabase.from('schedule').insert({...newSession, week_number: parseInt(newSession.week_number), sort_order: maxOrder + 1, session_date: newSession.session_date || null})
-    setNewSession({week_number: '1', day_of_week: 'Monday', session_date: '', start_time: '7:00 PM', end_time: '9:00 PM', topic: '', description: '', zoom_link: '', session_type: 'Live Session', instructor: '', syllabus: ''})
+    setNewSession({week_number: '1', day_of_week: 'Monday', session_date: '', start_time: '7:00 PM', end_time: '9:00 PM', topic: '', description: '', zoom_link: '', session_type: 'Live Session', instructor: '', syllabus: '', syllabus_link: ''})
     await load()
     setAdding(false)
     onSuccess('Session added!')
