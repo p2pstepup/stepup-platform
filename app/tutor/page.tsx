@@ -471,7 +471,19 @@ export default function TutorDashboard() {
               <div style={{fontFamily: 'Georgia, serif', fontSize: 28, color: '#0d2340', letterSpacing: -0.5}}>Exam Reports</div>
               <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>View all student exam sessions · Time reports · Answer sheets</div>
             </div>
-            <ExamReports supabase={supabase} students={students} />function StudentProfiles({ supabase, students, onSuccess }: any) {
+            <ExamReports supabase={supabase} students={students} />
+          </div>
+        )}
+{activeTab === 'profiles' && (
+          <div>
+            <div style={{marginBottom: 24}}>
+              <div style={{fontFamily: 'Georgia, serif', fontSize: 28, color: '#0d2340', letterSpacing: -0.5}}>Student Profiles</div>
+              <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>Assign mentor names · Update student info</div>
+            </div>
+            <StudentProfiles supabase={supabase} students={students} onSuccess={(msg: string) => { setSuccess(msg); setTimeout(() => setSuccess(''), 3000) }} />
+          </div>
+        )}
+function StudentProfiles({ supabase, students, onSuccess }: any) {
   const [profiles, setProfiles] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState('')
