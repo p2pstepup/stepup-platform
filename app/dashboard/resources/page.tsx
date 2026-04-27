@@ -50,7 +50,6 @@ export default function ResourceDrive() {
     ]},
   ]
 
-  const categories = [...new Set(resources.map(r => r.category))]
   const categoryColors: Record<string, string> = {
     'Course Materials': '#c9a84c',
     'Study Resources': '#4a8c84',
@@ -58,6 +57,7 @@ export default function ResourceDrive() {
     'Practice Exams & Qbanks': '#c07040',
     'Wellness': '#7a5c8a',
   }
+  const categories = Object.keys(categoryColors)
 
   if (loading) return (
     <main style={{minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f7f4ee'}}>
@@ -126,6 +126,11 @@ export default function ResourceDrive() {
                 <div style={{width: 10, height: 10, borderRadius: '50%', background: color}}/>
                 <div style={{fontSize: 14, fontWeight: 600, color: 'white'}}>{cat}</div>
               </div>
+              {catResources.length === 0 && (
+                <div style={{padding: '18px 20px', fontSize: 13, color: '#a89870', fontStyle: 'italic'}}>
+                  Resources coming soon — check back after your next session.
+                </div>
+              )}
               {catResources.map((item, i) => (
                 <div key={item.id}
                   onClick={() => item.link && window.open(item.link, '_blank')}
