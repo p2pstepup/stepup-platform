@@ -28,7 +28,7 @@ export default function TutorDashboard() {
       setUser(user)
       const [{ data: studentData }, { data: profileData }] = await Promise.all([
         supabase.from('profiles').select('*').eq('role', 'student').order('full_name'),
-        supabase.from('profiles').select('full_name').eq('id', user.id).single(),
+        supabase.from('profiles').select('*').eq('id', user.id).single(),
       ])
       setStudents(studentData || [])
       setProfile(profileData)
