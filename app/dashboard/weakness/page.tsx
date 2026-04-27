@@ -10,6 +10,7 @@ type LogEntry = { topic: string; answer: string; reason: string | null; source: 
 
 export default function WeaknessMap() {
   const [user, setUser] = useState<{id: string; email?: string} | null>(null)
+  const [profile, setProfile] = useState<any>(null)
   const [sessions, setSessions] = useState<Array<{id: string; topic: string; questions_total: number; questions_correct: number}>>([])
   const [logs, setLogs] = useState<LogEntry[]>([])
   const [loading, setLoading] = useState(true)

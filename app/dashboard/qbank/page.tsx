@@ -39,6 +39,7 @@ const defaultQForm = {
 
 export default function QbankTracker() {
   const [user, setUser] = useState<{id: string; email?: string} | null>(null)
+  const [profile, setProfile] = useState<any>(null)
   const [sessions, setSessions] = useState<Array<{id: string; session_date: string; source: string; topic: string; questions_total: number; questions_correct: number; accuracy: number; mode: string}>>([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
