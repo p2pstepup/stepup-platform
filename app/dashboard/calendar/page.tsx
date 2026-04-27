@@ -226,7 +226,7 @@ export default function Calendar() {
                       </div>
                     ))}
                     {(dayTutorEvents || []).map((e: any, idx: number) => (
-                      <div key={idx} style={{fontSize: 11, background: '#5c1a5c', color: '#e8a0f0', borderRadius: 4, padding: '3px 6px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 500}}>
+                      <div key={idx} style={{fontSize: 11, background: '#2d5a8a', color: '#a8d4f5', borderRadius: 4, padding: '3px 6px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 500}}>
                         {e.event_type === 'meeting' ? '👤' : '📖'} {e.title?.substring(0, 18)}
                       </div>
                     ))}
@@ -276,8 +276,8 @@ export default function Calendar() {
                 </div>
               ))}
               {(selectedDay.dayTutorEvents || []).map((e: any, i: number) => (
-                <div key={i} style={{display: 'flex', gap: 14, alignItems: 'flex-start', padding: '12px 14px', background: '#fdf0ff', borderRadius: 10, borderLeft: '4px solid #5c1a5c'}}>
-                  <div style={{width: 10, height: 10, borderRadius: '50%', background: '#5c1a5c', marginTop: 4, flexShrink: 0}}/>
+                <div key={i} style={{display: 'flex', gap: 14, alignItems: 'flex-start', padding: '12px 14px', background: '#f0f4ff', borderRadius: 10, borderLeft: '4px solid #2d5a8a'}}>
+                  <div style={{width: 10, height: 10, borderRadius: '50%', background: '#2d5a8a', marginTop: 4, flexShrink: 0}}/>
                   <div style={{flex: 1}}>
                     <div style={{fontSize: 15, fontWeight: 600, color: '#0d2340', marginBottom: 3}}>{e.title}</div>
                     <div style={{fontSize: 13, color: '#8a7d6a'}}>{e.event_type === 'meeting' ? 'Mentor Meeting' : e.event_type === 'extra_session' ? 'Extra Session' : 'Office Hours'}{e.start_time ? ` · ${e.start_time}` : ''}</div>
