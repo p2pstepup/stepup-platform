@@ -2034,6 +2034,32 @@ export function TutorCalendar({ supabase, students, tutorId, assignedStudents }:
         </div>
       )}
 
+      {/* Upcoming course sessions */}
+      <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, padding: '18px 22px'}}>
+        <div style={{fontSize: 15, fontWeight: 600, color: '#0d2340', marginBottom: 16}}>Upcoming sessions this month</div>
+        {schedule.filter(s => {
+          if (!s.session_date) return false
+          const d = new Date(s.session_date + 'T12:00:00')
+          return d.getMonth() === currentMonth.getMonth() && d.getFullYear() === currentMonth.getFullYear()
+        }).slice(0, 8).map((s, i, arr) => (
+          <div key={s.id} style={{display: 'flex', alignItems: 'center', gap: 14, padding: '10px 0', borderBottom: i < arr.length-1 ? '0.5px solid #f5f0e8' : 'none'}}>
+            <div style={{width: 48, textAlign: 'center', flexShrink: 0}}>
+              <div style={{fontSize: 10, color: '#c9a84c', fontWeight: 600, textTransform: 'uppercase'}}>{new Date(s.session_date + 'T12:00:00').toLocaleDateString('en-US', {month: 'short'})}</div>
+              <div style={{fontFamily: 'Georgia, serif', fontSize: 20, color: '#0d2340', lineHeight: 1}}>{new Date(s.session_date + 'T12:00:00').getDate()}</div>
+            </div>
+            <div style={{width: 4, height: 36, background: '#2563eb', borderRadius: 2, flexShrink: 0}}/>
+            <div style={{flex: 1}}>
+              <div style={{fontSize: 14, fontWeight: 500, color: '#0d2340'}}>{s.topic}</div>
+              <div style={{fontSize: 12, color: '#8a7d6a'}}>{s.start_time}{s.end_time ? ` — ${s.end_time}` : ''} CST · Week {s.week_number}</div>
+            </div>
+            {s.zoom_link && (
+              <a href={s.zoom_link} target="_blank" rel="noopener noreferrer"
+                style={{padding: '6px 14px', background: '#0d2340', borderRadius: 7, fontSize: 12, color: '#c9a84c', fontWeight: 500, textDecoration: 'none'}}>Join ↗</a>
+            )}
+          </div>
+        ))}
+      </div>
+
       {/* Upcoming events list */}
       <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, padding: '18px 22px'}}>
         <div style={{fontSize: 15, fontWeight: 600, color: '#0d2340', marginBottom: 16}}>Your scheduled events</div>

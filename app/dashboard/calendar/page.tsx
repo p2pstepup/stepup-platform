@@ -217,17 +217,17 @@ export default function Calendar() {
                     ))}
                     {dayMeetings.map((m, idx) => (
                       <div key={idx} style={{fontSize: 11, background: eventColors.meeting.bg, color: eventColors.meeting.text, borderRadius: 4, padding: '3px 6px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 500}}>
-                        👤 Mentor 1-on-1
+                        Mentor 1-on-1
                       </div>
                     ))}
                     {dueAssignments.map((a, idx) => (
                       <div key={idx} style={{fontSize: 11, background: eventColors.assignment.bg, color: eventColors.assignment.text, borderRadius: 4, padding: '3px 6px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 500}}>
-                        📋 {a.title.substring(0, 20)}
+                        {a.title.substring(0, 20)}
                       </div>
                     ))}
                     {(dayTutorEvents || []).map((e: any, idx: number) => (
                       <div key={idx} style={{fontSize: 11, background: '#16a34a', color: 'white', borderRadius: 4, padding: '3px 6px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 500}}>
-                        {e.event_type === 'meeting' ? '👤' : '📖'} {e.title?.substring(0, 18)}
+                        {e.start_time ? e.start_time + ' ' : ''}{e.title?.substring(0, 18)}
                       </div>
                     ))}
                   </div>
