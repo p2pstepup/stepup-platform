@@ -90,10 +90,10 @@ export default function Calendar() {
   const today = new Date()
 
   const eventColors = {
-    session: {bg: '#1a3a5c', text: '#c9a84c', label: 'Course Session'},
-    meeting: {bg: '#1a4a2a', text: '#7ecf8e', label: 'Mentor Meeting'},
-    assignment: {bg: '#5c1a1a', text: '#f5a0a0', label: 'Assignment Due'},
-    exam: {bg: '#5c3a1a', text: '#f5c87e', label: 'Exam'},
+    session: {bg: '#1e4d8c', text: 'white', label: 'Course Session'},
+    meeting: {bg: '#1a6b3a', text: 'white', label: 'Mentor Meeting'},
+    assignment: {bg: '#c0574a', text: 'white', label: 'Assignment Due'},
+    exam: {bg: '#c07040', text: 'white', label: 'Exam'},
   }
 
   if (loading) return (
@@ -226,7 +226,7 @@ export default function Calendar() {
                       </div>
                     ))}
                     {(dayTutorEvents || []).map((e: any, idx: number) => (
-                      <div key={idx} style={{fontSize: 11, background: '#2d5a8a', color: '#a8d4f5', borderRadius: 4, padding: '3px 6px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 500}}>
+                      <div key={idx} style={{fontSize: 11, background: '#6b3a8a', color: 'white', borderRadius: 4, padding: '3px 6px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 500}}>
                         {e.event_type === 'meeting' ? '👤' : '📖'} {e.title?.substring(0, 18)}
                       </div>
                     ))}
