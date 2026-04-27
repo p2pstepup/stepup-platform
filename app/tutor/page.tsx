@@ -104,7 +104,7 @@ export default function TutorDashboard() {
     ]},
     {section: 'Reporting', items: [
       {name: 'Log Attendance', tab: 'attendance'},
-      {name: 'Accountability', tab: 'accountability'},
+      {name: 'Student Progress Report', tab: 'accountability'},
     ]},
   ]
 
@@ -179,7 +179,7 @@ export default function TutorDashboard() {
                   {label: 'Upload slides', tab: 'slides', color: '#9e2a2a'},
                   {label: 'Add recording', tab: 'recordings', color: '#4a8c84'},
                   {label: 'Assign study schedule', tab: 'studyschedule', color: '#6b7c3a'},
-                  {label: 'Accountability report', tab: 'accountability', color: '#c9a84c'},
+                  {label: 'Student Progress Report', tab: 'accountability', color: '#c9a84c'},
                 ].map((a, i) => (
                   <div key={i} onClick={() => setActiveTab(a.tab)}
                     style={{padding: '12px 14px', background: '#f7f4ee', border: `1px solid ${a.color}`, borderRadius: 10, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10}}>
@@ -509,7 +509,7 @@ export default function TutorDashboard() {
         {activeTab === 'accountability' && (
           <div>
             <div style={{marginBottom: 24}}>
-              <div style={{fontFamily: 'Georgia, serif', fontSize: 28, color: '#0d2340', letterSpacing: -0.5}}>Accountability & Student Report</div>
+              <div style={{fontFamily: 'Georgia, serif', fontSize: 28, color: '#0d2340', letterSpacing: -0.5}}>Student Progress Report</div>
               <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>Log weekly activity reports for each student · Submitted to admin</div>
             </div>
             <AccountabilityReport supabase={supabase} students={students} tutorId={user?.id} onSuccess={(msg: string) => { setSuccess(msg); setTimeout(() => setSuccess(''), 3000) }} />
