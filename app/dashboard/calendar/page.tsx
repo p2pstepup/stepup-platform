@@ -68,7 +68,7 @@ export default function Calendar() {
     const year = currentMonth.getFullYear()
     const month = currentMonth.getMonth()
     const date = new Date(year, month, day)
-    const dateStr = date.toISOString().split('T')[0]
+    const dateStr = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`
     const sessions = schedule.filter(s => s.session_date === dateStr)
     const examDeadlines = exams.filter(e => e.deadline === dateStr)
     return { sessions, examDeadlines }

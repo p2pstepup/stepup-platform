@@ -133,15 +133,15 @@ export default function DailySchedule() {
         ) : (
           <div style={{display: 'flex', flexDirection: 'column', gap: 10}}>
             {weekSchedule.map((session) => {
-              const isToday = session.session_date && new Date(session.session_date).toDateString() === today
-              const isPast = session.session_date && new Date(session.session_date) < new Date() && !isToday
+              const isToday = session.session_date && new Date(session.session_date + 'T12:00:00').toDateString() === today
+              const isPast = session.session_date && new Date(session.session_date + 'T12:00:00') < new Date() && !isToday
               const color = typeColors[session.session_type] || '#0d2340'
               return (
                 <div key={session.id} style={{background: isToday ? '#fffdf5' : 'white', border: isToday ? '2px solid #c9a84c' : '0.5px solid #e8dfc8', borderRadius: 12, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 16, opacity: isPast ? 0.6 : 1}}>
                   <div style={{width: 56, textAlign: 'center', flexShrink: 0}}>
                     <div style={{fontSize: 11, fontWeight: 600, color: '#c9a84c', textTransform: 'uppercase'}}>{session.day_of_week.substring(0, 3)}</div>
                     {session.session_date && (
-                      <div style={{fontFamily: 'Georgia, serif', fontSize: 22, color: '#0d2340', lineHeight: 1.1}}>{new Date(session.session_date).getDate()}</div>
+                      <div style={{fontFamily: 'Georgia, serif', fontSize: 22, color: '#0d2340', lineHeight: 1.1}}>{new Date(session.session_date + 'T12:00:00').getDate()}</div>
                     )}
                   </div>
                   <div style={{width: 3, height: 48, background: color, borderRadius: 2, flexShrink: 0}}/>
