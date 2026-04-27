@@ -8,7 +8,7 @@ export default function StudySchedule() {
   const [profile, setProfile] = useState<any>(null)
   const [schedule, setSchedule] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
+  const [selectedDate, setSelectedDate] = useState(() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}` })
   const router = useRouter()
   const supabase = createClient()
 
@@ -144,13 +144,13 @@ export default function StudySchedule() {
                 const tasks = entry.tasks || []
                 const completed = tasks.filter((t: any) => t.completed).length
                 const isSelected = entry.schedule_date === selectedDate
-                const isToday = entry.schedule_date === new Date().toISOString().split('T')[0]
+                const today = new Date(); const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`; const isToday = entry.schedule_date === todayStr
                 return (
                   <div key={entry.id} onClick={() => setSelectedDate(entry.schedule_date)}
                     style={{padding: '12px 16px', cursor: 'pointer', borderBottom: '0.5px solid #f5f0e8', background: isSelected ? '#fffdf5' : 'white', borderLeft: isSelected ? '3px solid #c9a84c' : '3px solid transparent'}}>
                     <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4}}>
                       <div style={{fontSize: 13, fontWeight: isSelected ? 600 : 500, color: '#0d2340'}}>
-                        {new Date(entry.schedule_date).toLocaleDateString('en-US', {weekday: 'short', month: 'short', day: 'numeric'})}
+                        {new Date(entry.schedule_date + 'T12:00:00').toLocaleDateString('en-US', {weekday: 'short', month: 'short', day: 'numeric'})}
                         {isToday && <span style={{marginLeft: 6, fontSize: 10, background: '#c9a84c', color: '#0d2340', padding: '1px 6px', borderRadius: 8, fontWeight: 700}}>TODAY</span>}
                       </div>
                       <div style={{fontSize: 11, color: completed === tasks.length && tasks.length > 0 ? '#6b7c3a' : '#a89870'}}>{completed}/{tasks.length}</div>
@@ -169,7 +169,7 @@ export default function StudySchedule() {
                   <div style={{background: '#0d2340', padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
                     <div>
                       <div style={{fontSize: 15, fontWeight: 600, color: 'white'}}>
-                        {new Date(todayEntry.schedule_date).toLocaleDateString('en-US', {weekday: 'long', month: 'long', day: 'numeric'})}
+                        {new Date(todayEntry.schedule_date + 'T12:00:00').toLocaleDateString('en-US', {weekday: 'long', month: 'long', day: 'numeric'})}
                       </div>
                       {todayEntry.notes && <div style={{fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: 3}}>{todayEntry.notes}</div>}
                     </div>
