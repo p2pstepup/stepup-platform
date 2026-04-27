@@ -818,8 +818,13 @@ export function ScheduleManager({ supabase, onSuccess }: any) {
         {sessions.map((session, i) => (
           <div key={session.id} style={{padding: '12px 20px', borderBottom: i < sessions.length-1 ? '0.5px solid #f5f0e8' : 'none'}}>
             <div style={{display: 'grid', gridTemplateColumns: '80px 140px 1fr 1fr 1fr 1fr auto', gap: 10, alignItems: 'center'}}>
-              <div style={{fontSize: 12, color: '#c9a84c', background: '#f7f4ee', borderRadius: 4, padding: '3px 6px', textAlign: 'center'}}>Wk {session.week_number}</div>
-              <div style={{fontSize: 12, color: '#8a7d6a'}}>{session.day_of_week} {session.session_date && new Date(session.session_date + 'T12:00:00').toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}</div>
+              <select defaultValue={session.week_number} onChange={e => updateSession(session.id, {week_number: parseInt(e.target.value)})}
+                style={{height: 34, borderRadius: 6, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 12, padding: '0 6px', color: '#c9a84c', background: '#f7f4ee', outline: 'none', width: 70}}>
+                {[1,2,3,4,5,6,7,8].map(w => <option key={w} value={w}>Wk {w}</option>)}
+              </select>
+              <input type="date" defaultValue={session.session_date || ''}
+                onBlur={e => { if (e.target.value !== (session.session_date || '')) updateSession(session.id, {session_date: e.target.value}) }}
+                style={{height: 34, borderRadius: 6, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 12, padding: '0 6px', color: '#8a7d6a', outline: 'none', width: 130, boxSizing: 'border-box'}}/>
               <input type="text" defaultValue={session.topic}
                 onBlur={e => { if (e.target.value !== session.topic) updateSession(session.id, {topic: e.target.value}) }}
                 style={{height: 34, borderRadius: 6, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#0d2340', fontWeight: 500, outline: 'none', boxSizing: 'border-box'}}/>
