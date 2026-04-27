@@ -52,9 +52,11 @@ export default function ResourceDrive() {
 
   const categories = [...new Set(resources.map(r => r.category))]
   const categoryColors: Record<string, string> = {
-    'Study Strategy': '#c9a84c',
-    'High Yield References': '#4a8c84',
-    'Wellness & Performance': '#6b7c3a',
+    'Course Materials': '#c9a84c',
+    'Study Resources': '#4a8c84',
+    'Study Tools': '#6b7c3a',
+    'Practice Exams & Qbanks': '#c07040',
+    'Wellness': '#7a5c8a',
   }
 
   if (loading) return (
@@ -106,7 +108,7 @@ export default function ResourceDrive() {
       <div style={{flex: 1, minWidth: 0, overflowY: 'auto', padding: '32px 36px'}}>
         <div style={{marginBottom: 28}}>
           <div style={{fontFamily: 'Georgia, serif', fontSize: 30, color: '#0d2340', letterSpacing: -0.5}}>Resource Drive</div>
-          <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>Study guides · HY references · Strategy documents · Wellness resources</div>
+          <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>Course materials · Study resources · Practice exams · Wellness</div>
         </div>
 
         <div style={{background: '#0d2340', borderRadius: 12, padding: '16px 22px', marginBottom: 24, borderLeft: '4px solid #c9a84c'}}>
