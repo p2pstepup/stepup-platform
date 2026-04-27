@@ -303,17 +303,23 @@ export default function Calendar() {
         {/* Upcoming events */}
         <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, padding: '18px 22px'}}>
           <div style={{fontSize: 15, fontWeight: 600, color: '#0d2340', marginBottom: 16}}>Upcoming this month</div>
-          {schedule.filter(s => {
-            if (!s.session_date) return false
-            const d = new Date(s.session_date + 'T12:00:00')
-            return d.getMonth() === currentMonth.getMonth() && d.getFullYear() === currentMonth.getFullYear() && d >= today
-          }).slice(0, 6).map((s, i, arr) => (
+          {[
+            ...schedule.filter(s => {
+              if (!s.session_date) return false
+              const d = new Date(s.session_date + 'T12:00:00')
+              return d.getMonth() === currentMonth.getMonth() && d.getFullYear() === currentMonth.getFullYear() && d >= today
+            }).map(s => ({...s, _type: 'session'})),
+            ...tutorEvents.filter(e => {
+              const d = new Date(e.event_date + 'T12:00:00')
+              return d.getMonth() === currentMonth.getMonth() && d.getFullYear() === currentMonth.getFullYear() && d >= today
+            }).map(e => ({...e, _type: 'tutor_event', session_date: e.event_date, topic: e.title, start_time: e.start_time, end_time: e.end_time})),
+          ].sort((a, b) => a.session_date.localeCompare(b.session_date)).slice(0, 8).map((s, i, arr) => (
             <div key={s.id} style={{display: 'flex', alignItems: 'center', gap: 14, padding: '12px 0', borderBottom: i < arr.length-1 ? '0.5px solid #f5f0e8' : 'none'}}>
               <div style={{width: 52, textAlign: 'center', flexShrink: 0}}>
                 <div style={{fontSize: 10, color: '#c9a84c', fontWeight: 600, textTransform: 'uppercase'}}>{new Date(s.session_date + 'T12:00:00').toLocaleDateString('en-US', {month: 'short'})}</div>
                 <div style={{fontFamily: 'Georgia, serif', fontSize: 22, color: '#0d2340', lineHeight: 1}}>{new Date(s.session_date + 'T12:00:00').getDate()}</div>
               </div>
-              <div style={{width: 4, height: 40, background: eventColors.session.bg, borderRadius: 2, flexShrink: 0}}/>
+              <div style={{width: 4, height: 40, background: (s as any)._type === 'tutor_event' ? '#16a34a' : eventColors.session.bg, borderRadius: 2, flexShrink: 0}}/>
               <div style={{flex: 1}}>
                 <div style={{fontSize: 14, fontWeight: 500, color: '#0d2340'}}>{s.topic}</div>
                 <div style={{fontSize: 12, color: '#8a7d6a'}}>{s.start_time}{s.end_time ? ` — ${s.end_time}` : ''} CST · Week {s.week_number}</div>
