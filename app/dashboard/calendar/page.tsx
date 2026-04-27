@@ -90,10 +90,10 @@ export default function Calendar() {
   const today = new Date()
 
   const eventColors = {
-    session: {bg: '#1e4d8c', text: 'white', label: 'Course Session'},
-    meeting: {bg: '#1a6b3a', text: 'white', label: 'Mentor Meeting'},
-    assignment: {bg: '#c0574a', text: 'white', label: 'Assignment Due'},
-    exam: {bg: '#c07040', text: 'white', label: 'Exam'},
+    session: {bg: '#2563eb', text: 'white', label: 'Course Session'},
+    meeting: {bg: '#16a34a', text: 'white', label: 'Mentor Meeting'},
+    assignment: {bg: '#dc2626', text: 'white', label: 'Assignment Due'},
+    exam: {bg: '#d97706', text: 'white', label: 'Exam'},
   }
 
   if (loading) return (
@@ -226,7 +226,7 @@ export default function Calendar() {
                       </div>
                     ))}
                     {(dayTutorEvents || []).map((e: any, idx: number) => (
-                      <div key={idx} style={{fontSize: 11, background: '#6b3a8a', color: 'white', borderRadius: 4, padding: '3px 6px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 500}}>
+                      <div key={idx} style={{fontSize: 11, background: '#7c3aed', color: 'white', borderRadius: 4, padding: '3px 6px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 500}}>
                         {e.event_type === 'meeting' ? '👤' : '📖'} {e.title?.substring(0, 18)}
                       </div>
                     ))}
@@ -277,7 +277,7 @@ export default function Calendar() {
               ))}
               {(selectedDay.dayTutorEvents || []).map((e: any, i: number) => (
                 <div key={i} style={{display: 'flex', gap: 14, alignItems: 'flex-start', padding: '12px 14px', background: '#f0f4ff', borderRadius: 10, borderLeft: '4px solid #2d5a8a'}}>
-                  <div style={{width: 10, height: 10, borderRadius: '50%', background: '#2d5a8a', marginTop: 4, flexShrink: 0}}/>
+                  <div style={{width: 10, height: 10, borderRadius: '50%', background: '#7c3aed', marginTop: 4, flexShrink: 0}}/>
                   <div style={{flex: 1}}>
                     <div style={{fontSize: 15, fontWeight: 600, color: '#0d2340', marginBottom: 3}}>{e.title}</div>
                     <div style={{fontSize: 13, color: '#8a7d6a'}}>{e.event_type === 'meeting' ? 'Mentor Meeting' : e.event_type === 'extra_session' ? 'Extra Session' : 'Office Hours'}{e.start_time ? ` · ${e.start_time}` : ''}</div>

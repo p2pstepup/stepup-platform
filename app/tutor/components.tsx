@@ -1841,10 +1841,10 @@ export function TutorCalendar({ supabase, students, tutorId, assignedStudents }:
   const today = new Date()
 
   const eventColors: any = {
-    session: {bg: '#1a3a5c', text: '#c9a84c'},
-    meeting: {bg: '#1a4a2a', text: '#7ecf8e'},
-    extra_session: {bg: '#5c1a5c', text: '#e8a0f0'},
-    office_hours: {bg: '#5c3a1a', text: '#f5c87e'},
+    session: {bg: '#2563eb', text: 'white'},
+    meeting: {bg: '#16a34a', text: 'white'},
+    extra_session: {bg: '#7c3aed', text: 'white'},
+    office_hours: {bg: '#d97706', text: 'white'},
   }
 
   const studentName = (id: string) => {
@@ -1858,10 +1858,10 @@ export function TutorCalendar({ supabase, students, tutorId, assignedStudents }:
       <div style={{display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between'}}>
         <div style={{display: 'flex', gap: 12, flexWrap: 'wrap'}}>
           {[
-            {color: '#1a3a5c', border: '#c9a84c', label: 'Course Session'},
-            {color: '#1a4a2a', border: '#7ecf8e', label: 'Mentor Meeting'},
-            {color: '#5c1a5c', border: '#e8a0f0', label: 'Extra Session'},
-            {color: '#5c3a1a', border: '#f5c87e', label: 'Office Hours'},
+            {color: '#2563eb', border: '#2563eb', label: 'Course Session'},
+            {color: '#16a34a', border: '#16a34a', label: 'Mentor Meeting'},
+            {color: '#7c3aed', border: '#7c3aed', label: 'Extra Session'},
+            {color: '#d97706', border: '#d97706', label: 'Office Hours'},
           ].map(item => (
             <div key={item.label} style={{display: 'flex', alignItems: 'center', gap: 6}}>
               <div style={{width: 12, height: 12, borderRadius: 3, background: item.color, border: `1px solid ${item.border}`}}/>
