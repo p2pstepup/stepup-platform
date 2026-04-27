@@ -196,13 +196,13 @@ export default function Calendar() {
             ))}
             {Array.from({length: daysInMonth}).map((_, i) => {
               const day = i + 1
-              const { sessions, dueAssignments, dayMeetings } = getEventsForDay(day)
+              const { sessions, dueAssignments, dayMeetings, dayTutorEvents } = getEventsForDay(day)
               const isToday = today.getDate() === day && today.getMonth() === currentMonth.getMonth() && today.getFullYear() === currentMonth.getFullYear()
               const hasEvents = sessions.length > 0 || dueAssignments.length > 0 || dayMeetings.length > 0
               const col = (firstDay + i) % 7
               return (
                 <div key={day}
-                  onClick={() => hasEvents && setSelectedDay({day, sessions, dueAssignments, dayMeetings})}
+                  onClick={() => hasEvents && setSelectedDay({day, sessions, dueAssignments, dayMeetings, dayTutorEvents})}
                   style={{minHeight: 110, borderRight: col < 6 ? '0.5px solid #f0ece0' : 'none', borderBottom: '0.5px solid #f0ece0', padding: '8px 6px', background: isToday ? '#fffdf5' : 'white', cursor: hasEvents ? 'pointer' : 'default'}}>
                   <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6}}>
                     <div style={{width: 28, height: 28, borderRadius: '50%', background: isToday ? '#c9a84c' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
@@ -223,6 +223,11 @@ export default function Calendar() {
                     {dueAssignments.map((a, idx) => (
                       <div key={idx} style={{fontSize: 11, background: eventColors.assignment.bg, color: eventColors.assignment.text, borderRadius: 4, padding: '3px 6px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 500}}>
                         📋 {a.title.substring(0, 20)}
+                      </div>
+                    ))}
+                    {(dayTutorEvents || []).map((e: any, idx: number) => (
+                      <div key={idx} style={{fontSize: 11, background: '#5c1a5c', color: '#e8a0f0', borderRadius: 4, padding: '3px 6px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 500}}>
+                        {e.event_type === 'meeting' ? '👤' : '📖'} {e.title?.substring(0, 18)}
                       </div>
                     ))}
                   </div>
@@ -267,6 +272,17 @@ export default function Calendar() {
                     <div style={{fontSize: 15, fontWeight: 600, color: '#0d2340', marginBottom: 3}}>Mentor 1-on-1</div>
                     <div style={{fontSize: 13, color: '#8a7d6a'}}>{m.duration_minutes} minutes</div>
                     {m.action_items && <div style={{fontSize: 12, color: '#8a7d6a', marginTop: 4}}>Action items: {m.action_items}</div>}
+                  </div>
+                </div>
+              ))}
+              {(selectedDay.dayTutorEvents || []).map((e: any, i: number) => (
+                <div key={i} style={{display: 'flex', gap: 14, alignItems: 'flex-start', padding: '12px 14px', background: '#fdf0ff', borderRadius: 10, borderLeft: '4px solid #5c1a5c'}}>
+                  <div style={{width: 10, height: 10, borderRadius: '50%', background: '#5c1a5c', marginTop: 4, flexShrink: 0}}/>
+                  <div style={{flex: 1}}>
+                    <div style={{fontSize: 15, fontWeight: 600, color: '#0d2340', marginBottom: 3}}>{e.title}</div>
+                    <div style={{fontSize: 13, color: '#8a7d6a'}}>{e.event_type === 'meeting' ? 'Mentor Meeting' : e.event_type === 'extra_session' ? 'Extra Session' : 'Office Hours'}{e.start_time ? ` · ${e.start_time}` : ''}</div>
+                    {e.notes && <div style={{fontSize: 12, color: '#8a7d6a', marginTop: 4}}>{e.notes}</div>}
+                    {e.zoom_link && <a href={e.zoom_link} target="_blank" rel="noopener noreferrer" style={{fontSize: 12, color: '#c9a84c', textDecoration: 'none'}}>Join Zoom ↗</a>}
                   </div>
                 </div>
               ))}
