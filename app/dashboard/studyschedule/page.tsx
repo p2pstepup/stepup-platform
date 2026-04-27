@@ -9,6 +9,9 @@ export default function StudySchedule() {
   const [schedule, setSchedule] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedDate, setSelectedDate] = useState(() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}` })
+  const [showAddTask, setShowAddTask] = useState(false)
+  const [newTask, setNewTask] = useState({title: '', tag: 'General', duration: ''})
+  const [addingTask, setAddingTask] = useState(false)
   const router = useRouter()
   const supabase = createClient()
 
@@ -29,6 +32,26 @@ export default function StudySchedule() {
     }
     init()
   }, [])
+
+  const addStudentTask = async () => {
+    if (!newTask.title) return
+    setAddingTask(true)
+    const entry = schedule.find(s => s.schedule_date === selectedDate)
+    const task = {...newTask, completed: false, added_by_student: true}
+    if (entry) {
+      const updatedTasks = [...(entry.tasks || []), task]
+      await supabase.from('study_schedule').update({tasks: updatedTasks}).eq('id', entry.id)
+      setSchedule(schedule.map(s => s.id === entry.id ? {...s, tasks: updatedTasks} : s))
+    } else {
+      const { data } = await supabase.from('study_schedule').insert({
+        student_id: user.id, schedule_date: selectedDate, tasks: [task], notes: ''
+      }).select().single()
+      if (data) setSchedule([...schedule, data])
+    }
+    setNewTask({title: '', tag: 'General', duration: ''})
+    setShowAddTask(false)
+    setAddingTask(false)
+  }
 
   const toggleTask = async (scheduleId: string, taskIndex: number) => {
     const entry = schedule.find(s => s.id === scheduleId)
@@ -209,11 +232,76 @@ export default function StudySchedule() {
                       </div>
                     ))}
                   </div>
+                  {/* Add task button */}
+                  <div style={{padding: '12px 20px', borderTop: '0.5px solid #f0ece0'}}>
+                    {!showAddTask ? (
+                      <button onClick={() => setShowAddTask(true)}
+                        style={{width: '100%', height: 38, background: '#f7f4ee', border: '1px dashed #c9a84c', borderRadius: 8, color: '#c9a84c', fontFamily: 'Sora, sans-serif', fontSize: 13, fontWeight: 500, cursor: 'pointer'}}>
+                        + Add your own task
+                      </button>
+                    ) : (
+                      <div style={{display: 'flex', flexDirection: 'column', gap: 8}}>
+                        <input type="text" value={newTask.title} onChange={e => setNewTask({...newTask, title: e.target.value})}
+                          placeholder="Task title..." autoFocus
+                          style={{width: '100%', height: 38, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 10px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
+                        <div style={{display: 'flex', gap: 8}}>
+                          <select value={newTask.tag} onChange={e => setNewTask({...newTask, tag: e.target.value})}
+                            style={{flex: 1, height: 36, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none'}}>
+                            {['Qbank','Reading','Review','NBME','Anki','Sketchy','Pathoma','General'].map(t => <option key={t} value={t}>{t}</option>)}
+                          </select>
+                          <input type="text" value={newTask.duration} onChange={e => setNewTask({...newTask, duration: e.target.value})}
+                            placeholder="Duration (e.g. 1 hr)"
+                            style={{flex: 1, height: 36, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
+                        </div>
+                        <div style={{display: 'flex', gap: 8}}>
+                          <button onClick={addStudentTask} disabled={addingTask || !newTask.title}
+                            style={{flex: 1, height: 36, background: '#0d2340', border: 'none', borderRadius: 7, color: '#c9a84c', fontFamily: 'Sora, sans-serif', fontSize: 13, fontWeight: 600, cursor: 'pointer'}}>
+                            {addingTask ? 'Adding...' : 'Add task ↗'}
+                          </button>
+                          <button onClick={() => { setShowAddTask(false); setNewTask({title: '', tag: 'General', duration: ''}) }}
+                            style={{height: 36, padding: '0 14px', background: '#f7f4ee', border: '1px solid #e8dfc8', borderRadius: 7, color: '#8a7d6a', fontFamily: 'Sora, sans-serif', fontSize: 13, cursor: 'pointer'}}>
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               ) : (
-                <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, padding: '40px', textAlign: 'center'}}>
+                <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, padding: '32px', textAlign: 'center'}}>
                   <div style={{fontSize: 15, color: '#0d2340', fontWeight: 500, marginBottom: 8}}>No plan for this day yet</div>
-                  <div style={{fontSize: 13, color: '#8a7d6a'}}>Your mentor hasn't assigned a study plan for this day yet. Check back soon!</div>
+                  <div style={{fontSize: 13, color: '#8a7d6a', marginBottom: 16}}>Your mentor hasn't assigned a study plan for this day. You can add your own tasks below.</div>
+                  {!showAddTask ? (
+                    <button onClick={() => setShowAddTask(true)}
+                      style={{height: 38, padding: '0 20px', background: '#f7f4ee', border: '1px dashed #c9a84c', borderRadius: 8, color: '#c9a84c', fontFamily: 'Sora, sans-serif', fontSize: 13, fontWeight: 500, cursor: 'pointer'}}>
+                      + Add a task
+                    </button>
+                  ) : (
+                    <div style={{display: 'flex', flexDirection: 'column', gap: 8, textAlign: 'left'}}>
+                      <input type="text" value={newTask.title} onChange={e => setNewTask({...newTask, title: e.target.value})}
+                        placeholder="Task title..." autoFocus
+                        style={{width: '100%', height: 38, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 10px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
+                      <div style={{display: 'flex', gap: 8}}>
+                        <select value={newTask.tag} onChange={e => setNewTask({...newTask, tag: e.target.value})}
+                          style={{flex: 1, height: 36, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none'}}>
+                          {['Qbank','Reading','Review','NBME','Anki','Sketchy','Pathoma','General'].map(t => <option key={t} value={t}>{t}</option>)}
+                        </select>
+                        <input type="text" value={newTask.duration} onChange={e => setNewTask({...newTask, duration: e.target.value})}
+                          placeholder="Duration (e.g. 1 hr)"
+                          style={{flex: 1, height: 36, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
+                      </div>
+                      <div style={{display: 'flex', gap: 8}}>
+                        <button onClick={addStudentTask} disabled={addingTask || !newTask.title}
+                          style={{flex: 1, height: 36, background: '#0d2340', border: 'none', borderRadius: 7, color: '#c9a84c', fontFamily: 'Sora, sans-serif', fontSize: 13, fontWeight: 600, cursor: 'pointer'}}>
+                          {addingTask ? 'Adding...' : 'Add task ↗'}
+                        </button>
+                        <button onClick={() => { setShowAddTask(false); setNewTask({title: '', tag: 'General', duration: ''}) }}
+                          style={{height: 36, padding: '0 14px', background: '#f7f4ee', border: '1px solid #e8dfc8', borderRadius: 7, color: '#8a7d6a', fontFamily: 'Sora, sans-serif', fontSize: 13, cursor: 'pointer'}}>
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
