@@ -1980,17 +1980,17 @@ export function TutorCalendar({ supabase, students, tutorId, assignedStudents }:
                 <div style={{display: 'flex', flexDirection: 'column', gap: 3}}>
                   {sessions.map((s, idx) => (
                     <div key={idx} style={{fontSize: 10, background: eventColors.session.bg, color: eventColors.session.text, borderRadius: 4, padding: '2px 5px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 500}}>
-                      📚 {s.topic?.split(' ')[0]}
+                      {s.start_time?.replace(' PM','p').replace(' AM','a')} {s.topic?.split(' ')[0]}
                     </div>
                   ))}
                   {tutorEvents.map((e, idx) => (
                     <div key={idx} style={{fontSize: 10, background: eventColors[e.event_type]?.bg || '#1a4a2a', color: eventColors[e.event_type]?.text || '#7ecf8e', borderRadius: 4, padding: '2px 5px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 500}}>
-                      {e.event_type === 'meeting' ? '👤' : e.event_type === 'extra_session' ? '📖' : '🕐'} {e.title?.substring(0, 15)}
+                      {e.start_time || ''} {e.title?.substring(0, 18)}
                     </div>
                   ))}
                   {dayMeetings.map((m, idx) => (
                     <div key={idx} style={{fontSize: 10, background: eventColors.meeting.bg, color: eventColors.meeting.text, borderRadius: 4, padding: '2px 5px', fontWeight: 500}}>
-                      👤 1-on-1 logged
+                      1-on-1 logged
                     </div>
                   ))}
                 </div>

@@ -81,7 +81,8 @@ export default function TutorDashboard() {
   const navGroups = [
     {section: 'Home', items: [{name: 'Overview', tab: 'overview'}]},
     {section: 'Students', items: [
-      {name: 'My Students', tab: 'students'},
+      {name: 'Calendar', tab: 'calendar'},
+    {name: 'My Students', tab: 'students'},
       {name: 'Send Notifications', tab: 'notifications'},
       {name: 'Log Meetings', tab: 'meetings'},
       {name: 'Student Feedback', tab: 'feedback'},
@@ -105,7 +106,6 @@ export default function TutorDashboard() {
     {section: 'Reporting', items: [
       {name: 'Log Attendance', tab: 'attendance'},
       {name: 'Student Progress Report', tab: 'accountability'},
-      {name: 'Calendar', tab: 'calendar'},
     ]},
   ]
 
