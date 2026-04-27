@@ -27,7 +27,7 @@ export default function TutorDashboard() {
       if (!user) { router.push('/'); return }
       setUser(user)
       const [{ data: studentData }, { data: profileData }] = await Promise.all([
-        supabase.from('profiles').select('*').eq('role', 'student').eq('tutor_id', user.id).order('full_name'),
+        supabase.from('profiles').select('*').eq('role', 'student').order('full_name'),
         supabase.from('profiles').select('*').eq('id', user.id).single(),
       ])
       setStudents(studentData || [])

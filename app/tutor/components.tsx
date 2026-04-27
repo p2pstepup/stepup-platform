@@ -70,7 +70,8 @@ export function StudentProfiles({ supabase, students, onSuccess }: any) {
             </div>
             <div>
               <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Assigned tutor</label>
-              <select id={`tutor-${profile.id}`} defaultValue={profile.tutor_id || ''}
+              <select defaultValue={profile.tutor_id || ''}
+                onChange={e => updateProfile(profile.id, {tutor_id: e.target.value || null})}
                 style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 10px', color: '#1a1008', outline: 'none'}}>
                 <option value="">No tutor assigned</option>
                 {tutors.map((t: any) => <option key={t.id} value={t.id}>{t.full_name || t.email.split('@')[0]}</option>)}
@@ -81,8 +82,7 @@ export function StudentProfiles({ supabase, students, onSuccess }: any) {
                 const name = (document.getElementById(`name-${profile.id}`) as HTMLInputElement)?.value
                 const mentorName = (document.getElementById(`mentor-name-${profile.id}`) as HTMLInputElement)?.value
                 const mentorEmail = (document.getElementById(`mentor-email-${profile.id}`) as HTMLInputElement)?.value
-                const tutorId = (document.getElementById(`tutor-${profile.id}`) as HTMLSelectElement)?.value
-                updateProfile(profile.id, {full_name: name, mentor_name: mentorName, mentor_email: mentorEmail, tutor_id: tutorId || null})
+                updateProfile(profile.id, {full_name: name, mentor_name: mentorName, mentor_email: mentorEmail})
               }} style={{width: '100%', height: 40, background: '#0d2340', border: 'none', borderRadius: 7, color: '#c9a84c', fontFamily: 'Sora, sans-serif', fontSize: 13, fontWeight: 600, cursor: 'pointer'}}>
                 Save ↗
               </button>
