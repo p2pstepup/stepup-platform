@@ -27,6 +27,8 @@ export default function AdminDashboard() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/'); return }
       setUser(user)
+      const { data: adminProfile } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+      setProfile(adminProfile)
       const [{ data: s }, { data: t }] = await Promise.all([
         supabase.from('profiles').select('*').eq('role', 'student').order('full_name'),
         supabase.from('profiles').select('*').eq('role', 'tutor').order('full_name'),
