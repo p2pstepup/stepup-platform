@@ -245,7 +245,9 @@ export function SlidesManager({ supabase, onSuccess }: any) {
         <div key={slide.id} style={{display: 'grid', gridTemplateColumns: '80px 1fr 1fr auto', gap: 12, alignItems: 'center', padding: '12px 20px', borderBottom: i < slides.length-1 ? '0.5px solid #f5f0e8' : 'none'}}>
           <div style={{fontSize: 12, color: '#c9a84c', background: '#f7f4ee', borderRadius: 4, padding: '3px 6px', textAlign: 'center'}}>Week {slide.week_number}</div>
           <div>
-            <div style={{fontSize: 13, color: '#0d2340', fontWeight: 500}}>{slide.topic}</div>
+            <input type="text" defaultValue={slide.topic}
+              onBlur={e => { if (e.target.value !== slide.topic) updateSlide(slide.id, {topic: e.target.value}) }}
+              style={{height: 34, borderRadius: 6, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#0d2340', fontWeight: 500, outline: 'none', boxSizing: 'border-box', width: '100%'}}/>
             <div style={{fontSize: 11, color: '#8a7d6a'}}>{slide.session_date && new Date(slide.session_date + 'T12:00:00').toLocaleDateString('en-US', {weekday: 'short', month: 'short', day: 'numeric'})}</div>
           </div>
           <div style={{display: 'flex', gap: 6}}>
@@ -355,7 +357,9 @@ export function RecordingsManager({ supabase, onSuccess }: any) {
           <div key={rec.id} style={{display: 'grid', gridTemplateColumns: '80px 120px 1fr 1fr auto auto', gap: 10, alignItems: 'center', padding: '12px 20px', borderBottom: i < recordings.length-1 ? '0.5px solid #f5f0e8' : 'none'}}>
             <div style={{fontSize: 12, color: '#c9a84c', background: '#f7f4ee', borderRadius: 4, padding: '3px 6px', textAlign: 'center'}}>Week {rec.week_number}</div>
             <div style={{fontSize: 12, color: '#8a7d6a'}}>{new Date(rec.session_date + 'T12:00:00').toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}</div>
-            <div style={{fontSize: 13, color: '#0d2340', fontWeight: 500}}>{rec.topic}</div>
+            <input type="text" defaultValue={rec.topic}
+              onBlur={e => { if (e.target.value !== rec.topic) updateRecording(rec.id, {topic: e.target.value}) }}
+              style={{height: 34, borderRadius: 6, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#0d2340', fontWeight: 500, outline: 'none', boxSizing: 'border-box', width: '100%'}}/>
             <div style={{display: 'flex', gap: 6}}>
               <input type="text" defaultValue={rec.link || ''} placeholder="Paste recording link..." id={`rec-link-${rec.id}`}
                 style={{flex: 1, height: 34, borderRadius: 6, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 12, padding: '0 8px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
@@ -442,8 +446,12 @@ export function NotesManager({ supabase, onSuccess }: any) {
         {notes.map((note, i) => (
           <div key={note.id} style={{display: 'grid', gridTemplateColumns: '1fr 120px 1fr auto auto', gap: 10, alignItems: 'center', padding: '12px 20px', borderBottom: i < notes.length-1 ? '0.5px solid #f5f0e8' : 'none'}}>
             <div>
-              <div style={{fontSize: 13, color: '#0d2340', fontWeight: 500}}>{note.topic}</div>
-              <div style={{fontSize: 11, color: '#8a7d6a'}}>{note.category}</div>
+              <input type="text" defaultValue={note.topic}
+                onBlur={e => { if (e.target.value !== note.topic) updateNote(note.id, {topic: e.target.value}) }}
+                style={{height: 30, borderRadius: 5, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#0d2340', fontWeight: 500, outline: 'none', boxSizing: 'border-box', width: '100%', marginBottom: 4}}/>
+              <input type="text" defaultValue={note.category}
+                onBlur={e => { if (e.target.value !== note.category) updateNote(note.id, {category: e.target.value}) }}
+                style={{height: 26, borderRadius: 5, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 11, padding: '0 8px', color: '#8a7d6a', outline: 'none', boxSizing: 'border-box', width: '100%'}}/>
             </div>
             <span style={{fontSize: 11, padding: '2px 8px', borderRadius: 4, background: '#f7f4ee', color: '#8a7d6a', textAlign: 'center'}}>{note.category}</span>
             <div style={{display: 'flex', gap: 6}}>
@@ -673,7 +681,9 @@ export function ExamsManager({ supabase, onSuccess }: any) {
         </div>
         {exams.map((exam, i) => (
           <div key={exam.id} style={{display: 'grid', gridTemplateColumns: '1fr 80px 100px 160px auto auto', gap: 10, alignItems: 'center', padding: '12px 20px', borderBottom: i < exams.length-1 ? '0.5px solid #f5f0e8' : 'none'}}>
-            <div style={{fontSize: 13, color: '#0d2340', fontWeight: 500}}>{exam.name}</div>
+            <input type="text" defaultValue={exam.name}
+              onBlur={e => { if (e.target.value !== exam.name) updateExam(exam.id, {name: e.target.value}) }}
+              style={{height: 34, borderRadius: 6, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#0d2340', fontWeight: 500, outline: 'none', boxSizing: 'border-box', width: '100%'}}/>
             <div style={{fontSize: 12, color: '#8a7d6a'}}>{exam.questions}Q · {exam.time_limit}</div>
             <div style={{fontSize: 12, color: exam.deadline ? '#c0574a' : '#a89870'}}>{exam.deadline ? new Date(exam.deadline).toLocaleDateString('en-US', {month: 'short', day: 'numeric'}) : 'No deadline'}</div>
             <div style={{display: 'flex', gap: 6}}>
@@ -1219,7 +1229,9 @@ export function CourseDocsManager({ supabase, onSuccess }: any) {
         {docs.map((doc, i) => (
           <div key={doc.id} style={{display: 'grid', gridTemplateColumns: '1fr 180px 100px 1fr auto', gap: 12, alignItems: 'center', padding: '12px 20px', borderBottom: i < docs.length-1 ? '0.5px solid #f5f0e8' : 'none'}}>
             <div>
-              <div style={{fontSize: 13, color: '#0d2340', fontWeight: 500}}>{doc.name}</div>
+              <input type="text" defaultValue={doc.name}
+                onBlur={e => { if (e.target.value !== doc.name) updateDoc(doc.id, {name: e.target.value}) }}
+                style={{height: 30, borderRadius: 5, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#0d2340', fontWeight: 500, outline: 'none', boxSizing: 'border-box', width: '100%', marginBottom: 4}}/>
               <div style={{fontSize: 11, color: '#8a7d6a'}}>{doc.category} · {doc.file_type}</div>
             </div>
             <div style={{fontSize: 12, color: '#8a7d6a'}}>{doc.description?.substring(0, 30)}</div>
