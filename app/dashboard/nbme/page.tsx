@@ -241,7 +241,7 @@ export default function NBMETracker() {
               {user?.email?.charAt(0).toUpperCase()}
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 13, color: 'white', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.email?.split('@')[0]}</div>
+              <div style={{ fontSize: 13, color: 'white', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{profile?.full_name || user?.email?.split('@')[0]}</div>
               <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)' }}>Windsor SOM</div>
             </div>
             <div onClick={async () => { await supabase.auth.signOut(); router.push('/') }}
