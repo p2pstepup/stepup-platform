@@ -6,6 +6,7 @@ import { createClient } from '../../utils/supabase'
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
+  const [todayTasks, setTodayTasks] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [notifications, setNotifications] = useState<any[]>([])
   const [showNotifications, setShowNotifications] = useState(false)
@@ -38,6 +39,10 @@ export default function Dashboard() {
         ])
         setNotifications(notifs || [])
         setProfile(profileData)
+      const today = new Date()
+      const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`
+      const { data: scheduleData } = await supabase.from('study_schedule').select('*').eq('student_id', user.id).eq('schedule_date', todayStr).single()
+      setTodayTasks(scheduleData?.tasks || [])
         setLoading(false)
       }
     }
@@ -198,7 +203,7 @@ export default function Dashboard() {
             {label: 'Qbank avg', value: '—', delta: 'No sessions yet', color: '#a89870'},
             {label: 'Questions done', value: '0', delta: 'Log your first session', color: '#a89870'},
             {label: 'Latest NBME', value: '—', delta: 'No exams logged', color: '#a89870'},
-            {label: 'Tasks today', value: '0/0', delta: 'No tasks assigned', color: '#a89870'},
+            {label: 'Tasks today', value: `${todayTasks.filter((t:any)=>t.completed).length}/${todayTasks.length}`, delta: todayTasks.length > 0 ? `${todayTasks.length - todayTasks.filter((t:any)=>t.completed).length} remaining` : 'No tasks assigned', color: todayTasks.length > 0 ? '#c9a84c' : '#a89870'},
             {label: 'Study streak', value: '0 days', delta: 'Start today!', color: '#c9a84c'},
           ].map((m, i) => (
             <div key={i} style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 10, padding: '14px 16px'}}>
@@ -226,7 +231,19 @@ export default function Dashboard() {
               <div onClick={() => router.push('/dashboard/studyschedule')} style={{fontSize: 12, color: '#c9a84c', cursor: 'pointer'}}>Study schedule →</div>
             </div>
             <div style={{fontSize: 13, color: '#8a7d6a', fontStyle: 'italic', padding: '10px 0'}}>
-              No tasks assigned yet. Your tutor will assign your daily schedule before the program starts.
+              {todayTasks.length === 0 ? (
+                <div style={{fontSize: 13, color: '#8a7d6a', fontStyle: 'italic'}}>No tasks assigned yet. Your tutor will assign your daily schedule before the program starts.</div>
+              ) : todayTasks.map((task: any, idx: number) => (
+                <div key={idx} style={{display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: idx < todayTasks.length-1 ? '0.5px solid #f0ece0' : 'none'}}>
+                  <div style={{width: 18, height: 18, borderRadius: 4, border: task.completed ? 'none' : '1.5px solid #e8dfc8', background: task.completed ? '#6b7c3a' : 'white', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                    {task.completed && <span style={{color: 'white', fontSize: 11}}>✓</span>}
+                  </div>
+                  <div style={{flex: 1}}>
+                    <div style={{fontSize: 13, color: task.completed ? '#a89870' : '#0d2340', fontWeight: 500, textDecoration: task.completed ? 'line-through' : 'none'}}>{task.title}</div>
+                    {task.duration && <div style={{fontSize: 11, color: '#a89870'}}>{task.tag} · {task.duration}</div>}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
