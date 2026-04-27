@@ -9,6 +9,7 @@ export default function Calendar() {
   const [schedule, setSchedule] = useState<any[]>([])
   const [assignments, setAssignments] = useState<any[]>([])
   const [meetings, setMeetings] = useState<any[]>([])
+  const [tutorEvents, setTutorEvents] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [currentMonth, setCurrentMonth] = useState(new Date(2026, 4, 1))
   const [selectedDay, setSelectedDay] = useState<any>(null)
@@ -22,14 +23,16 @@ export default function Calendar() {
       setUser(user)
       const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single()
       setProfile(profileData)
-      const [{ data: sched }, { data: assign }, { data: meet }] = await Promise.all([
+      const [{ data: sched }, { data: assign }, { data: meet }, { data: tevts }] = await Promise.all([
         supabase.from('schedule').select('*').order('sort_order'),
         supabase.from('assignments').select('*').eq('student_id', user.id).not('due_date', 'is', null),
         supabase.from('mentor_meetings').select('*').eq('student_id', user.id),
+        supabase.from('tutor_events').select('*').or(`student_id.eq.${user.id},student_id.is.null`),
       ])
       setSchedule(sched || [])
       setAssignments(assign || [])
       setMeetings(meet || [])
+      setTutorEvents(tevts || [])
       setLoading(false)
     }
     init()
@@ -79,7 +82,8 @@ export default function Calendar() {
     const sessions = schedule.filter(s => s.session_date === dateStr)
     const dueAssignments = assignments.filter(a => a.due_date === dateStr)
     const dayMeetings = meetings.filter(m => m.meeting_date === dateStr)
-    return { sessions, dueAssignments, dayMeetings }
+    const dayTutorEvents = tutorEvents.filter(e => e.event_date === dateStr)
+    return { sessions, dueAssignments, dayMeetings, dayTutorEvents }
   }
 
   const { firstDay, daysInMonth } = getDaysInMonth(currentMonth)

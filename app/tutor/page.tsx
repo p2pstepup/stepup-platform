@@ -5,7 +5,7 @@ import { createClient } from '../../utils/supabase'
 import {
   AnnouncementForm, FeedbackTab, SlidesManager, RecordingsManager,
   NotesManager, ResourcesManager, ScheduleManager, AssignmentsManager,
-  StudyScheduleManager, ExamReports, AttendanceLogger, StudentPerformance
+  StudyScheduleManager, ExamReports, AttendanceLogger, StudentPerformance, TutorCalendar
 } from './components'
 
 export default function TutorDashboard() {
@@ -105,6 +105,7 @@ export default function TutorDashboard() {
     {section: 'Reporting', items: [
       {name: 'Log Attendance', tab: 'attendance'},
       {name: 'Student Progress Report', tab: 'accountability'},
+    {name: 'Calendar', tab: 'calendar'},
     ]},
   ]
 
@@ -503,6 +504,16 @@ export default function TutorDashboard() {
               <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>Mark attendance for each session · Reported to admin</div>
             </div>
             <AttendanceLogger supabase={supabase} students={students} tutorId={user?.id} />
+          </div>
+        )}
+
+        {activeTab === 'calendar' && (
+          <div>
+            <div style={{marginBottom: 24}}>
+              <div style={{fontFamily: 'Georgia, serif', fontSize: 28, color: '#0d2340', letterSpacing: -0.5}}>Tutor Calendar</div>
+              <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>Schedule mentor meetings · View all course sessions · Events appear on student calendars</div>
+            </div>
+            <TutorCalendar supabase={supabase} students={students} tutorId={user?.id} assignedStudents={assignedStudents} />
           </div>
         )}
 

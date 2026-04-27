@@ -1767,3 +1767,294 @@ export function StudentPerformance({ supabase, students }: any) {
     </div>
   )
 }
+
+export function TutorCalendar({ supabase, students, tutorId, assignedStudents }: any) {
+  const [currentMonth, setCurrentMonth] = useState(new Date(2026, 4, 1))
+  const [schedule, setSchedule] = useState<any[]>([])
+  const [events, setEvents] = useState<any[]>([])
+  const [meetings, setMeetings] = useState<any[]>([])
+  const [selectedDay, setSelectedDay] = useState<any>(null)
+  const [showAddEvent, setShowAddEvent] = useState(false)
+  const [newEvent, setNewEvent] = useState({student_id: '', title: '', event_date: '', start_time: '', end_time: '', event_type: 'meeting', notes: '', zoom_link: ''})
+  const [saving, setSaving] = useState(false)
+
+  useEffect(() => { load() }, [])
+
+  const load = async () => {
+    const [{ data: sched }, { data: evts }, { data: meets }] = await Promise.all([
+      supabase.from('schedule').select('*').order('sort_order'),
+      supabase.from('tutor_events').select('*').eq('tutor_id', tutorId),
+      supabase.from('mentor_meetings').select('*').eq('mentor_id', tutorId),
+    ])
+    setSchedule(sched || [])
+    setEvents(evts || [])
+    setMeetings(meets || [])
+  }
+
+  const saveEvent = async () => {
+    if (!newEvent.title || !newEvent.event_date) return
+    setSaving(true)
+    await supabase.from('tutor_events').insert({...newEvent, tutor_id: tutorId, student_id: newEvent.student_id || null})
+    if (newEvent.student_id) {
+      await supabase.from('notifications').insert({
+        student_id: newEvent.student_id,
+        title: `New event: ${newEvent.title}`,
+        message: `Scheduled for ${new Date(newEvent.event_date + 'T12:00:00').toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}${newEvent.start_time ? ' at ' + newEvent.start_time : ''}`,
+        type: 'meeting',
+        link: '/dashboard/calendar'
+      })
+    }
+    setNewEvent({student_id: '', title: '', event_date: '', start_time: '', end_time: '', event_type: 'meeting', notes: '', zoom_link: ''})
+    setShowAddEvent(false)
+    setSaving(false)
+    await load()
+  }
+
+  const deleteEvent = async (id: string) => {
+    await supabase.from('tutor_events').delete().eq('id', id)
+    await load()
+  }
+
+  const getDateStr = (year: number, month: number, day: number) =>
+    `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+
+  const getEventsForDay = (day: number) => {
+    const year = currentMonth.getFullYear()
+    const month = currentMonth.getMonth()
+    const dateStr = getDateStr(year, month, day)
+    return {
+      sessions: schedule.filter(s => s.session_date === dateStr),
+      tutorEvents: events.filter(e => e.event_date === dateStr),
+      dayMeetings: meetings.filter(m => m.meeting_date === dateStr),
+    }
+  }
+
+  const { firstDay, daysInMonth } = (() => {
+    const year = currentMonth.getFullYear()
+    const month = currentMonth.getMonth()
+    return {
+      firstDay: new Date(year, month, 1).getDay(),
+      daysInMonth: new Date(year, month + 1, 0).getDate()
+    }
+  })()
+
+  const today = new Date()
+
+  const eventColors: any = {
+    session: {bg: '#1a3a5c', text: '#c9a84c'},
+    meeting: {bg: '#1a4a2a', text: '#7ecf8e'},
+    extra_session: {bg: '#5c1a5c', text: '#e8a0f0'},
+    office_hours: {bg: '#5c3a1a', text: '#f5c87e'},
+  }
+
+  const studentName = (id: string) => {
+    const s = students.find((s: any) => s.id === id)
+    return s ? (s.full_name || s.email.split('@')[0]) : 'All students'
+  }
+
+  return (
+    <div style={{display: 'flex', flexDirection: 'column', gap: 20}}>
+      {/* Legend */}
+      <div style={{display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between'}}>
+        <div style={{display: 'flex', gap: 12, flexWrap: 'wrap'}}>
+          {[
+            {color: '#1a3a5c', border: '#c9a84c', label: 'Course Session'},
+            {color: '#1a4a2a', border: '#7ecf8e', label: 'Mentor Meeting'},
+            {color: '#5c1a5c', border: '#e8a0f0', label: 'Extra Session'},
+            {color: '#5c3a1a', border: '#f5c87e', label: 'Office Hours'},
+          ].map(item => (
+            <div key={item.label} style={{display: 'flex', alignItems: 'center', gap: 6}}>
+              <div style={{width: 12, height: 12, borderRadius: 3, background: item.color, border: `1px solid ${item.border}`}}/>
+              <span style={{fontSize: 12, color: '#8a7d6a'}}>{item.label}</span>
+            </div>
+          ))}
+        </div>
+        <button onClick={() => setShowAddEvent(!showAddEvent)}
+          style={{height: 38, padding: '0 18px', background: '#0d2340', border: 'none', borderRadius: 8, color: '#c9a84c', fontFamily: 'Sora, sans-serif', fontSize: 13, fontWeight: 600, cursor: 'pointer'}}>
+          + Add Event
+        </button>
+      </div>
+
+      {/* Add event form */}
+      {showAddEvent && (
+        <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, padding: '20px 24px'}}>
+          <div style={{fontSize: 15, fontWeight: 600, color: '#0d2340', marginBottom: 16}}>Schedule new event</div>
+          <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 12}}>
+            <div>
+              <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Event type</label>
+              <select value={newEvent.event_type} onChange={e => setNewEvent({...newEvent, event_type: e.target.value})}
+                style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none'}}>
+                <option value="meeting">Mentor Meeting</option>
+                <option value="extra_session">Extra Session</option>
+                <option value="office_hours">Office Hours</option>
+              </select>
+            </div>
+            <div>
+              <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Student (optional)</label>
+              <select value={newEvent.student_id} onChange={e => setNewEvent({...newEvent, student_id: e.target.value})}
+                style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none'}}>
+                <option value="">All students</option>
+                {students.map((s: any) => <option key={s.id} value={s.id}>{s.full_name || s.email.split('@')[0]}</option>)}
+              </select>
+            </div>
+            <div>
+              <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Date</label>
+              <input type="date" value={newEvent.event_date} onChange={e => setNewEvent({...newEvent, event_date: e.target.value})}
+                style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
+            </div>
+          </div>
+          <div style={{marginBottom: 12}}>
+            <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Title</label>
+            <input type="text" value={newEvent.title} onChange={e => setNewEvent({...newEvent, title: e.target.value})} placeholder="e.g. Weekly 1-on-1 with Ernest"
+              style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 10px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
+          </div>
+          <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 12}}>
+            <div>
+              <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Start time</label>
+              <input type="text" value={newEvent.start_time} onChange={e => setNewEvent({...newEvent, start_time: e.target.value})} placeholder="e.g. 7:00 PM"
+                style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
+            </div>
+            <div>
+              <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>End time</label>
+              <input type="text" value={newEvent.end_time} onChange={e => setNewEvent({...newEvent, end_time: e.target.value})} placeholder="e.g. 8:00 PM"
+                style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
+            </div>
+            <div>
+              <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Zoom link</label>
+              <input type="text" value={newEvent.zoom_link} onChange={e => setNewEvent({...newEvent, zoom_link: e.target.value})} placeholder="https://zoom.us/j/..."
+                style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
+            </div>
+          </div>
+          <div style={{marginBottom: 16}}>
+            <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Notes</label>
+            <textarea value={newEvent.notes} onChange={e => setNewEvent({...newEvent, notes: e.target.value})} rows={2} placeholder="Additional notes..."
+              style={{width: '100%', borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '8px 10px', color: '#1a1008', outline: 'none', boxSizing: 'border-box', resize: 'none'}}/>
+          </div>
+          <div style={{display: 'flex', gap: 10}}>
+            <button onClick={saveEvent} disabled={saving || !newEvent.title || !newEvent.event_date}
+              style={{flex: 1, height: 42, background: '#0d2340', border: 'none', borderRadius: 8, color: '#c9a84c', fontFamily: 'Sora, sans-serif', fontSize: 14, fontWeight: 600, cursor: 'pointer'}}>
+              {saving ? 'Saving...' : 'Save & notify student ↗'}
+            </button>
+            <button onClick={() => setShowAddEvent(false)}
+              style={{height: 42, padding: '0 16px', background: '#f7f4ee', border: '1px solid #e8dfc8', borderRadius: 8, color: '#8a7d6a', fontFamily: 'Sora, sans-serif', fontSize: 13, cursor: 'pointer'}}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Calendar */}
+      <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 14, overflow: 'hidden'}}>
+        <div style={{background: '#0d2340', padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+          <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))}
+            style={{background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: 8, width: 36, height: 36, color: 'white', cursor: 'pointer', fontSize: 18}}>←</button>
+          <div style={{fontFamily: 'Georgia, serif', fontSize: 22, color: 'white'}}>
+            {currentMonth.toLocaleDateString('en-US', {month: 'long', year: 'numeric'})}
+          </div>
+          <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))}
+            style={{background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: 8, width: 36, height: 36, color: 'white', cursor: 'pointer', fontSize: 18}}>→</button>
+        </div>
+        <div style={{display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', background: '#f7f4ee', borderBottom: '0.5px solid #e8dfc8'}}>
+          {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => (
+            <div key={d} style={{padding: '10px 8px', textAlign: 'center', fontSize: 12, fontWeight: 600, color: '#8a7d6a', textTransform: 'uppercase', letterSpacing: '0.05em'}}>{d}</div>
+          ))}
+        </div>
+        <div style={{display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)'}}>
+          {Array.from({length: firstDay}).map((_, i) => (
+            <div key={`empty-${i}`} style={{minHeight: 110, borderRight: '0.5px solid #f0ece0', borderBottom: '0.5px solid #f0ece0', background: '#fafaf8'}}/>
+          ))}
+          {Array.from({length: daysInMonth}).map((_, i) => {
+            const day = i + 1
+            const { sessions, tutorEvents, dayMeetings } = getEventsForDay(day)
+            const isToday = today.getDate() === day && today.getMonth() === currentMonth.getMonth() && today.getFullYear() === currentMonth.getFullYear()
+            const hasEvents = sessions.length > 0 || tutorEvents.length > 0 || dayMeetings.length > 0
+            const col = (firstDay + i) % 7
+            return (
+              <div key={day} onClick={() => hasEvents && setSelectedDay({day, sessions, tutorEvents, dayMeetings})}
+                style={{minHeight: 110, borderRight: col < 6 ? '0.5px solid #f0ece0' : 'none', borderBottom: '0.5px solid #f0ece0', padding: '8px 6px', background: isToday ? '#fffdf5' : 'white', cursor: hasEvents ? 'pointer' : 'default'}}>
+                <div style={{marginBottom: 6}}>
+                  <div style={{width: 28, height: 28, borderRadius: '50%', background: isToday ? '#c9a84c' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                    <span style={{fontSize: 14, fontWeight: isToday ? 700 : 400, color: isToday ? '#0d2340' : '#3d3020'}}>{day}</span>
+                  </div>
+                </div>
+                <div style={{display: 'flex', flexDirection: 'column', gap: 3}}>
+                  {sessions.map((s, idx) => (
+                    <div key={idx} style={{fontSize: 10, background: eventColors.session.bg, color: eventColors.session.text, borderRadius: 4, padding: '2px 5px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 500}}>
+                      📚 {s.topic?.split(' ')[0]}
+                    </div>
+                  ))}
+                  {tutorEvents.map((e, idx) => (
+                    <div key={idx} style={{fontSize: 10, background: eventColors[e.event_type]?.bg || '#1a4a2a', color: eventColors[e.event_type]?.text || '#7ecf8e', borderRadius: 4, padding: '2px 5px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 500}}>
+                      {e.event_type === 'meeting' ? '👤' : e.event_type === 'extra_session' ? '📖' : '🕐'} {e.title?.substring(0, 15)}
+                    </div>
+                  ))}
+                  {dayMeetings.map((m, idx) => (
+                    <div key={idx} style={{fontSize: 10, background: eventColors.meeting.bg, color: eventColors.meeting.text, borderRadius: 4, padding: '2px 5px', fontWeight: 500}}>
+                      👤 1-on-1 logged
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Day detail */}
+      {selectedDay && (
+        <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, overflow: 'hidden'}}>
+          <div style={{background: '#0d2340', padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+            <div style={{fontFamily: 'Georgia, serif', fontSize: 18, color: 'white'}}>
+              {currentMonth.toLocaleDateString('en-US', {month: 'long'})} {selectedDay.day}, {currentMonth.getFullYear()}
+            </div>
+            <button onClick={() => setSelectedDay(null)}
+              style={{background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: 6, padding: '4px 12px', color: 'white', cursor: 'pointer', fontSize: 12, fontFamily: 'Sora, sans-serif'}}>Close</button>
+          </div>
+          <div style={{padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 10}}>
+            {selectedDay.sessions.map((s: any, i: number) => (
+              <div key={i} style={{padding: '12px 14px', background: '#f0f4ff', borderRadius: 10, borderLeft: '4px solid #1a3a5c'}}>
+                <div style={{fontSize: 14, fontWeight: 600, color: '#0d2340'}}>{s.topic}</div>
+                <div style={{fontSize: 12, color: '#8a7d6a'}}>{s.start_time}{s.end_time ? ` — ${s.end_time}` : ''} CST{s.instructor ? ` · ${s.instructor}` : ''}</div>
+                {s.zoom_link && <a href={s.zoom_link} target="_blank" rel="noopener noreferrer" style={{fontSize: 12, color: '#c9a84c', textDecoration: 'none'}}>Join Zoom ↗</a>}
+              </div>
+            ))}
+            {selectedDay.tutorEvents.map((e: any, i: number) => (
+              <div key={i} style={{padding: '12px 14px', background: '#f0fff4', borderRadius: 10, borderLeft: '4px solid #1a4a2a', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
+                <div>
+                  <div style={{fontSize: 14, fontWeight: 600, color: '#0d2340'}}>{e.title}</div>
+                  <div style={{fontSize: 12, color: '#8a7d6a'}}>{e.event_type}{e.start_time ? ` · ${e.start_time}` : ''}{e.student_id ? ` · ${studentName(e.student_id)}` : ''}</div>
+                  {e.notes && <div style={{fontSize: 12, color: '#8a7d6a', marginTop: 4}}>{e.notes}</div>}
+                  {e.zoom_link && <a href={e.zoom_link} target="_blank" rel="noopener noreferrer" style={{fontSize: 12, color: '#c9a84c', textDecoration: 'none'}}>Join Zoom ↗</a>}
+                </div>
+                <button onClick={() => deleteEvent(e.id)}
+                  style={{fontSize: 11, color: '#c0574a', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px'}}>Remove</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Upcoming events list */}
+      <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, padding: '18px 22px'}}>
+        <div style={{fontSize: 15, fontWeight: 600, color: '#0d2340', marginBottom: 16}}>Your scheduled events</div>
+        {events.length === 0 ? (
+          <div style={{fontSize: 13, color: '#8a7d6a', fontStyle: 'italic'}}>No events scheduled yet. Click "+ Add Event" to get started.</div>
+        ) : events.sort((a, b) => a.event_date.localeCompare(b.event_date)).map((e, i) => (
+          <div key={e.id} style={{display: 'flex', alignItems: 'center', gap: 14, padding: '10px 0', borderBottom: i < events.length-1 ? '0.5px solid #f5f0e8' : 'none'}}>
+            <div style={{width: 48, textAlign: 'center', flexShrink: 0}}>
+              <div style={{fontSize: 10, color: '#c9a84c', fontWeight: 600, textTransform: 'uppercase'}}>{new Date(e.event_date + 'T12:00:00').toLocaleDateString('en-US', {month: 'short'})}</div>
+              <div style={{fontFamily: 'Georgia, serif', fontSize: 20, color: '#0d2340', lineHeight: 1}}>{new Date(e.event_date + 'T12:00:00').getDate()}</div>
+            </div>
+            <div style={{width: 4, height: 36, background: eventColors[e.event_type]?.bg || '#1a4a2a', borderRadius: 2, flexShrink: 0}}/>
+            <div style={{flex: 1}}>
+              <div style={{fontSize: 14, fontWeight: 500, color: '#0d2340'}}>{e.title}</div>
+              <div style={{fontSize: 12, color: '#8a7d6a'}}>{e.event_type}{e.start_time ? ` · ${e.start_time}` : ''}{e.student_id ? ` · ${studentName(e.student_id)}` : ' · All students'}</div>
+            </div>
+            <button onClick={() => deleteEvent(e.id)}
+              style={{fontSize: 11, color: '#c0574a', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px'}}>Remove</button>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
