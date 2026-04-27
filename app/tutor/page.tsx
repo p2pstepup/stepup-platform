@@ -510,7 +510,7 @@ export default function TutorDashboard() {
           <div>
             <div style={{marginBottom: 24}}>
               <div style={{fontFamily: 'Georgia, serif', fontSize: 28, color: '#0d2340', letterSpacing: -0.5}}>Student Progress Report</div>
-              <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>Log weekly activity reports for each student · Submitted to admin</div>
+              <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>Log bi-weekly 30 minute meeting reports for each student · Submitted to admin</div>
             </div>
             <AccountabilityReport supabase={supabase} students={students} tutorId={user?.id} onSuccess={(msg: string) => { setSuccess(msg); setTimeout(() => setSuccess(''), 3000) }} />
           </div>
@@ -572,8 +572,8 @@ function AccountabilityReport({ supabase, students, tutorId, onSuccess }: any) {
   return (
     <div style={{display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: 20, alignItems: 'start'}}>
       <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, padding: '20px 24px'}}>
-        <div style={{fontSize: 16, fontWeight: 600, color: '#0d2340', marginBottom: 4}}>Weekly Accountability Report</div>
-        <div style={{fontSize: 12, color: '#8a7d6a', marginBottom: 18}}>Complete after each weekly mentor meeting</div>
+        <div style={{fontSize: 16, fontWeight: 600, color: '#0d2340', marginBottom: 4}}>Bi-Weekly Progress Report</div>
+        <div style={{fontSize: 12, color: '#8a7d6a', marginBottom: 18}}>Complete after each mentor meeting</div>
 
         {sectionHeader('Basic Info')}
         <div style={{display: 'grid', gridTemplateColumns: '1fr 80px 1fr', gap: 12, marginBottom: 12}}>
