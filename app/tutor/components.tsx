@@ -246,7 +246,7 @@ export function SlidesManager({ supabase, onSuccess }: any) {
           <div style={{fontSize: 12, color: '#c9a84c', background: '#f7f4ee', borderRadius: 4, padding: '3px 6px', textAlign: 'center'}}>Week {slide.week_number}</div>
           <div>
             <div style={{fontSize: 13, color: '#0d2340', fontWeight: 500}}>{slide.topic}</div>
-            <div style={{fontSize: 11, color: '#8a7d6a'}}>{slide.session_date && new Date(slide.session_date).toLocaleDateString('en-US', {weekday: 'short', month: 'short', day: 'numeric'})}</div>
+            <div style={{fontSize: 11, color: '#8a7d6a'}}>{slide.session_date && new Date(slide.session_date + 'T12:00:00').toLocaleDateString('en-US', {weekday: 'short', month: 'short', day: 'numeric'})}</div>
           </div>
           <div style={{display: 'flex', gap: 6}}>
             <input type="text" defaultValue={slide.link || ''} placeholder="Paste Google Drive link..." id={`slide-link-${slide.id}`}
@@ -354,7 +354,7 @@ export function RecordingsManager({ supabase, onSuccess }: any) {
         ) : recordings.map((rec, i) => (
           <div key={rec.id} style={{display: 'grid', gridTemplateColumns: '80px 120px 1fr 1fr auto auto', gap: 10, alignItems: 'center', padding: '12px 20px', borderBottom: i < recordings.length-1 ? '0.5px solid #f5f0e8' : 'none'}}>
             <div style={{fontSize: 12, color: '#c9a84c', background: '#f7f4ee', borderRadius: 4, padding: '3px 6px', textAlign: 'center'}}>Week {rec.week_number}</div>
-            <div style={{fontSize: 12, color: '#8a7d6a'}}>{new Date(rec.session_date).toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}</div>
+            <div style={{fontSize: 12, color: '#8a7d6a'}}>{new Date(rec.session_date + 'T12:00:00').toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}</div>
             <div style={{fontSize: 13, color: '#0d2340', fontWeight: 500}}>{rec.topic}</div>
             <div style={{display: 'flex', gap: 6}}>
               <input type="text" defaultValue={rec.link || ''} placeholder="Paste recording link..." id={`rec-link-${rec.id}`}
@@ -808,7 +808,7 @@ export function ScheduleManager({ supabase, onSuccess }: any) {
           <div key={session.id} style={{padding: '12px 20px', borderBottom: i < sessions.length-1 ? '0.5px solid #f5f0e8' : 'none'}}>
             <div style={{display: 'grid', gridTemplateColumns: '80px 140px 1fr 1fr 1fr 1fr auto', gap: 10, alignItems: 'center'}}>
               <div style={{fontSize: 12, color: '#c9a84c', background: '#f7f4ee', borderRadius: 4, padding: '3px 6px', textAlign: 'center'}}>Wk {session.week_number}</div>
-              <div style={{fontSize: 12, color: '#8a7d6a'}}>{session.day_of_week} {session.session_date && new Date(session.session_date).toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}</div>
+              <div style={{fontSize: 12, color: '#8a7d6a'}}>{session.day_of_week} {session.session_date && new Date(session.session_date + 'T12:00:00').toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}</div>
               <input type="text" defaultValue={session.topic}
                 onBlur={e => { if (e.target.value !== session.topic) updateSession(session.id, {topic: e.target.value}) }}
                 style={{height: 34, borderRadius: 6, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#0d2340', fontWeight: 500, outline: 'none', boxSizing: 'border-box'}}/>
@@ -1428,7 +1428,7 @@ export function AttendanceLogger({ supabase, students, tutorId }: any) {
       {selectedSession && students.length > 0 && (
         <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, overflow: 'hidden'}}>
           <div style={{background: '#0d2340', padding: '14px 20px'}}>
-            <div style={{fontSize: 14, fontWeight: 600, color: 'white'}}>{session?.topic} · {session?.session_date ? new Date(session.session_date).toLocaleDateString('en-US', {month: 'short', day: 'numeric'}) : ''}</div>
+            <div style={{fontSize: 14, fontWeight: 600, color: 'white'}}>{session?.topic} · {session?.session_date ? new Date(session.session_date + 'T12:00:00').toLocaleDateString('en-US', {month: 'short', day: 'numeric'}) : ''}</div>
             <div style={{fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 2}}>Click a status button to mark each student</div>
           </div>
           <div style={{padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 10}}>
