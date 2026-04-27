@@ -1024,7 +1024,7 @@ export function StudyScheduleManager({ supabase, students, onSuccess }: any) {
     if (existingEntry) {
       await supabase.from('study_schedule').update({tasks, notes, updated_at: new Date().toISOString()}).eq('id', existingEntry.id)
     } else {
-      await supabase.from('study_schedule').insert({student_id: selectedStudent, assigned_by: user.id, schedule_date: selectedDate, tasks, notes})
+      await supabase.from('study_schedule').insert({student_id: selectedStudent, assigned_by: null, schedule_date: selectedDate, tasks, notes})
     }
     await supabase.from('notifications').insert({student_id: selectedStudent, title: 'Your study schedule has been updated', message: `Your study plan for ${new Date(selectedDate).toLocaleDateString('en-US', {month: 'short', day: 'numeric'})} is ready`, type: 'assignment', link: '/dashboard/studyschedule'})
     setSaving(false)
