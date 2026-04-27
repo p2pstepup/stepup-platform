@@ -521,7 +521,14 @@ export default function TutorDashboard() {
 }
 
 function AccountabilityReport({ supabase, students, tutorId, onSuccess }: any) {
-  const blankForm = {student_id: '', week_number: '1', report_date: new Date().toISOString().split('T')[0], attendance: 'present', participation: '3', performance_notes: '', action_items_completed: '', new_action_items: '', concerns: '', status: 'on_track'}
+  const blankForm = {
+    student_id: '', week_number: '1', report_date: new Date().toISOString().split('T')[0],
+    mentor_name: '', topics_covered: '', understanding: '3', practice_questions: '',
+    areas_of_difficulty: '', engagement: '3', follow_up_needed: 'No', sga_action_needed: 'No',
+    completed_study_goals: 'Y', took_practice_test: 'No', nbme_score: '',
+    was_prepared: 'Yes', stress_levels: 'LOW', barriers_this_week: 'N',
+    barriers_description: '', resources_used: '', next_steps: '', mentor_notes: ''
+  }
   const [form, setForm] = useState(blankForm)
   const [reports, setReports] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -539,7 +546,10 @@ function AccountabilityReport({ supabase, students, tutorId, onSuccess }: any) {
   const submit = async () => {
     if (!form.student_id) return
     setSaving(true)
-    await supabase.from('accountability_reports').insert({...form, tutor_id: tutorId, week_number: parseInt(form.week_number), participation: parseInt(form.participation)})
+    await supabase.from('accountability_reports').insert({
+      ...form, tutor_id: tutorId, week_number: parseInt(form.week_number),
+      understanding: parseInt(form.understanding), engagement: parseInt(form.engagement)
+    })
     setForm(blankForm)
     await load()
     setSaving(false)
@@ -551,127 +561,219 @@ function AccountabilityReport({ supabase, students, tutorId, onSuccess }: any) {
     return s ? (s.full_name || s.email.split('@')[0]) : 'Unknown'
   }
 
-  const statusStyle = (status: string) => {
-    if (status === 'at_risk') return {background: '#fdf0f0', color: '#c0574a', border: '1px solid #f5c6c6'}
-    if (status === 'needs_attention') return {background: '#fff8e8', color: '#c07040', border: '1px solid #f5dfa0'}
-    return {background: '#f0f7f2', color: '#2d6a4f', border: '1px solid #b8dfc8'}
-  }
-
-  const statusLabel = (s: string) => s === 'on_track' ? 'On Track' : s === 'needs_attention' ? 'Needs Attention' : 'At Risk'
+  const labelStyle: any = {fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}
+  const inputStyle: any = {width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 10px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}
+  const selectStyle: any = {width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none'}
+  const textareaStyle: any = {width: '100%', borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '8px 10px', color: '#1a1008', outline: 'none', boxSizing: 'border-box', resize: 'none'}
+  const sectionHeader = (title: string) => (
+    <div style={{fontSize: 12, fontWeight: 700, color: '#0d2340', textTransform: 'uppercase', letterSpacing: '0.08em', padding: '10px 0 6px', borderBottom: '1px solid #e8dfc8', marginBottom: 12, marginTop: 16}}>{title}</div>
+  )
 
   return (
-    <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, alignItems: 'start'}}>
+    <div style={{display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: 20, alignItems: 'start'}}>
       <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, padding: '20px 24px'}}>
-        <div style={{fontSize: 16, fontWeight: 600, color: '#0d2340', marginBottom: 18}}>Submit weekly report</div>
-        <div style={{display: 'grid', gridTemplateColumns: '1fr 80px', gap: 12, marginBottom: 14}}>
+        <div style={{fontSize: 16, fontWeight: 600, color: '#0d2340', marginBottom: 4}}>Weekly Accountability Report</div>
+        <div style={{fontSize: 12, color: '#8a7d6a', marginBottom: 18}}>Complete after each weekly mentor meeting</div>
+
+        {sectionHeader('Basic Info')}
+        <div style={{display: 'grid', gridTemplateColumns: '1fr 80px 1fr', gap: 12, marginBottom: 12}}>
           <div>
-            <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Student</label>
-            <select value={form.student_id} onChange={e => setForm({...form, student_id: e.target.value})}
-              style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 10px', color: '#1a1008', outline: 'none'}}>
+            <label style={labelStyle}>Student</label>
+            <select value={form.student_id} onChange={e => setForm({...form, student_id: e.target.value})} style={selectStyle}>
               <option value="">Select student...</option>
               {students.map((s: any) => <option key={s.id} value={s.id}>{s.full_name || s.email.split('@')[0]}</option>)}
             </select>
           </div>
           <div>
-            <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Week</label>
-            <select value={form.week_number} onChange={e => setForm({...form, week_number: e.target.value})}
-              style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none'}}>
+            <label style={labelStyle}>Week</label>
+            <select value={form.week_number} onChange={e => setForm({...form, week_number: e.target.value})} style={selectStyle}>
               {[1,2,3,4,5,6,7,8].map(w => <option key={w} value={w}>Wk {w}</option>)}
             </select>
           </div>
-        </div>
-        <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 14}}>
           <div>
-            <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Report date</label>
-            <input type="date" value={form.report_date} onChange={e => setForm({...form, report_date: e.target.value})}
-              style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
+            <label style={labelStyle}>Date</label>
+            <input type="date" value={form.report_date} onChange={e => setForm({...form, report_date: e.target.value})} style={inputStyle}/>
           </div>
+        </div>
+        <div style={{marginBottom: 12}}>
+          <label style={labelStyle}>Mentor Name</label>
+          <input type="text" value={form.mentor_name} onChange={e => setForm({...form, mentor_name: e.target.value})} placeholder="Your full name" style={inputStyle}/>
+        </div>
+
+        {sectionHeader('Session Content')}
+        <div style={{marginBottom: 12}}>
+          <label style={labelStyle}>Topics Covered</label>
+          <textarea value={form.topics_covered} onChange={e => setForm({...form, topics_covered: e.target.value})} rows={2} placeholder="List topics discussed this week..." style={textareaStyle}/>
+        </div>
+        <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12}}>
           <div>
-            <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Attendance</label>
-            <select value={form.attendance} onChange={e => setForm({...form, attendance: e.target.value})}
-              style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none'}}>
-              <option value="present">Present</option>
-              <option value="absent">Absent</option>
-              <option value="excused">Excused</option>
+            <label style={labelStyle}>Understanding (1–5)</label>
+            <select value={form.understanding} onChange={e => setForm({...form, understanding: e.target.value})} style={selectStyle}>
+              {['1','2','3','4','5'].map(n => <option key={n} value={n}>{n} — {n==='1'?'Poor':n==='2'?'Below Avg':n==='3'?'Average':n==='4'?'Good':'Excellent'}</option>)}
             </select>
           </div>
           <div>
-            <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Participation (1–5)</label>
-            <select value={form.participation} onChange={e => setForm({...form, participation: e.target.value})}
-              style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none'}}>
-              {[1,2,3,4,5].map(n => <option key={n} value={n}>{n} — {['','Poor','Below avg','Average','Good','Excellent'][n]}</option>)}
+            <label style={labelStyle}>Engagement (1–5)</label>
+            <select value={form.engagement} onChange={e => setForm({...form, engagement: e.target.value})} style={selectStyle}>
+              {['1','2','3','4','5'].map(n => <option key={n} value={n}>{n} — {n==='1'?'Poor':n==='2'?'Below Avg':n==='3'?'Average':n==='4'?'Good':'Excellent'}</option>)}
             </select>
           </div>
         </div>
-        <div style={{marginBottom: 14}}>
-          <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Performance notes</label>
-          <textarea value={form.performance_notes} onChange={e => setForm({...form, performance_notes: e.target.value})} placeholder="How is the student performing this week?" rows={3}
-            style={{width: '100%', borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '8px 10px', color: '#1a1008', outline: 'none', boxSizing: 'border-box', resize: 'none'}}/>
+        <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12}}>
+          <div>
+            <label style={labelStyle}>No. of Practice Questions Done</label>
+            <input type="text" value={form.practice_questions} onChange={e => setForm({...form, practice_questions: e.target.value})} placeholder="e.g. 40" style={inputStyle}/>
+          </div>
+          <div>
+            <label style={labelStyle}>Was Prepared</label>
+            <select value={form.was_prepared} onChange={e => setForm({...form, was_prepared: e.target.value})} style={selectStyle}>
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+            </select>
+          </div>
         </div>
-        <div style={{marginBottom: 14}}>
-          <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Previous action items completed?</label>
-          <textarea value={form.action_items_completed} onChange={e => setForm({...form, action_items_completed: e.target.value})} placeholder="Which action items did the student complete?" rows={2}
-            style={{width: '100%', borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '8px 10px', color: '#1a1008', outline: 'none', boxSizing: 'border-box', resize: 'none'}}/>
+        <div style={{marginBottom: 12}}>
+          <label style={labelStyle}>Areas of Difficulty</label>
+          <textarea value={form.areas_of_difficulty} onChange={e => setForm({...form, areas_of_difficulty: e.target.value})} rows={2} placeholder="What topics or concepts were most challenging?" style={textareaStyle}/>
         </div>
-        <div style={{marginBottom: 14}}>
-          <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>New action items for student</label>
-          <textarea value={form.new_action_items} onChange={e => setForm({...form, new_action_items: e.target.value})} placeholder="What should the student focus on this week?" rows={2}
-            style={{width: '100%', borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '8px 10px', color: '#1a1008', outline: 'none', boxSizing: 'border-box', resize: 'none'}}/>
+
+        {sectionHeader('Practice Tests & NBME')}
+        <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12}}>
+          <div>
+            <label style={labelStyle}>Took Practice Test or NBME</label>
+            <select value={form.took_practice_test} onChange={e => setForm({...form, took_practice_test: e.target.value})} style={selectStyle}>
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+              <option value="Not Assigned">Not Assigned</option>
+            </select>
+          </div>
+          <div>
+            <label style={labelStyle}>NBME Score (if applicable)</label>
+            <input type="text" value={form.nbme_score} onChange={e => setForm({...form, nbme_score: e.target.value})} placeholder="e.g. 210" style={inputStyle}/>
+          </div>
         </div>
-        <div style={{marginBottom: 14}}>
-          <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Concerns or flags</label>
-          <textarea value={form.concerns} onChange={e => setForm({...form, concerns: e.target.value})} placeholder="Any concerns to flag for admin?" rows={2}
-            style={{width: '100%', borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '8px 10px', color: '#1a1008', outline: 'none', boxSizing: 'border-box', resize: 'none'}}/>
+
+        {sectionHeader('Study Goals & Resources')}
+        <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12}}>
+          <div>
+            <label style={labelStyle}>Completed Study Goals</label>
+            <select value={form.completed_study_goals} onChange={e => setForm({...form, completed_study_goals: e.target.value})} style={selectStyle}>
+              <option value="Y">Y — Yes</option>
+              <option value="N">N — No</option>
+            </select>
+          </div>
+          <div>
+            <label style={labelStyle}>Stress Levels</label>
+            <select value={form.stress_levels} onChange={e => setForm({...form, stress_levels: e.target.value})} style={selectStyle}>
+              <option value="LOW">Low</option>
+              <option value="MODERATE">Moderate</option>
+              <option value="HIGH">High</option>
+            </select>
+          </div>
         </div>
-        <div style={{marginBottom: 20}}>
-          <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Overall status</label>
-          <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8}}>
-            {[{v:'on_track',l:'On Track'},{v:'needs_attention',l:'Needs Attention'},{v:'at_risk',l:'At Risk'}].map(opt => (
-              <div key={opt.v} onClick={() => setForm({...form, status: opt.v})}
-                style={{padding: '10px 12px', borderRadius: 8, border: `2px solid ${form.status === opt.v ? (opt.v === 'on_track' ? '#6b7c3a' : opt.v === 'needs_attention' ? '#c07040' : '#c0574a') : '#e8dfc8'}`, background: form.status === opt.v ? (opt.v === 'on_track' ? '#f0f7f2' : opt.v === 'needs_attention' ? '#fff8e8' : '#fdf0f0') : 'white', cursor: 'pointer', textAlign: 'center'}}>
-                <div style={{fontSize: 12, fontWeight: 600, color: form.status === opt.v ? (opt.v === 'on_track' ? '#2d6a4f' : opt.v === 'needs_attention' ? '#c07040' : '#c0574a') : '#8a7d6a'}}>{opt.l}</div>
+        <div style={{marginBottom: 12}}>
+          <label style={labelStyle}>Resources Used</label>
+          <div style={{display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 6}}>
+            {['UWorld','First Aid','Pathoma','Sketchy','Amboss','Other'].map(r => (
+              <div key={r} onClick={() => {
+                const current = form.resources_used.split(',').filter(Boolean)
+                const updated = current.includes(r) ? current.filter(x => x !== r) : [...current, r]
+                setForm({...form, resources_used: updated.join(',')})
+              }} style={{padding: '5px 12px', borderRadius: 20, fontSize: 12, cursor: 'pointer', fontFamily: 'Sora, sans-serif',
+                background: form.resources_used.split(',').includes(r) ? '#0d2340' : '#f7f4ee',
+                color: form.resources_used.split(',').includes(r) ? '#c9a84c' : '#8a7d6a',
+                border: form.resources_used.split(',').includes(r) ? 'none' : '1px solid #e8dfc8'}}>
+                {r}
               </div>
             ))}
           </div>
         </div>
+
+        {sectionHeader('Barriers & Follow-Up')}
+        <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12}}>
+          <div>
+            <label style={labelStyle}>Barriers This Week</label>
+            <select value={form.barriers_this_week} onChange={e => setForm({...form, barriers_this_week: e.target.value})} style={selectStyle}>
+              <option value="N">N — No</option>
+              <option value="Y">Y — Yes</option>
+            </select>
+          </div>
+          <div>
+            <label style={labelStyle}>Follow Up Needed</label>
+            <select value={form.follow_up_needed} onChange={e => setForm({...form, follow_up_needed: e.target.value})} style={selectStyle}>
+              <option value="No">No</option>
+              <option value="Yes">Yes</option>
+            </select>
+          </div>
+        </div>
+        {form.barriers_this_week === 'Y' && (
+          <div style={{marginBottom: 12}}>
+            <label style={labelStyle}>If Yes, Describe Barriers (e.g. Work, Family, etc.)</label>
+            <textarea value={form.barriers_description} onChange={e => setForm({...form, barriers_description: e.target.value})} rows={2} placeholder="Describe barriers..." style={textareaStyle}/>
+          </div>
+        )}
+        <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12}}>
+          <div>
+            <label style={labelStyle}>SGA Action Needed</label>
+            <select value={form.sga_action_needed} onChange={e => setForm({...form, sga_action_needed: e.target.value})} style={selectStyle}>
+              <option value="No">No</option>
+              <option value="Yes">Yes</option>
+            </select>
+          </div>
+        </div>
+
+        {sectionHeader('Next Steps & Notes')}
+        <div style={{marginBottom: 12}}>
+          <label style={labelStyle}>Next Steps / Study Plan Given</label>
+          <textarea value={form.next_steps} onChange={e => setForm({...form, next_steps: e.target.value})} rows={2} placeholder="What is the plan for next week?" style={textareaStyle}/>
+        </div>
+        <div style={{marginBottom: 20}}>
+          <label style={labelStyle}>Mentor Notes</label>
+          <textarea value={form.mentor_notes} onChange={e => setForm({...form, mentor_notes: e.target.value})} rows={3} placeholder="Additional observations or notes..." style={textareaStyle}/>
+        </div>
+
         <button onClick={submit} disabled={saving || !form.student_id}
-          style={{width: '100%', height: 46, background: saving || !form.student_id ? '#4a5568' : '#0d2340', border: 'none', borderRadius: 9, color: '#c9a84c', fontFamily: 'Sora, sans-serif', fontSize: 15, fontWeight: 600, cursor: saving || !form.student_id ? 'not-allowed' : 'pointer'}}>
-          {saving ? 'Submitting...' : 'Submit report to admin ↗'}
+          style={{width: '100%', height: 46, background: '#0d2340', border: 'none', borderRadius: 9, color: '#c9a84c', fontFamily: 'Sora, sans-serif', fontSize: 15, fontWeight: 600, cursor: 'pointer'}}>
+          {saving ? 'Submitting...' : 'Submit Report ↗'}
         </button>
       </div>
 
       <div style={{display: 'flex', flexDirection: 'column', gap: 12}}>
         <div style={{background: '#0d2340', borderRadius: 12, padding: '16px 20px'}}>
-          <div style={{fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#c9a84c', marginBottom: 4}}>Your submitted reports</div>
-          <div style={{fontSize: 12, color: 'rgba(255,255,255,0.5)'}}>{reports.length} report{reports.length !== 1 ? 's' : ''} on file</div>
+          <div style={{fontSize: 13, color: '#c9a84c', fontWeight: 600, marginBottom: 4}}>Past Reports</div>
+          <div style={{fontSize: 11, color: 'rgba(255,255,255,0.4)'}}>{reports.length} report{reports.length !== 1 ? 's' : ''} submitted</div>
         </div>
-        {loading ? (
-          <div style={{fontSize: 14, color: '#8a7d6a'}}>Loading...</div>
-        ) : reports.length === 0 ? (
-          <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, padding: '32px', textAlign: 'center'}}>
-            <div style={{fontSize: 14, color: '#8a7d6a'}}>No reports submitted yet</div>
-          </div>
+        {loading ? <div style={{fontSize: 13, color: '#8a7d6a'}}>Loading...</div>
+        : reports.length === 0 ? (
+          <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 10, padding: '20px', textAlign: 'center', fontSize: 13, color: '#8a7d6a', fontStyle: 'italic'}}>No reports yet.</div>
         ) : reports.map(r => (
-          <div key={r.id} style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, overflow: 'hidden'}}>
-            <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', cursor: 'pointer'}} onClick={() => setExpanded(expanded === r.id ? null : r.id)}>
+          <div key={r.id} style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 10, overflow: 'hidden'}}>
+            <div onClick={() => setExpanded(expanded === r.id ? null : r.id)}
+              style={{padding: '12px 16px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
               <div>
-                <div style={{fontSize: 14, fontWeight: 500, color: '#0d2340'}}>{studentName(r.student_id)}</div>
-                <div style={{fontSize: 11, color: '#8a7d6a', marginTop: 2}}>Week {r.week_number} · {new Date(r.report_date).toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}</div>
+                <div style={{fontSize: 13, fontWeight: 600, color: '#0d2340'}}>{studentName(r.student_id)}</div>
+                <div style={{fontSize: 11, color: '#8a7d6a'}}>Week {r.week_number} · {r.report_date}</div>
               </div>
-              <div style={{display: 'flex', alignItems: 'center', gap: 8}}>
-                <span style={{fontSize: 11, padding: '3px 10px', borderRadius: 10, fontWeight: 500, ...statusStyle(r.status)}}>{statusLabel(r.status)}</span>
-                <span style={{fontSize: 12, color: '#a89870'}}>{expanded === r.id ? '▲' : '▼'}</span>
+              <div style={{display: 'flex', gap: 8, alignItems: 'center'}}>
+                <span style={{fontSize: 10, padding: '2px 8px', borderRadius: 8, background: '#f7f4ee', color: '#8a7d6a'}}>U:{r.understanding}/5 E:{r.engagement}/5</span>
+                <span style={{fontSize: 12, color: '#c9a84c'}}>{expanded === r.id ? '▲' : '▼'}</span>
               </div>
             </div>
             {expanded === r.id && (
-              <div style={{padding: '0 18px 16px', borderTop: '0.5px solid #f5f0e8'}}>
-                <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 12}}>
-                  <div><div style={{fontSize: 10, color: '#a89870', textTransform: 'uppercase', marginBottom: 2}}>Attendance</div><div style={{fontSize: 13, color: '#0d2340'}}>{r.attendance}</div></div>
-                  <div><div style={{fontSize: 10, color: '#a89870', textTransform: 'uppercase', marginBottom: 2}}>Participation</div><div style={{fontSize: 13, color: '#0d2340'}}>{r.participation}/5</div></div>
+              <div style={{padding: '0 16px 14px', borderTop: '0.5px solid #f0ece0', display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8}}>
+                {r.topics_covered && <div style={{fontSize: 12, color: '#3d3020'}}><strong>Topics:</strong> {r.topics_covered}</div>}
+                {r.areas_of_difficulty && <div style={{fontSize: 12, color: '#3d3020'}}><strong>Difficulty:</strong> {r.areas_of_difficulty}</div>}
+                {r.took_practice_test && <div style={{fontSize: 12, color: '#3d3020'}}><strong>Practice test:</strong> {r.took_practice_test}{r.nbme_score ? ` · Score: ${r.nbme_score}` : ''}</div>}
+                {r.resources_used && <div style={{fontSize: 12, color: '#3d3020'}}><strong>Resources:</strong> {r.resources_used}</div>}
+                {r.barriers_this_week === 'Y' && <div style={{fontSize: 12, color: '#c0574a'}}><strong>Barriers:</strong> {r.barriers_description}</div>}
+                {r.next_steps && <div style={{fontSize: 12, color: '#3d3020'}}><strong>Next steps:</strong> {r.next_steps}</div>}
+                {r.mentor_notes && <div style={{fontSize: 12, color: '#3d3020'}}><strong>Notes:</strong> {r.mentor_notes}</div>}
+                <div style={{display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 4}}>
+                  <span style={{fontSize: 10, padding: '2px 8px', borderRadius: 8, background: r.follow_up_needed === 'Yes' ? '#fff8e8' : '#f0f7f2', color: r.follow_up_needed === 'Yes' ? '#c07040' : '#2d6a4f'}}>Follow-up: {r.follow_up_needed}</span>
+                  <span style={{fontSize: 10, padding: '2px 8px', borderRadius: 8, background: r.sga_action_needed === 'Yes' ? '#fdf0f0' : '#f0f7f2', color: r.sga_action_needed === 'Yes' ? '#c0574a' : '#2d6a4f'}}>SGA: {r.sga_action_needed}</span>
+                  <span style={{fontSize: 10, padding: '2px 8px', borderRadius: 8, background: '#f7f4ee', color: '#8a7d6a'}}>Stress: {r.stress_levels}</span>
+                  <span style={{fontSize: 10, padding: '2px 8px', borderRadius: 8, background: r.completed_study_goals === 'Y' ? '#f0f7f2' : '#fdf0f0', color: r.completed_study_goals === 'Y' ? '#2d6a4f' : '#c0574a'}}>Goals: {r.completed_study_goals}</span>
                 </div>
-                {r.performance_notes && <div style={{marginTop: 10}}><div style={{fontSize: 10, color: '#a89870', textTransform: 'uppercase', marginBottom: 2}}>Performance notes</div><div style={{fontSize: 13, color: '#3d3020', lineHeight: 1.5}}>{r.performance_notes}</div></div>}
-                {r.new_action_items && <div style={{marginTop: 10}}><div style={{fontSize: 10, color: '#a89870', textTransform: 'uppercase', marginBottom: 2}}>Action items</div><div style={{fontSize: 13, color: '#3d3020', lineHeight: 1.5}}>{r.new_action_items}</div></div>}
-                {r.concerns && <div style={{marginTop: 10, background: '#fdf0f0', borderRadius: 7, padding: '8px 10px'}}><div style={{fontSize: 10, color: '#c0574a', textTransform: 'uppercase', marginBottom: 2}}>Concerns flagged</div><div style={{fontSize: 13, color: '#c0574a', lineHeight: 1.5}}>{r.concerns}</div></div>}
               </div>
             )}
           </div>
@@ -680,3 +782,5 @@ function AccountabilityReport({ supabase, students, tutorId, onSuccess }: any) {
     </div>
   )
 }
+
+
