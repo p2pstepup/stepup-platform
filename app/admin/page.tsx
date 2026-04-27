@@ -13,6 +13,7 @@ const label = (style: object, children: React.ReactNode) =>
 
 export default function AdminDashboard() {
   const [user, setUser] = useState<any>(null)
+  const [profile, setProfile] = useState<any>(null)
   const [students, setStudents] = useState<any[]>([])
   const [tutors, setTutors] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -116,7 +117,7 @@ export default function AdminDashboard() {
               {user?.email?.charAt(0).toUpperCase()}
             </div>
             <div style={{flex: 1, minWidth: 0}}>
-              <div style={{fontSize: 12, color: 'white', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>{user?.email?.split('@')[0]}</div>
+              <div style={{fontSize: 12, color: 'white', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>{profile?.full_name || user?.email?.split('@')[0]}</div>
               <div style={{fontSize: 10, color: 'rgba(255,255,255,0.35)'}}>Admin</div>
             </div>
             <div onClick={handleSignOut} style={{fontSize: 11, color: 'rgba(255,255,255,0.35)', cursor: 'pointer', padding: '4px 8px', borderRadius: 4, border: '0.5px solid rgba(255,255,255,0.15)', flexShrink: 0}}>Sign Out</div>
