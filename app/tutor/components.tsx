@@ -997,6 +997,8 @@ export function StudyScheduleManager({ supabase, students, onSuccess }: any) {
   const [notes, setNotes] = useState('')
   const [saving, setSaving] = useState(false)
   const [newTask, setNewTask] = useState({title: '', description: '', tag: 'Qbank', duration: '', resource_link: ''})
+  const [viewMode, setViewMode] = useState<'add'|'view'>('add')
+  const [allSchedules, setAllSchedules] = useState<any[]>([])
 
   const loadEntry = async (studentId: string, date: string) => {
     if (!studentId || !date) return
@@ -1005,8 +1007,15 @@ export function StudyScheduleManager({ supabase, students, onSuccess }: any) {
     else { setExistingEntry(null); setTasks([]); setNotes('') }
   }
 
+  const loadAllSchedules = async (studentId: string) => {
+    if (!studentId) return
+    const { data } = await supabase.from('study_schedule').select('*').eq('student_id', studentId).order('schedule_date', {ascending: true})
+    setAllSchedules(data || [])
+  }
+
   useEffect(() => {
     if (selectedStudent && selectedDate) loadEntry(selectedStudent, selectedDate)
+    if (selectedStudent) loadAllSchedules(selectedStudent)
   }, [selectedStudent, selectedDate])
 
   const addTask = () => {
@@ -1058,6 +1067,63 @@ export function StudyScheduleManager({ supabase, students, onSuccess }: any) {
         </div>
       </div>
       {selectedStudent && (
+        <div style={{display: 'flex', gap: 8, marginBottom: 4}}>
+          <button onClick={() => setViewMode('add')}
+            style={{flex: 1, height: 38, background: viewMode === 'add' ? '#0d2340' : '#f7f4ee', border: viewMode === 'add' ? 'none' : '1px solid #e8dfc8', borderRadius: 8, color: viewMode === 'add' ? '#c9a84c' : '#8a7d6a', fontFamily: 'Sora, sans-serif', fontSize: 13, fontWeight: 600, cursor: 'pointer'}}>
+            ✏️ Add / Edit Schedule
+          </button>
+          <button onClick={() => { setViewMode('view'); loadAllSchedules(selectedStudent) }}
+            style={{flex: 1, height: 38, background: viewMode === 'view' ? '#0d2340' : '#f7f4ee', border: viewMode === 'view' ? 'none' : '1px solid #e8dfc8', borderRadius: 8, color: viewMode === 'view' ? '#c9a84c' : '#8a7d6a', fontFamily: 'Sora, sans-serif', fontSize: 13, fontWeight: 600, cursor: 'pointer'}}>
+            👁️ View Full Schedule
+          </button>
+        </div>
+      )}
+      {selectedStudent && viewMode === 'view' && (
+        <div style={{display: 'flex', flexDirection: 'column', gap: 12}}>
+          {allSchedules.length === 0 ? (
+            <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, padding: '32px', textAlign: 'center', fontSize: 14, color: '#8a7d6a', fontStyle: 'italic'}}>No study schedule entries yet for this student.</div>
+          ) : allSchedules.map((entry: any) => {
+            const completed = (entry.tasks || []).filter((t: any) => t.completed).length
+            const total = (entry.tasks || []).length
+            const pct = total > 0 ? Math.round((completed/total)*100) : 0
+            return (
+              <div key={entry.id} style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, overflow: 'hidden'}}>
+                <div style={{background: '#f7f4ee', padding: '12px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '0.5px solid #e8dfc8'}}>
+                  <div>
+                    <div style={{fontSize: 14, fontWeight: 600, color: '#0d2340'}}>{new Date(entry.schedule_date + 'T12:00:00').toLocaleDateString('en-US', {weekday: 'long', month: 'long', day: 'numeric'})}</div>
+                    {entry.notes && <div style={{fontSize: 12, color: '#8a7d6a', marginTop: 2}}>{entry.notes}</div>}
+                  </div>
+                  <div style={{textAlign: 'right'}}>
+                    <div style={{fontSize: 13, fontWeight: 600, color: pct === 100 ? '#6b7c3a' : '#c9a84c'}}>{completed}/{total} done</div>
+                    <div style={{width: 80, height: 4, background: '#e8dfc8', borderRadius: 2, marginTop: 4}}>
+                      <div style={{height: '100%', background: pct === 100 ? '#6b7c3a' : '#c9a84c', width: `${pct}%`, borderRadius: 2}}/>
+                    </div>
+                  </div>
+                </div>
+                <div style={{padding: '8px 0'}}>
+                  {(entry.tasks || []).map((task: any, idx: number) => (
+                    <div key={idx} style={{display: 'flex', alignItems: 'center', gap: 12, padding: '8px 18px', borderBottom: idx < entry.tasks.length-1 ? '0.5px solid #f5f0e8' : 'none'}}>
+                      <div style={{width: 20, height: 20, borderRadius: 5, border: task.completed ? 'none' : '1.5px solid #e8dfc8', background: task.completed ? '#6b7c3a' : 'white', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                        {task.completed && <span style={{color: 'white', fontSize: 11}}>✓</span>}
+                      </div>
+                      <div style={{flex: 1}}>
+                        <div style={{fontSize: 13, fontWeight: 500, color: task.completed ? '#a89870' : '#0d2340', textDecoration: task.completed ? 'line-through' : 'none'}}>{task.title}</div>
+                        {task.description && <div style={{fontSize: 11, color: '#8a7d6a'}}>{task.description}</div>}
+                      </div>
+                      <div style={{display: 'flex', gap: 6, alignItems: 'center'}}>
+                        {task.tag && <span style={{fontSize: 10, padding: '2px 7px', borderRadius: 8, background: '#f7f4ee', color: '#8a7d6a'}}>{task.tag}</span>}
+                        {task.duration && <span style={{fontSize: 10, color: '#a89870'}}>{task.duration}</span>}
+                        {task.added_by_student && <span style={{fontSize: 10, padding: '2px 7px', borderRadius: 8, background: '#fff8e8', color: '#c9a84c'}}>Student added</span>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+      {selectedStudent && viewMode === 'add' && (<>
         <div style={{display: 'grid', gridTemplateColumns: '1fr 300px', gap: 20}}>
           <div style={{display: 'flex', flexDirection: 'column', gap: 14}}>
             <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, padding: '18px 22px'}}>
@@ -1150,6 +1216,7 @@ export function StudyScheduleManager({ supabase, students, onSuccess }: any) {
             </div>
           </div>
         </div>
+      </>
       )}
     </div>
   )
