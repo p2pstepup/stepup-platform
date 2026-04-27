@@ -105,7 +105,7 @@ export default function TutorDashboard() {
     {section: 'Reporting', items: [
       {name: 'Log Attendance', tab: 'attendance'},
       {name: 'Student Progress Report', tab: 'accountability'},
-    {name: 'Calendar', tab: 'calendar'},
+      {name: 'Calendar', tab: 'calendar'},
     ]},
   ]
 
