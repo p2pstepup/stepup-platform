@@ -3,14 +3,19 @@ import { useState, useEffect } from 'react'
 
 export function StudentProfiles({ supabase, students, onSuccess }: any) {
   const [profiles, setProfiles] = useState<any[]>([])
+  const [tutors, setTutors] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState('')
 
   useEffect(() => { load() }, [])
 
   const load = async () => {
-    const { data } = await supabase.from('profiles').select('*').eq('role', 'student').order('full_name')
-    setProfiles(data || [])
+    const [{ data: studentData }, { data: tutorData }] = await Promise.all([
+      supabase.from('profiles').select('*').eq('role', 'student').order('full_name'),
+      supabase.from('profiles').select('id, full_name, email').in('role', ['tutor', 'admin']).order('full_name')
+    ])
+    setProfiles(studentData || [])
+    setTutors(tutorData || [])
     setLoading(false)
   }
 
@@ -47,7 +52,7 @@ export function StudentProfiles({ supabase, students, onSuccess }: any) {
             </div>
             {saving === profile.id && <div style={{fontSize: 12, color: '#c9a84c', marginLeft: 'auto'}}>Saving...</div>}
           </div>
-          <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12}}>
+          <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr', gap: 12}}>
             <div>
               <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Full name</label>
               <input type="text" defaultValue={profile.full_name || ''} id={`name-${profile.id}`} placeholder="Student full name"
@@ -63,12 +68,21 @@ export function StudentProfiles({ supabase, students, onSuccess }: any) {
               <input type="text" defaultValue={profile.mentor_email || ''} id={`mentor-email-${profile.id}`} placeholder="mentor@email.com"
                 style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 10px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
             </div>
-            <div style={{display: 'flex', alignItems: 'flex-end'}}>
+            <div>
+              <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Assigned tutor</label>
+              <select id={`tutor-${profile.id}`} defaultValue={profile.tutor_id || ''}
+                style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 10px', color: '#1a1008', outline: 'none'}}>
+                <option value="">No tutor assigned</option>
+                {tutors.map((t: any) => <option key={t.id} value={t.id}>{t.full_name || t.email.split('@')[0]}</option>)}
+              </select>
+            </div>
+            <div style={{display: 'flex', alignItems: 'flex-end', gridColumn: 'span 1'}}>
               <button onClick={() => {
                 const name = (document.getElementById(`name-${profile.id}`) as HTMLInputElement)?.value
                 const mentorName = (document.getElementById(`mentor-name-${profile.id}`) as HTMLInputElement)?.value
                 const mentorEmail = (document.getElementById(`mentor-email-${profile.id}`) as HTMLInputElement)?.value
-                updateProfile(profile.id, {full_name: name, mentor_name: mentorName, mentor_email: mentorEmail})
+                const tutorId = (document.getElementById(`tutor-${profile.id}`) as HTMLSelectElement)?.value
+                updateProfile(profile.id, {full_name: name, mentor_name: mentorName, mentor_email: mentorEmail, tutor_id: tutorId || null})
               }} style={{width: '100%', height: 40, background: '#0d2340', border: 'none', borderRadius: 7, color: '#c9a84c', fontFamily: 'Sora, sans-serif', fontSize: 13, fontWeight: 600, cursor: 'pointer'}}>
                 Save ↗
               </button>
