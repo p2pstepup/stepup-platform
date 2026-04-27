@@ -551,12 +551,23 @@ export function ResourcesManager({ supabase, onSuccess }: any) {
           <div style={{fontSize: 14, fontWeight: 600, color: 'white'}}>All resources ({resources.length})</div>
         </div>
         {resources.map((res, i) => (
-          <div key={res.id} style={{display: 'grid', gridTemplateColumns: '1fr 120px 1fr auto', gap: 12, alignItems: 'center', padding: '12px 20px', borderBottom: i < resources.length-1 ? '0.5px solid #f5f0e8' : 'none'}}>
+          <div key={res.id} style={{display: 'grid', gridTemplateColumns: '1fr 180px 100px 1fr auto', gap: 12, alignItems: 'center', padding: '12px 20px', borderBottom: i < resources.length-1 ? '0.5px solid #f5f0e8' : 'none'}}>
             <div>
-              <div style={{fontSize: 13, color: '#0d2340', fontWeight: 500}}>{res.name}</div>
-              <div style={{fontSize: 11, color: '#8a7d6a'}}>{res.category}</div>
+              <input type="text" defaultValue={res.name}
+                onBlur={e => { if (e.target.value !== res.name) updateResource(res.id, {name: e.target.value}) }}
+                style={{width: '100%', height: 30, borderRadius: 5, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#0d2340', fontWeight: 500, outline: 'none', boxSizing: 'border-box', marginBottom: 4}}/>
+              <input type="text" defaultValue={res.description || ''} placeholder="Description..."
+                onBlur={e => { if (e.target.value !== (res.description || '')) updateResource(res.id, {description: e.target.value}) }}
+                style={{width: '100%', height: 26, borderRadius: 5, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 11, padding: '0 8px', color: '#8a7d6a', outline: 'none', boxSizing: 'border-box'}}/>
             </div>
-            <span style={{fontSize: 11, padding: '2px 8px', borderRadius: 4, background: '#f7f4ee', color: '#8a7d6a'}}>{res.file_type}</span>
+            <select defaultValue={res.category} onChange={e => updateResource(res.id, {category: e.target.value})}
+              style={{height: 34, borderRadius: 6, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 12, padding: '0 8px', color: '#1a1008', outline: 'none'}}>
+              {['Course Materials','Study Resources','Study Tools','Practice Exams & Qbanks','Wellness'].map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+            <select defaultValue={res.file_type} onChange={e => updateResource(res.id, {file_type: e.target.value})}
+              style={{height: 34, borderRadius: 6, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 12, padding: '0 8px', color: '#1a1008', outline: 'none'}}>
+              {['PDF','Doc','Video','Link','Spreadsheet'].map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
             <div style={{display: 'flex', gap: 6}}>
               <input type="text" defaultValue={res.link || ''} placeholder="Paste link..." id={`res-link-${res.id}`}
                 style={{flex: 1, height: 34, borderRadius: 6, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 12, padding: '0 8px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
@@ -1201,7 +1212,7 @@ export function CourseDocsManager({ supabase, onSuccess }: any) {
           <div style={{fontSize: 14, fontWeight: 600, color: 'white'}}>All documents ({docs.length})</div>
         </div>
         {docs.map((doc, i) => (
-          <div key={doc.id} style={{display: 'grid', gridTemplateColumns: '1fr 120px 1fr auto', gap: 12, alignItems: 'center', padding: '12px 20px', borderBottom: i < docs.length-1 ? '0.5px solid #f5f0e8' : 'none'}}>
+          <div key={doc.id} style={{display: 'grid', gridTemplateColumns: '1fr 180px 100px 1fr auto', gap: 12, alignItems: 'center', padding: '12px 20px', borderBottom: i < docs.length-1 ? '0.5px solid #f5f0e8' : 'none'}}>
             <div>
               <div style={{fontSize: 13, color: '#0d2340', fontWeight: 500}}>{doc.name}</div>
               <div style={{fontSize: 11, color: '#8a7d6a'}}>{doc.category} · {doc.file_type}</div>
