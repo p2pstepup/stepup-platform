@@ -5,6 +5,7 @@ import { createClient } from '../../../utils/supabase'
 
 export default function MentorMeetings() {
   const [user, setUser] = useState<any>(null)
+  const [profile, setProfile] = useState<any>(null)
   const [meetings, setMeetings] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const router = useRouter()
@@ -15,6 +16,8 @@ export default function MentorMeetings() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/'); return }
       setUser(user)
+      const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+      setProfile(profileData)
       const { data } = await supabase
         .from('mentor_meetings')
         .select('*')

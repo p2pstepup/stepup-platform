@@ -5,6 +5,7 @@ import { createClient } from '../../../utils/supabase'
 
 export default function ExamCenter() {
   const [user, setUser] = useState<any>(null)
+  const [profile, setProfile] = useState<any>(null)
   const [exams, setExams] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [activeSession, setActiveSession] = useState<any>(null)
@@ -25,6 +26,8 @@ export default function ExamCenter() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/'); return }
       setUser(user)
+      const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+      setProfile(profileData)
       const [{ data: examData }, { data: sessionData }] = await Promise.all([
         supabase.from('exams').select('*').order('sort_order'),
         supabase.from('exam_sessions').select('*, answer_sheets(*)').eq('student_id', user.id).order('created_at', {ascending: false})

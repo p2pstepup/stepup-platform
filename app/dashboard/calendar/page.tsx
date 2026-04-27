@@ -5,6 +5,7 @@ import { createClient } from '../../../utils/supabase'
 
 export default function Calendar() {
   const [user, setUser] = useState<any>(null)
+  const [profile, setProfile] = useState<any>(null)
   const [schedule, setSchedule] = useState<any[]>([])
   const [exams, setExams] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -17,6 +18,8 @@ export default function Calendar() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/'); return }
       setUser(user)
+      const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+      setProfile(profileData)
       const [{ data: sched }, { data: examData }] = await Promise.all([
         supabase.from('schedule').select('*').order('sort_order'),
         supabase.from('exams').select('*').not('deadline', 'is', null)

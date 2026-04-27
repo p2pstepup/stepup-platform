@@ -68,6 +68,8 @@ export default function NBMETracker() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/'); return }
       setUser(user)
+      const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+      setProfile(profileData)
       const { data } = await supabase
         .from('nbme_scores')
         .select('*')

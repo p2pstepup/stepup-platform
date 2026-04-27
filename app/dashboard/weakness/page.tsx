@@ -21,6 +21,8 @@ export default function WeaknessMap() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/'); return }
       setUser(user)
+      const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+      setProfile(profileData)
 
       const [{ data: sessionsData }, { data: nbmeData }] = await Promise.all([
         supabase.from('qbank_sessions').select('id, topic, questions_total, questions_correct').eq('student_id', user.id),

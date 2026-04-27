@@ -5,6 +5,7 @@ import { createClient } from '../../../utils/supabase'
 
 export default function HYNotes() {
   const [user, setUser] = useState<any>(null)
+  const [profile, setProfile] = useState<any>(null)
   const [notes, setNotes] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -16,6 +17,8 @@ export default function HYNotes() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/'); return }
       setUser(user)
+      const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+      setProfile(profileData)
       const { data } = await supabase.from('hy_notes').select('*').order('sort_order', {ascending: true})
       setNotes(data || [])
       setLoading(false)

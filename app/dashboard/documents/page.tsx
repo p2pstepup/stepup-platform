@@ -5,6 +5,7 @@ import { createClient } from '../../../utils/supabase'
 
 export default function CourseDocuments() {
   const [user, setUser] = useState<any>(null)
+  const [profile, setProfile] = useState<any>(null)
   const [documents, setDocuments] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const router = useRouter()
@@ -15,6 +16,8 @@ export default function CourseDocuments() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/'); return }
       setUser(user)
+      const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+      setProfile(profileData)
       const { data } = await supabase.from('course_documents').select('*').order('sort_order', {ascending: true})
       setDocuments(data || [])
       setLoading(false)

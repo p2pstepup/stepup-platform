@@ -5,6 +5,7 @@ import { createClient } from '../../../utils/supabase'
 
 export default function LiveFeedback() {
   const [user, setUser] = useState<any>(null)
+  const [profile, setProfile] = useState<any>(null)
   const [messages, setMessages] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
@@ -18,6 +19,8 @@ export default function LiveFeedback() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/'); return }
       setUser(user)
+      const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+      setProfile(profileData)
       const { data } = await supabase
         .from('feedback')
         .select('*')
