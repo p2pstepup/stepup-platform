@@ -39,6 +39,7 @@ const defaultQForm = {
 
 export default function NBMETracker() {
   const [user, setUser] = useState<{id: string; email?: string} | null>(null)
+  const [profile, setProfile] = useState<any>(null)
   const [scores, setScores] = useState<Array<{id: string; exam_name: string; score: number; percent_correct: number | null; time_taken: string | null; exam_date: string; notes: string | null}>>([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
