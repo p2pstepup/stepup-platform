@@ -32,6 +32,8 @@ export default function TutorDashboard() {
         supabase.from('profiles').select('*').eq('id', user.id).single(),
       ])
       setStudents(studentData || [])
+      const { data: assignedData } = await supabase.from('profiles').select('*').eq('role', 'student').eq('tutor_id', user.id).order('full_name')
+      setAssignedStudents(assignedData && assignedData.length > 0 ? assignedData : (studentData || []))
       setProfile(profileData)
       setLoading(false)
     }
