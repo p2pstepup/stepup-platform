@@ -471,7 +471,7 @@ export function NotesManager({ supabase, onSuccess }: any) {
 export function ResourcesManager({ supabase, onSuccess }: any) {
   const [resources, setResources] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [newRes, setNewRes] = useState({name: '', description: '', category: 'Study Strategy', file_type: 'PDF', link: ''})
+  const [newRes, setNewRes] = useState({name: '', description: '', category: 'Course Materials', file_type: 'PDF', link: ''})
   const [adding, setAdding] = useState(false)
 
   useEffect(() => { load() }, [])
@@ -523,7 +523,7 @@ export function ResourcesManager({ supabase, onSuccess }: any) {
             <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Category</label>
             <select value={newRes.category} onChange={e => setNewRes({...newRes, category: e.target.value})}
               style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none'}}>
-              {['Study Strategy','High Yield References','Wellness & Performance'].map(c => <option key={c} value={c}>{c}</option>)}
+              {['Course Materials','Study Resources','Study Tools','Practice Exams & Qbanks','Wellness'].map(c => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
           <div>
