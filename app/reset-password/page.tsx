@@ -13,12 +13,36 @@ export default function ResetPassword() {
   const router = useRouter()
   const supabase = createClient()
 
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') setReady(true)
-    })
-    return () => subscription.unsubscribe()
-  }, [])
+useEffect(() => {
+  const tryRestore = async () => {
+    // Log everything so we can see what's in the URL
+    console.log('FULL URL:', window.location.href)
+    console.log('HASH:', window.location.hash)
+    console.log('SEARCH:', window.location.search)
+
+    const params = new URLSearchParams(window.location.search)
+    console.log('token:', params.get('token'))
+    console.log('type:', params.get('type'))
+    console.log('code:', params.get('code'))
+
+    const token = params.get('token')
+    const type = params.get('type')
+
+    if (token) {
+      const { data, error } = await supabase.auth.verifyOtp({
+        token_hash: token,
+        type: 'recovery'
+      })
+      console.log('verifyOtp result:', data, error)
+      if (!error) { setReady(true); return }
+    }
+
+    const { data: { session } } = await supabase.auth.getSession()
+    console.log('session:', session)
+  }
+
+  tryRestore()
+}, [])
 
   const handleReset = async () => {
     if (!password) { setError('Please enter a new password.'); return }
