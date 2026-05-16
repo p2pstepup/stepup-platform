@@ -7,6 +7,7 @@ import {
   NotesManager, ResourcesManager, ExamsManager, ScheduleManager, AssignmentsManager,
   StudyScheduleManager, CourseDocsManager, ExamReports, StudentPerformance
 } from '../tutor/components'
+import ExamManager from './components/ExamManager'
 
 const label = (style: object, children: React.ReactNode) =>
   <div style={{fontSize: 11, textTransform: 'uppercase' as const, letterSpacing: '0.07em', color: '#8a7d6a', marginBottom: 4, ...style}}>{children}</div>
@@ -77,135 +78,9 @@ export default function AdminDashboard() {
       {name: 'Manage Recordings', tab: 'recordings'},
       {name: 'Manage HY Notes', tab: 'notes'},
       {name: 'Manage Resources', tab: 'resources'},
-      {name: 'Manage Exams', tab: 'exams'},export function QuestionBuilder({ supabase }: any) {
-  const [exams, setExams] = useState<any[]>([])
-  const [selectedExam, setSelectedExam] = useState('')
-  const [questions, setQuestions] = useState<any[]>([])
-  const [loading, setLoading] = useState(false)
-  const [saving, setSaving] = useState(false)
-  const [newQ, setNewQ] = useState({
-    question_number: 1, question_text: '', choice_a: '', choice_b: '',
-    choice_c: '', choice_d: '', correct_answer: 'A', topic: 'Mixed', explanation: ''
-  })
-
-  const TOPICS = ['Cardiology','Psychiatry','Renal','Biochemistry','Pharmacology',
-    'Microbiology','Anatomy','Pathology','Physiology','Reproductive',
-    'Neurology','Endocrinology','Immunology','Mixed']
-
-  useEffect(() => {
-    supabase.from('exams').select('*').order('sort_order').then(({data}:any) => setExams(data||[]))
-  }, [])
-
-  const loadQuestions = async (examId: string) => {
-    setLoading(true)
-    const { data } = await supabase.from('questions').select('*').eq('exam_id', examId).order('question_number')
-    setQuestions(data || [])
-    const nextNum = data && data.length > 0 ? Math.max(...data.map((q:any) => q.question_number)) + 1 : 1
-    setNewQ(prev => ({...prev, question_number: nextNum}))
-    setLoading(false)
-  }
-
-  const addQuestion = async () => {
-    if (!selectedExam || !newQ.question_text || !newQ.choice_a || !newQ.choice_b || !newQ.choice_c || !newQ.choice_d) return
-    setSaving(true)
-    await supabase.from('questions').insert({...newQ, exam_id: selectedExam})
-    await loadQuestions(selectedExam)
-    setNewQ(prev => ({...prev, question_number: prev.question_number + 1, question_text: '', choice_a: '', choice_b: '', choice_c: '', choice_d: '', explanation: ''}))
-    setSaving(false)
-  }
-
-  const deleteQuestion = async (id: string) => {
-    await supabase.from('questions').delete().eq('id', id)
-    await loadQuestions(selectedExam)
-  }
-
-  const inp = {width:'100%',height:40,borderRadius:7,border:'1px solid #e8dfc8',fontFamily:'Sora,sans-serif',fontSize:13,padding:'0 10px',color:'#1a1008',outline:'none',boxSizing:'border-box' as const}
-
-  return (
-    <div style={{display:'flex',flexDirection:'column',gap:20}}>
-      <div style={{background:'white',border:'0.5px solid #e8dfc8',borderRadius:12,padding:'20px 24px'}}>
-        <div style={{fontSize:15,fontWeight:600,color:'#0d2340',marginBottom:14}}>Select exam to manage questions</div>
-        <select value={selectedExam} onChange={e => { setSelectedExam(e.target.value); if(e.target.value) loadQuestions(e.target.value) }}
-          style={{height:42,borderRadius:8,border:'1px solid #e8dfc8',fontFamily:'Sora,sans-serif',fontSize:14,padding:'0 12px',color:'#1a1008',outline:'none',minWidth:280}}>
-          <option value="">Choose an exam...</option>
-          {exams.map((e:any) => <option key={e.id} value={e.id}>{e.name} ({e.questions}Q)</option>)}
-        </select>
-        {selectedExam && <div style={{fontSize:13,color:'#8a7d6a',marginTop:8}}>{questions.length} questions added so far</div>}
-      </div>
-
-      {selectedExam && (
-        <div style={{background:'white',border:'0.5px solid #e8dfc8',borderRadius:12,padding:'24px'}}>
-          <div style={{fontSize:15,fontWeight:600,color:'#0d2340',marginBottom:20}}>Add question #{newQ.question_number}</div>
-          <div style={{marginBottom:14}}>
-            <label style={{fontSize:11,fontWeight:500,color:'#5c4f35',display:'block',marginBottom:5,textTransform:'uppercase'}}>Question text</label>
-            <textarea value={newQ.question_text} onChange={e => setNewQ({...newQ,question_text:e.target.value})}
-              placeholder="A 45-year-old man presents with..." rows={4}
-              style={{width:'100%',borderRadius:8,border:'1px solid #e8dfc8',fontFamily:'Sora,sans-serif',fontSize:14,padding:'10px 12px',color:'#1a1008',outline:'none',boxSizing:'border-box',resize:'vertical'}}/>
-          </div>
-          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:14}}>
-            {['a','b','c','d'].map(opt => (
-              <div key={opt}>
-                <label style={{fontSize:11,fontWeight:500,color:'#5c4f35',display:'block',marginBottom:5,textTransform:'uppercase'}}>Choice {opt.toUpperCase()}</label>
-                <input type="text" value={(newQ as any)[`choice_${opt}`]} onChange={e => setNewQ({...newQ,[`choice_${opt}`]:e.target.value})}
-                  placeholder={`Option ${opt.toUpperCase()}...`} style={inp}/>
-              </div>
-            ))}
-          </div>
-          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:12,marginBottom:14}}>
-            <div>
-              <label style={{fontSize:11,fontWeight:500,color:'#5c4f35',display:'block',marginBottom:5,textTransform:'uppercase'}}>Correct answer</label>
-              <select value={newQ.correct_answer} onChange={e => setNewQ({...newQ,correct_answer:e.target.value})}
-                style={{...inp,height:40}}>
-                {['A','B','C','D'].map(o => <option key={o} value={o}>{o}</option>)}
-              </select>
-            </div>
-            <div>
-              <label style={{fontSize:11,fontWeight:500,color:'#5c4f35',display:'block',marginBottom:5,textTransform:'uppercase'}}>Topic</label>
-              <select value={newQ.topic} onChange={e => setNewQ({...newQ,topic:e.target.value})}
-                style={{...inp,height:40}}>
-                {TOPICS.map(t => <option key={t} value={t}>{t}</option>)}
-              </select>
-            </div>
-            <div>
-              <label style={{fontSize:11,fontWeight:500,color:'#5c4f35',display:'block',marginBottom:5,textTransform:'uppercase'}}>Q number</label>
-              <input type="number" value={newQ.question_number} onChange={e => setNewQ({...newQ,question_number:parseInt(e.target.value)})} style={inp}/>
-            </div>
-          </div>
-          <div style={{marginBottom:16}}>
-            <label style={{fontSize:11,fontWeight:500,color:'#5c4f35',display:'block',marginBottom:5,textTransform:'uppercase'}}>Explanation (optional)</label>
-            <textarea value={newQ.explanation} onChange={e => setNewQ({...newQ,explanation:e.target.value})}
-              placeholder="Why is this the correct answer..." rows={2}
-              style={{width:'100%',borderRadius:8,border:'1px solid #e8dfc8',fontFamily:'Sora,sans-serif',fontSize:13,padding:'10px 12px',color:'#1a1008',outline:'none',boxSizing:'border-box',resize:'none'}}/>
-          </div>
-          <button onClick={addQuestion} disabled={saving||!newQ.question_text||!newQ.choice_a||!newQ.choice_b||!newQ.choice_c||!newQ.choice_d}
-            style={{width:'100%',height:46,background:'#0d2340',border:'none',borderRadius:9,color:'#c9a84c',fontFamily:'Sora,sans-serif',fontSize:15,fontWeight:600,cursor:'pointer'}}>
-            {saving ? 'Saving...' : `Save question #${newQ.question_number} →`}
-          </button>
-        </div>
-      )}
-
-      {selectedExam && questions.length > 0 && (
-        <div style={{background:'white',border:'0.5px solid #e8dfc8',borderRadius:12,overflow:'hidden'}}>
-          <div style={{background:'#0d2340',padding:'12px 20px'}}>
-            <div style={{fontSize:14,fontWeight:600,color:'white'}}>{questions.length} questions added</div>
-          </div>
-          {loading ? <div style={{padding:24,fontSize:14,color:'#8a7d6a'}}>Loading...</div>
-          : questions.map((q, i) => (
-            <div key={q.id} style={{padding:'14px 20px',borderBottom:i<questions.length-1?'0.5px solid #f5f0e8':'none',display:'flex',gap:16,alignItems:'flex-start'}}>
-              <div style={{width:32,height:32,borderRadius:'50%',background:'#0d2340',color:'#c9a84c',fontSize:13,fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>{q.question_number}</div>
-              <div style={{flex:1,minWidth:0}}>
-                <div style={{fontSize:13,color:'#0d2340',fontWeight:500,marginBottom:6,lineHeight:1.5}}>{q.question_text.substring(0,120)}{q.question_text.length>120?'...':''}</div>
-                <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
-                  {['a','b','c','d'].map(opt => (
-                    <span key={opt} style={{fontSize:12,padding:'2px 8px',borderRadius:6,
-                      background: q.correct_answer===opt.toUpperCase() ? '#f0f7f2' : '#f7f4ee',
-                      color: q.correct_answer===opt.toUpperCase() ? '#2d6a4f' : '#8a7d6a',
-                      fontWeight: q.correct_answer===opt.toUpperCase() ? 700 : 400,
-                      border: q.correct_answer===opt.toUpperCase() ? '1px solid #b8dfc8' : 'none'}}>
-                      {opt.toUpperCase()}: {q[`choice_${opt}`]?.substring(0,30)}
-                    </span>
-                  ))}
-                {name: 'Manage Questions', tab: 'questions'},
+      {name: 'Manage Exams', tab: 'exams'},
+      {name: 'Exam Center', tab: 'examcenter'},
+      {name: 'Manage Questions', tab: 'questions'},
       {name: 'Course Documents', tab: 'coursedocs'},
     ]},
     {section: 'Manage', items: [
@@ -421,6 +296,7 @@ export default function AdminDashboard() {
         {activeTab === 'recordings'  && <div><div style={{marginBottom:24}}><div style={{fontFamily:'Georgia,serif',fontSize:28,color:'#0d2340',letterSpacing:-0.5}}>Manage Recordings</div></div><RecordingsManager supabase={supabase} onSuccess={flash}/></div>}
         {activeTab === 'notes'       && <div><div style={{marginBottom:24}}><div style={{fontFamily:'Georgia,serif',fontSize:28,color:'#0d2340',letterSpacing:-0.5}}>Manage HY Notes</div></div><NotesManager supabase={supabase} onSuccess={flash}/></div>}
         {activeTab === 'resources'   && <div><div style={{marginBottom:24}}><div style={{fontFamily:'Georgia,serif',fontSize:28,color:'#0d2340',letterSpacing:-0.5}}>Manage Resources</div></div><ResourcesManager supabase={supabase} onSuccess={flash}/></div>}
+        {activeTab === 'examcenter'  && <div><div style={{marginBottom:24}}><div style={{fontFamily:'Georgia,serif',fontSize:28,color:'#0d2340',letterSpacing:-0.5}}>Exam Center</div></div><ExamManager /></div>}
         {activeTab === 'exams'       && <div><div style={{marginBottom:24}}><div style={{fontFamily:'Georgia,serif',fontSize:28,color:'#0d2340',letterSpacing:-0.5}}>Manage Exams</div></div><ExamsManager supabase={supabase} onSuccess={flash}/></div>}
         {activeTab === 'coursedocs'  && <div><div style={{marginBottom:24}}><div style={{fontFamily:'Georgia,serif',fontSize:28,color:'#0d2340',letterSpacing:-0.5}}>Course Documents</div></div><CourseDocsManager supabase={supabase} onSuccess={flash}/></div>}
         {activeTab === 'profiles'    && <div><div style={{marginBottom:24}}><div style={{fontFamily:'Georgia,serif',fontSize:28,color:'#0d2340',letterSpacing:-0.5}}>Student Profiles</div></div><StudentProfiles supabase={supabase} students={students} onSuccess={flash}/></div>}
@@ -1349,143 +1225,3 @@ function NotifyForm({ supabase, recipients, label, onSuccess }: any) {
     </div>
   )
 }
-export function QuestionBuilder({ supabase }: any) {
-  const [exams, setExams] = useState<any[]>([])
-  const [selectedExam, setSelectedExam] = useState('')
-  const [questions, setQuestions] = useState<any[]>([])
-  const [loading, setLoading] = useState(false)
-  const [saving, setSaving] = useState(false)
-  const [newQ, setNewQ] = useState({
-    question_number: 1, question_text: '', choice_a: '', choice_b: '',
-    choice_c: '', choice_d: '', correct_answer: 'A', topic: 'Mixed', explanation: ''
-  })
-
-  const TOPICS = ['Cardiology','Psychiatry','Renal','Biochemistry','Pharmacology',
-    'Microbiology','Anatomy','Pathology','Physiology','Reproductive',
-    'Neurology','Endocrinology','Immunology','Mixed']
-
-  useEffect(() => {
-    supabase.from('exams').select('*').order('sort_order').then(({data}:any) => setExams(data||[]))
-  }, [])
-
-  const loadQuestions = async (examId: string) => {
-    setLoading(true)
-    const { data } = await supabase.from('questions').select('*').eq('exam_id', examId).order('question_number')
-    setQuestions(data || [])
-    const nextNum = data && data.length > 0 ? Math.max(...data.map((q:any) => q.question_number)) + 1 : 1
-    setNewQ(prev => ({...prev, question_number: nextNum}))
-    setLoading(false)
-  }
-
-  const addQuestion = async () => {
-    if (!selectedExam || !newQ.question_text || !newQ.choice_a || !newQ.choice_b || !newQ.choice_c || !newQ.choice_d) return
-    setSaving(true)
-    await supabase.from('questions').insert({...newQ, exam_id: selectedExam})
-    await loadQuestions(selectedExam)
-    setNewQ(prev => ({...prev, question_number: prev.question_number + 1, question_text: '', choice_a: '', choice_b: '', choice_c: '', choice_d: '', explanation: ''}))
-    setSaving(false)
-  }
-
-  const deleteQuestion = async (id: string) => {
-    await supabase.from('questions').delete().eq('id', id)
-    await loadQuestions(selectedExam)
-  }
-
-  const inp = {width:'100%',height:40,borderRadius:7,border:'1px solid #e8dfc8',fontFamily:'Sora,sans-serif',fontSize:13,padding:'0 10px',color:'#1a1008',outline:'none',boxSizing:'border-box' as const}
-
-  return (
-    <div style={{display:'flex',flexDirection:'column',gap:20}}>
-      <div style={{background:'white',border:'0.5px solid #e8dfc8',borderRadius:12,padding:'20px 24px'}}>
-        <div style={{fontSize:15,fontWeight:600,color:'#0d2340',marginBottom:14}}>Select exam to manage questions</div>
-        <select value={selectedExam} onChange={e => { setSelectedExam(e.target.value); if(e.target.value) loadQuestions(e.target.value) }}
-          style={{height:42,borderRadius:8,border:'1px solid #e8dfc8',fontFamily:'Sora,sans-serif',fontSize:14,padding:'0 12px',color:'#1a1008',outline:'none',minWidth:280}}>
-          <option value="">Choose an exam...</option>
-          {exams.map((e:any) => <option key={e.id} value={e.id}>{e.name} ({e.questions}Q)</option>)}
-        </select>
-        {selectedExam && <div style={{fontSize:13,color:'#8a7d6a',marginTop:8}}>{questions.length} questions added so far</div>}
-      </div>
-
-      {selectedExam && (
-        <div style={{background:'white',border:'0.5px solid #e8dfc8',borderRadius:12,padding:'24px'}}>
-          <div style={{fontSize:15,fontWeight:600,color:'#0d2340',marginBottom:20}}>Add question #{newQ.question_number}</div>
-          <div style={{marginBottom:14}}>
-            <label style={{fontSize:11,fontWeight:500,color:'#5c4f35',display:'block',marginBottom:5,textTransform:'uppercase'}}>Question text</label>
-            <textarea value={newQ.question_text} onChange={e => setNewQ({...newQ,question_text:e.target.value})}
-              placeholder="A 45-year-old man presents with..." rows={4}
-              style={{width:'100%',borderRadius:8,border:'1px solid #e8dfc8',fontFamily:'Sora,sans-serif',fontSize:14,padding:'10px 12px',color:'#1a1008',outline:'none',boxSizing:'border-box',resize:'vertical'}}/>
-          </div>
-          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:14}}>
-            {['a','b','c','d'].map(opt => (
-              <div key={opt}>
-                <label style={{fontSize:11,fontWeight:500,color:'#5c4f35',display:'block',marginBottom:5,textTransform:'uppercase'}}>Choice {opt.toUpperCase()}</label>
-                <input type="text" value={(newQ as any)[`choice_${opt}`]} onChange={e => setNewQ({...newQ,[`choice_${opt}`]:e.target.value})}
-                  placeholder={`Option ${opt.toUpperCase()}...`} style={inp}/>
-              </div>
-            ))}
-          </div>
-          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:12,marginBottom:14}}>
-            <div>
-              <label style={{fontSize:11,fontWeight:500,color:'#5c4f35',display:'block',marginBottom:5,textTransform:'uppercase'}}>Correct answer</label>
-              <select value={newQ.correct_answer} onChange={e => setNewQ({...newQ,correct_answer:e.target.value})}
-                style={{...inp,height:40}}>
-                {['A','B','C','D'].map(o => <option key={o} value={o}>{o}</option>)}
-              </select>
-            </div>
-            <div>
-              <label style={{fontSize:11,fontWeight:500,color:'#5c4f35',display:'block',marginBottom:5,textTransform:'uppercase'}}>Topic</label>
-              <select value={newQ.topic} onChange={e => setNewQ({...newQ,topic:e.target.value})}
-                style={{...inp,height:40}}>
-                {TOPICS.map(t => <option key={t} value={t}>{t}</option>)}
-              </select>
-            </div>
-            <div>
-              <label style={{fontSize:11,fontWeight:500,color:'#5c4f35',display:'block',marginBottom:5,textTransform:'uppercase'}}>Q number</label>
-              <input type="number" value={newQ.question_number} onChange={e => setNewQ({...newQ,question_number:parseInt(e.target.value)})} style={inp}/>
-            </div>
-          </div>
-          <div style={{marginBottom:16}}>
-            <label style={{fontSize:11,fontWeight:500,color:'#5c4f35',display:'block',marginBottom:5,textTransform:'uppercase'}}>Explanation (optional)</label>
-            <textarea value={newQ.explanation} onChange={e => setNewQ({...newQ,explanation:e.target.value})}
-              placeholder="Why is this the correct answer..." rows={2}
-              style={{width:'100%',borderRadius:8,border:'1px solid #e8dfc8',fontFamily:'Sora,sans-serif',fontSize:13,padding:'10px 12px',color:'#1a1008',outline:'none',boxSizing:'border-box',resize:'none'}}/>
-          </div>
-          <button onClick={addQuestion} disabled={saving||!newQ.question_text||!newQ.choice_a||!newQ.choice_b||!newQ.choice_c||!newQ.choice_d}
-            style={{width:'100%',height:46,background:'#0d2340',border:'none',borderRadius:9,color:'#c9a84c',fontFamily:'Sora,sans-serif',fontSize:15,fontWeight:600,cursor:'pointer'}}>
-            {saving ? 'Saving...' : `Save question #${newQ.question_number} →`}
-          </button>
-        </div>
-      )}
-
-      {selectedExam && questions.length > 0 && (
-        <div style={{background:'white',border:'0.5px solid #e8dfc8',borderRadius:12,overflow:'hidden'}}>
-          <div style={{background:'#0d2340',padding:'12px 20px'}}>
-            <div style={{fontSize:14,fontWeight:600,color:'white'}}>{questions.length} questions added</div>
-          </div>
-          {loading ? <div style={{padding:24,fontSize:14,color:'#8a7d6a'}}>Loading...</div>
-          : questions.map((q, i) => (
-            <div key={q.id} style={{padding:'14px 20px',borderBottom:i<questions.length-1?'0.5px solid #f5f0e8':'none',display:'flex',gap:16,alignItems:'flex-start'}}>
-              <div style={{width:32,height:32,borderRadius:'50%',background:'#0d2340',color:'#c9a84c',fontSize:13,fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>{q.question_number}</div>
-              <div style={{flex:1,minWidth:0}}>
-                <div style={{fontSize:13,color:'#0d2340',fontWeight:500,marginBottom:6,lineHeight:1.5}}>{q.question_text.substring(0,120)}{q.question_text.length>120?'...':''}</div>
-                <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
-                  {['a','b','c','d'].map(opt => (
-                    <span key={opt} style={{fontSize:12,padding:'2px 8px',borderRadius:6,
-                      background: q.correct_answer===opt.toUpperCase() ? '#f0f7f2' : '#f7f4ee',
-                      color: q.correct_answer===opt.toUpperCase() ? '#2d6a4f' : '#8a7d6a',
-                      fontWeight: q.correct_answer===opt.toUpperCase() ? 700 : 400,
-                      border: q.correct_answer===opt.toUpperCase() ? '1px solid #b8dfc8' : 'none'}}>
-                      {opt.toUpperCase()}: {q[`choice_${opt}`]?.substring(0,30)}
-                    </span>
-                  ))}
-                </div>
-                {q.topic && <span style={{fontSize:11,marginTop:6,display:'inline-block',padding:'2px 8px',borderRadius:8,background:'#f0f4ff',color:'#3d5a99'}}>{q.topic}</span>}
-              </div>
-              <button onClick={() => deleteQuestion(q.id)}
-                style={{fontSize:11,color:'#c0574a',background:'none',border:'none',cursor:'pointer',padding:'4px 8px',flexShrink:0}}>Remove</button>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  )
-} 
