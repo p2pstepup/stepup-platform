@@ -10,7 +10,7 @@ export default function StudySchedule() {
   const [loading, setLoading] = useState(true)
   const [selectedDate, setSelectedDate] = useState(() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}` })
   const [showAddTask, setShowAddTask] = useState(false)
-  const [newTask, setNewTask] = useState({title: '', tag: 'General', duration: ''})
+  const [newTask, setNewTask] = useState({title: '', tag: 'General', duration: '', time: '', description: '', date: selectedDate})
   const [addingTask, setAddingTask] = useState(false)
   const router = useRouter()
   const supabase = createClient()
@@ -36,19 +36,21 @@ export default function StudySchedule() {
   const addStudentTask = async () => {
     if (!newTask.title) return
     setAddingTask(true)
-    const entry = schedule.find(s => s.schedule_date === selectedDate)
-    const task = {...newTask, completed: false, added_by_student: true}
+    const taskDate = newTask.date || selectedDate
+    const entry = schedule.find(s => s.schedule_date === taskDate)
+    const { date: _d, ...taskFields } = newTask
+    const task = {...taskFields, completed: false, added_by_student: true}
     if (entry) {
       const updatedTasks = [...(entry.tasks || []), task]
       await supabase.from('study_schedule').update({tasks: updatedTasks}).eq('id', entry.id)
       setSchedule(schedule.map(s => s.id === entry.id ? {...s, tasks: updatedTasks} : s))
     } else {
       const { data } = await supabase.from('study_schedule').insert({
-        student_id: user.id, schedule_date: selectedDate, tasks: [task], notes: ''
+        student_id: user.id, schedule_date: taskDate, tasks: [task], notes: ''
       }).select().single()
-      if (data) setSchedule([...schedule, data])
+      if (data) setSchedule([...schedule, data].sort((a, b) => a.schedule_date.localeCompare(b.schedule_date)))
     }
-    setNewTask({title: '', tag: 'General', duration: ''})
+    setNewTask({title: '', tag: 'General', duration: '', time: '', description: '', date: selectedDate})
     setShowAddTask(false)
     setAddingTask(false)
   }
@@ -219,6 +221,7 @@ export default function StudySchedule() {
                           <div style={{display: 'flex', alignItems: 'center', gap: 10, marginBottom: task.description ? 4 : 0}}>
                             <div style={{fontSize: 14, fontWeight: 500, color: task.completed ? '#a89870' : '#0d2340', textDecoration: task.completed ? 'line-through' : 'none'}}>{task.title}</div>
                             {task.tag && <span style={{fontSize: 11, padding: '2px 8px', borderRadius: 10, background: `${tagColors[task.tag] || '#8a7d6a'}18`, color: tagColors[task.tag] || '#8a7d6a', fontWeight: 500}}>{task.tag}</span>}
+                            {task.time && <span style={{fontSize: 11, color: '#8a7d6a'}}>{new Date('1970-01-01T' + task.time).toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'})}</span>}
                             {task.duration && <span style={{fontSize: 11, color: '#a89870'}}>~{task.duration}</span>}
                           </div>
                           {task.description && <div style={{fontSize: 13, color: '#8a7d6a', lineHeight: 1.5}}>{task.description}</div>}
@@ -235,7 +238,7 @@ export default function StudySchedule() {
                   {/* Add task button */}
                   <div style={{padding: '12px 20px', borderTop: '0.5px solid #f0ece0'}}>
                     {!showAddTask ? (
-                      <button onClick={() => setShowAddTask(true)}
+                      <button onClick={() => { setShowAddTask(true); setNewTask(t => ({...t, date: selectedDate})) }}
                         style={{width: '100%', height: 38, background: '#f7f4ee', border: '1px dashed #c9a84c', borderRadius: 8, color: '#c9a84c', fontFamily: 'Sora, sans-serif', fontSize: 13, fontWeight: 500, cursor: 'pointer'}}>
                         + Add your own task
                       </button>
@@ -249,8 +252,18 @@ export default function StudySchedule() {
                             style={{flex: 1, height: 36, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none'}}>
                             {['Qbank','Reading','Review','NBME','Anki','Sketchy','Pathoma','General'].map(t => <option key={t} value={t}>{t}</option>)}
                           </select>
+                          <input type="time" value={newTask.time} onChange={e => setNewTask({...newTask, time: e.target.value})}
+                            style={{flex: 1, height: 36, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
                           <input type="text" value={newTask.duration} onChange={e => setNewTask({...newTask, duration: e.target.value})}
                             placeholder="Duration (e.g. 1 hr)"
+                            style={{flex: 1, height: 36, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
+                        </div>
+                        <textarea value={newTask.description} onChange={e => setNewTask({...newTask, description: e.target.value})}
+                          placeholder="Instructions or notes (optional)..." rows={2}
+                          style={{width: '100%', borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '8px 10px', color: '#1a1008', outline: 'none', boxSizing: 'border-box', resize: 'none'}}/>
+                        <div style={{display: 'flex', gap: 8, alignItems: 'center'}}>
+                          <label style={{fontSize: 11, color: '#8a7d6a', whiteSpace: 'nowrap'}}>Date:</label>
+                          <input type="date" value={newTask.date} onChange={e => setNewTask({...newTask, date: e.target.value})}
                             style={{flex: 1, height: 36, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
                         </div>
                         <div style={{display: 'flex', gap: 8}}>
@@ -258,7 +271,7 @@ export default function StudySchedule() {
                             style={{flex: 1, height: 36, background: '#0d2340', border: 'none', borderRadius: 7, color: '#c9a84c', fontFamily: 'Sora, sans-serif', fontSize: 13, fontWeight: 600, cursor: 'pointer'}}>
                             {addingTask ? 'Adding...' : 'Add task ↗'}
                           </button>
-                          <button onClick={() => { setShowAddTask(false); setNewTask({title: '', tag: 'General', duration: ''}) }}
+                          <button onClick={() => { setShowAddTask(false); setNewTask({title: '', tag: 'General', duration: '', time: '', description: '', date: selectedDate}) }}
                             style={{height: 36, padding: '0 14px', background: '#f7f4ee', border: '1px solid #e8dfc8', borderRadius: 7, color: '#8a7d6a', fontFamily: 'Sora, sans-serif', fontSize: 13, cursor: 'pointer'}}>
                             Cancel
                           </button>
@@ -272,7 +285,7 @@ export default function StudySchedule() {
                   <div style={{fontSize: 15, color: '#0d2340', fontWeight: 500, marginBottom: 8}}>No plan for this day yet</div>
                   <div style={{fontSize: 13, color: '#8a7d6a', marginBottom: 16}}>Your mentor hasn't assigned a study plan for this day. You can add your own tasks below.</div>
                   {!showAddTask ? (
-                    <button onClick={() => setShowAddTask(true)}
+                    <button onClick={() => { setShowAddTask(true); setNewTask(t => ({...t, date: selectedDate})) }}
                       style={{height: 38, padding: '0 20px', background: '#f7f4ee', border: '1px dashed #c9a84c', borderRadius: 8, color: '#c9a84c', fontFamily: 'Sora, sans-serif', fontSize: 13, fontWeight: 500, cursor: 'pointer'}}>
                       + Add a task
                     </button>
@@ -286,8 +299,18 @@ export default function StudySchedule() {
                           style={{flex: 1, height: 36, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none'}}>
                           {['Qbank','Reading','Review','NBME','Anki','Sketchy','Pathoma','General'].map(t => <option key={t} value={t}>{t}</option>)}
                         </select>
+                        <input type="time" value={newTask.time} onChange={e => setNewTask({...newTask, time: e.target.value})}
+                          style={{flex: 1, height: 36, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
                         <input type="text" value={newTask.duration} onChange={e => setNewTask({...newTask, duration: e.target.value})}
                           placeholder="Duration (e.g. 1 hr)"
+                          style={{flex: 1, height: 36, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
+                      </div>
+                      <textarea value={newTask.description} onChange={e => setNewTask({...newTask, description: e.target.value})}
+                        placeholder="Instructions or notes (optional)..." rows={2}
+                        style={{width: '100%', borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '8px 10px', color: '#1a1008', outline: 'none', boxSizing: 'border-box', resize: 'none'}}/>
+                      <div style={{display: 'flex', gap: 8, alignItems: 'center'}}>
+                        <label style={{fontSize: 11, color: '#8a7d6a', whiteSpace: 'nowrap'}}>Date:</label>
+                        <input type="date" value={newTask.date} onChange={e => setNewTask({...newTask, date: e.target.value})}
                           style={{flex: 1, height: 36, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
                       </div>
                       <div style={{display: 'flex', gap: 8}}>
@@ -295,7 +318,7 @@ export default function StudySchedule() {
                           style={{flex: 1, height: 36, background: '#0d2340', border: 'none', borderRadius: 7, color: '#c9a84c', fontFamily: 'Sora, sans-serif', fontSize: 13, fontWeight: 600, cursor: 'pointer'}}>
                           {addingTask ? 'Adding...' : 'Add task ↗'}
                         </button>
-                        <button onClick={() => { setShowAddTask(false); setNewTask({title: '', tag: 'General', duration: ''}) }}
+                        <button onClick={() => { setShowAddTask(false); setNewTask({title: '', tag: 'General', duration: '', time: '', description: '', date: selectedDate}) }}
                           style={{height: 36, padding: '0 14px', background: '#f7f4ee', border: '1px solid #e8dfc8', borderRadius: 7, color: '#8a7d6a', fontFamily: 'Sora, sans-serif', fontSize: 13, cursor: 'pointer'}}>
                           Cancel
                         </button>

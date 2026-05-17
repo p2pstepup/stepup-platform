@@ -1014,7 +1014,7 @@ export function StudyScheduleManager({ supabase, students, onSuccess }: any) {
   const [tasks, setTasks] = useState<any[]>([])
   const [notes, setNotes] = useState('')
   const [saving, setSaving] = useState(false)
-  const [newTask, setNewTask] = useState({title: '', description: '', tag: 'Qbank', duration: '', resource_link: ''})
+  const [newTask, setNewTask] = useState({title: '', description: '', tag: 'Qbank', duration: '', time: '', resource_link: ''})
   const [viewMode, setViewMode] = useState<'add'|'view'>('add')
   const [allSchedules, setAllSchedules] = useState<any[]>([])
 
@@ -1039,7 +1039,7 @@ export function StudyScheduleManager({ supabase, students, onSuccess }: any) {
   const addTask = () => {
     if (!newTask.title) return
     setTasks([...tasks, {...newTask, completed: false}])
-    setNewTask({title: '', description: '', tag: 'Qbank', duration: '', resource_link: ''})
+    setNewTask({title: '', description: '', tag: 'Qbank', duration: '', time: '', resource_link: ''})
   }
 
   const removeTask = (idx: number) => setTasks(tasks.filter((_, i) => i !== idx))
@@ -1146,7 +1146,7 @@ export function StudyScheduleManager({ supabase, students, onSuccess }: any) {
           <div style={{display: 'flex', flexDirection: 'column', gap: 14}}>
             <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, padding: '18px 22px'}}>
               <div style={{fontSize: 15, fontWeight: 600, color: '#0d2340', marginBottom: 14}}>Add task</div>
-              <div style={{display: 'grid', gridTemplateColumns: '1fr 120px 100px', gap: 10, marginBottom: 10}}>
+              <div style={{display: 'grid', gridTemplateColumns: '1fr 120px 110px 100px', gap: 10, marginBottom: 10}}>
                 <div>
                   <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Task title</label>
                   <input type="text" value={newTask.title} onChange={e => setNewTask({...newTask, title: e.target.value})} placeholder="e.g. 40 UWorld Cardiology questions"
@@ -1158,6 +1158,11 @@ export function StudyScheduleManager({ supabase, students, onSuccess }: any) {
                     style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none'}}>
                     {Object.keys(tagColors).map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
+                </div>
+                <div>
+                  <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Time</label>
+                  <input type="time" value={newTask.time} onChange={e => setNewTask({...newTask, time: e.target.value})}
+                    style={{width: '100%', height: 40, borderRadius: 7, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#1a1008', outline: 'none', boxSizing: 'border-box'}}/>
                 </div>
                 <div>
                   <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Duration</label>
@@ -1193,6 +1198,7 @@ export function StudyScheduleManager({ supabase, students, onSuccess }: any) {
                       <div style={{display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3}}>
                         <div style={{fontSize: 14, fontWeight: 500, color: '#0d2340'}}>{task.title}</div>
                         <span style={{fontSize: 11, padding: '2px 8px', borderRadius: 10, background: `${tagColors[task.tag] || '#8a7d6a'}18`, color: tagColors[task.tag] || '#8a7d6a'}}>{task.tag}</span>
+                        {task.time && <span style={{fontSize: 11, color: '#8a7d6a'}}>{new Date('1970-01-01T' + task.time).toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'})}</span>}
                         {task.duration && <span style={{fontSize: 11, color: '#a89870'}}>{task.duration}</span>}
                       </div>
                       {task.description && <div style={{fontSize: 12, color: '#8a7d6a'}}>{task.description}</div>}
