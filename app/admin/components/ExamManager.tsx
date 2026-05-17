@@ -18,7 +18,7 @@ interface AccomCode {
 
 interface Exam {
   id: string;
-  title: string;
+  name: string;
   is_live: boolean;
   pdf_url: string | null;
   answer_key_url: string | null;
@@ -231,7 +231,7 @@ export default function ExamManager() {
     setExams(
       (data ?? []).map((row: Record<string, unknown>) => ({
         id: row.id as string,
-        title: row.title as string,
+        name: row.name as string,
         is_live: (row.is_live as boolean) ?? false,
         pdf_url: (row.pdf_url as string | null) ?? null,
         answer_key_url: (row.answer_key_url as string | null) ?? null,
@@ -260,7 +260,7 @@ export default function ExamManager() {
         ? exam.accommodation_codes
         : [...DEFAULT_ACCOM_CODES]
     );
-    setEditTitle(exam.title);
+    setEditTitle(exam.name);
     setEditMinutes(exam.time_per_section_minutes);
     setEditDeadline(exam.deadline ? exam.deadline.slice(0, 16) : "");
     setEditMsg(null);
@@ -281,7 +281,7 @@ export default function ExamManager() {
     const { data, error } = await supabase
       .from("exams")
       .insert({
-        title: newTitle.trim(),
+        name: newTitle.trim(),
         is_live: false,
         section_count: newSections,
         questions_per_section: newQps,
@@ -325,14 +325,14 @@ export default function ExamManager() {
     setEditSaving(true);
     setEditMsg(null);
     const { error } = await supabase.from("exams").update({
-      title: editTitle.trim() || selectedExam.title,
+      name: editTitle.trim() || selectedExam.name,
       time_per_section_minutes: editMinutes,
       deadline: editDeadline ? new Date(editDeadline).toISOString() : null,
     }).eq("id", selectedExam.id);
     setEditSaving(false);
     if (error) { setEditMsg("❌ " + error.message); return; }
     setExams(prev => prev.map(e => e.id === selectedExam.id
-      ? { ...e, title: editTitle.trim() || e.title, time_per_section_minutes: editMinutes, deadline: editDeadline ? new Date(editDeadline).toISOString() : null }
+      ? { ...e, name: editTitle.trim() || e.name, time_per_section_minutes: editMinutes, deadline: editDeadline ? new Date(editDeadline).toISOString() : null }
       : e));
     setEditMsg("✓ Settings saved.");
   };
@@ -340,7 +340,7 @@ export default function ExamManager() {
   // ── Delete exam ──
   const handleDelete = async () => {
     if (!selectedExam) return;
-    if (!window.confirm(`Delete "${selectedExam.title}"? This cannot be undone.`)) return;
+    if (!window.confirm(`Delete "${selectedExam.name}"? This cannot be undone.`)) return;
     setDeleting(true);
     const { error } = await supabase.from("exams").delete().eq("id", selectedExam.id);
     setDeleting(false);
@@ -795,7 +795,7 @@ export default function ExamManager() {
         >
           <div>
             <h1 style={{ ...S.pageTitle, marginBottom: 6 }}>
-              {selectedExam.title}
+              {selectedExam.name}
             </h1>
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               <Badge live={selectedExam.is_live} />
@@ -1130,7 +1130,7 @@ export default function ExamManager() {
                 onClick={() => selectExam(exam)}
               >
                 <div style={S.examItemTitle(selectedId === exam.id)}>
-                  {exam.title}
+                  {exam.name}
                 </div>
                 <Badge live={exam.is_live} />
               </div>
