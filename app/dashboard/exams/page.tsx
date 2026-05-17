@@ -523,9 +523,13 @@ export default function ExamCenter() {
       const logRows = questionDetails
         .filter(q => q.system || q.topic || q.discipline)
         .map(q => ({ student_id: user.id, exam_session_id: session.id, question_number: q.qNum, system: q.system || null, topic: q.topic || null, discipline: q.discipline || null, correct: q.correct }))
+      console.log('[examLogs] rows to write:', logRows.length)
       if (logRows.length > 0) {
-        await supabase.from('exam_question_logs').delete().eq('exam_session_id', session.id)
-        await supabase.from('exam_question_logs').insert(logRows)
+        const { error: delErr } = await supabase.from('exam_question_logs').delete().eq('exam_session_id', session.id)
+        if (delErr) console.error('[examLogs] delete error:', delErr)
+        const { error: insErr } = await supabase.from('exam_question_logs').insert(logRows)
+        if (insErr) console.error('[examLogs] insert error:', insErr)
+        else console.log('[examLogs] wrote', logRows.length, 'rows successfully')
       }
 
       setResultsFilter('all')
