@@ -380,12 +380,7 @@ export default function ExamManager() {
     }
 
     onProgress(100);
-
-    const { data: urlData } = supabase.storage
-      .from(bucket)
-      .getPublicUrl(path);
-
-    return urlData.publicUrl;
+    return path;
   };
 
   // ── Handle PDF + answer key uploads ──

@@ -285,7 +285,7 @@ export default function ExamCenter() {
       console.log('[answerKey] url:', keyUrl)
       if (keyUrl) {
         try {
-          const resp = await fetch(keyUrl)
+          const resp = await fetch(keyUrl, { cache: 'no-store' })
           const raw = await resp.json()
           console.log('[answerKey] raw sample:', JSON.stringify(raw).slice(0, 300))
           key = parseAnswerKey(raw)
@@ -471,7 +471,7 @@ export default function ExamCenter() {
         console.log('[viewReport] resolved keyUrl:', keyUrl)
         if (keyUrl) {
           try {
-            const resp = await fetch(keyUrl)
+            const resp = await fetch(keyUrl, { cache: 'no-store' })
             const raw = await resp.json()
             console.log('[viewReport] raw sample:', JSON.stringify(raw).slice(0, 300))
             ak = parseAnswerKey(raw)
