@@ -611,6 +611,7 @@ export function ExamsManager({ supabase, onSuccess }: any) {
   const [loading, setLoading] = useState(true)
   const [newExam, setNewExam] = useState({name: '', questions: '200', time_limit: '4 hrs', difficulty: 'Moderate', recommended_week: '3', available: false, deadline: '', link: '', notes: ''})
   const [adding, setAdding] = useState(false)
+  const [deleting, setDeleting] = useState<string | null>(null)
 
   useEffect(() => { load() }, [])
 
@@ -637,10 +638,27 @@ export function ExamsManager({ supabase, onSuccess }: any) {
     onSuccess('Exam added!')
   }
 
-  const deleteExam = async (id: string) => {
-    await supabase.from('exams').delete().eq('id', id)
+  const deleteExam = async (id: string, name: string) => {
+    if (!window.confirm(`Remove "${name}"? This will also delete all student sessions for this exam.`)) return
+    setDeleting(id)
+    // Delete related records first to avoid FK constraint errors
+    await supabase.from('exam_question_logs').delete().eq('exam_session_id',
+      supabase.from('exam_sessions').select('id').eq('exam_name', name)
+    )
+    const { data: sessions } = await supabase.from('exam_sessions').select('id').eq('exam_name', name)
+    if (sessions && sessions.length > 0) {
+      const sessionIds = sessions.map((s: any) => s.id)
+      await supabase.from('exam_question_logs').delete().in('exam_session_id', sessionIds)
+      await supabase.from('exam_sessions').delete().in('id', sessionIds)
+    }
+    const { error } = await supabase.from('exams').delete().eq('id', id)
+    if (error) {
+      alert(`Could not remove exam: ${error.message}`)
+    } else {
+      onSuccess('Exam removed!')
+    }
     await load()
-    onSuccess('Exam removed!')
+    setDeleting(null)
   }
 
   if (loading) return <div style={{fontSize: 14, color: '#8a7d6a'}}>Loading...</div>
@@ -698,7 +716,7 @@ export function ExamsManager({ supabase, onSuccess }: any) {
             <input type="text" defaultValue={exam.name}
               onBlur={e => { if (e.target.value !== exam.name) updateExam(exam.id, {name: e.target.value}) }}
               style={{height: 34, borderRadius: 6, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', color: '#0d2340', fontWeight: 500, outline: 'none', boxSizing: 'border-box', width: '100%'}}/>
-            <div style={{fontSize: 12, color: '#8a7d6a'}}>{exam.questions}Q · {exam.time_limit}</div>
+            <div style={{fontSize: 12, color: '#8a7d6a'}}>{exam.questions}Q · {exam.time_per_section_minutes ? (Number.isInteger(exam.time_per_section_minutes * (exam.section_count || 4) / 60) ? exam.time_per_section_minutes * (exam.section_count || 4) / 60 : +(exam.time_per_section_minutes * (exam.section_count || 4) / 60).toFixed(1)) + ' hrs' : exam.time_limit}</div>
             <div style={{fontSize: 12, color: exam.deadline ? '#c0574a' : '#a89870'}}>{exam.deadline ? new Date(exam.deadline).toLocaleDateString('en-US', {month: 'short', day: 'numeric'}) : 'No deadline'}</div>
             <div style={{display: 'flex', gap: 6}}>
               <input type="text" defaultValue={exam.link || ''} placeholder="Exam link..." id={`exam-link-${exam.id}`}
@@ -714,7 +732,7 @@ export function ExamsManager({ supabase, onSuccess }: any) {
               </div>
               <span style={{fontSize: 11, color: exam.available ? '#6b7c3a' : '#a89870'}}>{exam.available ? 'Live' : 'Hidden'}</span>
             </div>
-            <div onClick={() => deleteExam(exam.id)} style={{fontSize: 11, color: '#c0574a', cursor: 'pointer', padding: '4px 8px'}}>Remove</div>
+            <div onClick={() => deleting !== exam.id && deleteExam(exam.id, exam.name)} style={{fontSize: 11, color: deleting === exam.id ? '#a89870' : '#c0574a', cursor: deleting === exam.id ? 'default' : 'pointer', padding: '4px 8px'}}>{deleting === exam.id ? 'Removing…' : 'Remove'}</div>
           </div>
         ))}
       </div>

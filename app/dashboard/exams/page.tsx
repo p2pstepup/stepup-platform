@@ -776,10 +776,10 @@ export default function ExamCenter() {
                 const qNum = sectionStart + i
                 const sel = curSecAnswers[qNum]
                 const entry = answerKey[String(qNum)]
-                const numOpts = Math.max(5, entry?.options ?? 0, entry?.answer ? entry.answer.charCodeAt(0) - 64 : 0)
+                const numOpts = Math.max(7, entry?.options ?? 0, entry?.answer ? entry.answer.charCodeAt(0) - 64 : 0)
                 const opts = Array.from({length:numOpts},(_,j) => String.fromCharCode(65+j))
-                const row1 = opts.slice(0,5)
-                const row2 = opts.slice(5)
+                const row1 = opts.slice(0,7)
+                const row2 = opts.slice(7)
                 const btnStyle = (opt: string) => ({
                   width:28,height:24,borderRadius:4,border:sel===opt?'none':'1px solid #d8cfc0',
                   background:sel===opt?'#0d2340':'#f7f4ee',color:sel===opt?'#c9a84c':'#8a7d6a',
@@ -1118,7 +1118,7 @@ export default function ExamCenter() {
                       {attempted.length > 0 && <div style={{fontSize:11,color:'#6b7c3a',marginTop:2}}>Taken {attempted.length}x</div>}
                     </td>
                     <td style={{fontSize:13,color:'#3d3020',padding:'14px 16px'}}>{exam.questions}Q</td>
-                    <td style={{fontSize:13,color:'#3d3020',padding:'14px 16px'}}>{exam.time_limit}</td>
+                    <td style={{fontSize:13,color:'#3d3020',padding:'14px 16px'}}>{(() => { if (!exam.time_per_section_minutes) return exam.time_limit; const t = exam.time_per_section_minutes * (exam.section_count || 4) / 60; return (Number.isInteger(t) ? t : +t.toFixed(1)) + ' hrs'; })()}</td>
                     <td style={{padding:'14px 16px'}}>
                       <span style={{fontSize:12,padding:'3px 10px',borderRadius:10,background:`${diffColor(exam.difficulty)}18`,color:diffColor(exam.difficulty),fontWeight:500}}>{exam.difficulty}</span>
                     </td>

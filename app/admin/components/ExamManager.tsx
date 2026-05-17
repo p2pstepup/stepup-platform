@@ -324,9 +324,13 @@ export default function ExamManager() {
     if (!selectedExam) return;
     setEditSaving(true);
     setEditMsg(null);
+    const totalMins = editMinutes * selectedExam.section_count;
+    const hrs = totalMins / 60;
+    const timeLimitText = Number.isInteger(hrs) ? `${hrs} hrs` : `${+hrs.toFixed(1)} hrs`;
     const { error } = await supabase.from("exams").update({
       name: editTitle.trim() || selectedExam.name,
       time_per_section_minutes: editMinutes,
+      time_limit: timeLimitText,
       deadline: editDeadline ? new Date(editDeadline).toISOString() : null,
     }).eq("id", selectedExam.id);
     setEditSaving(false);
