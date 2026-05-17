@@ -23,6 +23,7 @@ interface Exam {
   pdf_url: string | null;
   answer_key_url: string | null;
   created_at: string;
+  deadline: string | null;
   accommodation_codes: AccomCode[];
   section_count: number;
   questions_per_section: number;
@@ -202,6 +203,14 @@ export default function ExamManager() {
   const [newCodeLabel, setNewCodeLabel] = useState("");
   const [accomMsg, setAccomMsg] = useState<string | null>(null);
 
+  // edit settings
+  const [editTitle, setEditTitle] = useState("");
+  const [editMinutes, setEditMinutes] = useState(72);
+  const [editDeadline, setEditDeadline] = useState("");
+  const [editMsg, setEditMsg] = useState<string | null>(null);
+  const [editSaving, setEditSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
   // toggle saving state
   const [togglingId, setTogglingId] = useState<string | null>(null);
 
@@ -227,6 +236,7 @@ export default function ExamManager() {
         pdf_url: (row.pdf_url as string | null) ?? null,
         answer_key_url: (row.answer_key_url as string | null) ?? null,
         created_at: row.created_at as string,
+        deadline: (row.deadline as string | null) ?? null,
         accommodation_codes:
           (row.accommodation_codes as AccomCode[]) ?? DEFAULT_ACCOM_CODES,
         section_count: (row.section_count as number) ?? 4,
@@ -250,6 +260,10 @@ export default function ExamManager() {
         ? exam.accommodation_codes
         : [...DEFAULT_ACCOM_CODES]
     );
+    setEditTitle(exam.title);
+    setEditMinutes(exam.time_per_section_minutes);
+    setEditDeadline(exam.deadline ? exam.deadline.slice(0, 16) : "");
+    setEditMsg(null);
     setPdfFile(null);
     setKeyFile(null);
     setPdfProgress(null);
@@ -303,6 +317,36 @@ export default function ExamManager() {
     setExams((prev) =>
       prev.map((e) => (e.id === exam.id ? { ...e, is_live: !e.is_live } : e))
     );
+  };
+
+  // ── Save exam settings (title, minutes, deadline) ──
+  const handleSaveSettings = async () => {
+    if (!selectedExam) return;
+    setEditSaving(true);
+    setEditMsg(null);
+    const { error } = await supabase.from("exams").update({
+      title: editTitle.trim() || selectedExam.title,
+      time_per_section_minutes: editMinutes,
+      deadline: editDeadline ? new Date(editDeadline).toISOString() : null,
+    }).eq("id", selectedExam.id);
+    setEditSaving(false);
+    if (error) { setEditMsg("❌ " + error.message); return; }
+    setExams(prev => prev.map(e => e.id === selectedExam.id
+      ? { ...e, title: editTitle.trim() || e.title, time_per_section_minutes: editMinutes, deadline: editDeadline ? new Date(editDeadline).toISOString() : null }
+      : e));
+    setEditMsg("✓ Settings saved.");
+  };
+
+  // ── Delete exam ──
+  const handleDelete = async () => {
+    if (!selectedExam) return;
+    if (!window.confirm(`Delete "${selectedExam.title}"? This cannot be undone.`)) return;
+    setDeleting(true);
+    const { error } = await supabase.from("exams").delete().eq("id", selectedExam.id);
+    setDeleting(false);
+    if (error) { alert("Delete failed: " + error.message); return; }
+    setExams(prev => prev.filter(e => e.id !== selectedExam.id));
+    setSelectedId(null);
   };
 
   // ── Simulate chunked upload progress (real XHR upload for Supabase Storage) ──
@@ -796,6 +840,42 @@ export default function ExamManager() {
             </div>
             <div style={S.statLabel}>Min / Section</div>
           </div>
+        </div>
+
+        {/* Edit Settings Card */}
+        <div style={S.card}>
+          <div style={S.cardTitle}><span>⚙️</span> Exam Settings</div>
+          <div style={{ ...S.row3, marginBottom: 14 }}>
+            <div style={{ gridColumn: '1 / -1' }}>
+              <label style={S.label}>Exam Name</label>
+              <input style={{ ...S.input, width: '100%' }} value={editTitle} onChange={e => setEditTitle(e.target.value)} />
+            </div>
+          </div>
+          <div style={{ ...S.row3, marginBottom: 14 }}>
+            <div>
+              <label style={S.label}>Min / Section</label>
+              <input style={S.input} type="number" min={1} value={editMinutes} onChange={e => setEditMinutes(Number(e.target.value))} />
+              <div style={{ fontSize: 11, color: '#7a6f5e', marginTop: 4 }}>
+                Total: {editMinutes * selectedExam.section_count} min ({Math.round(editMinutes * selectedExam.section_count / 60 * 10) / 10} hrs)
+              </div>
+            </div>
+            <div>
+              <label style={S.label}>Deadline (local time)</label>
+              <input style={S.input} type="datetime-local" value={editDeadline} onChange={e => setEditDeadline(e.target.value)} />
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+            <button style={S.btnGold} onClick={handleSaveSettings} disabled={editSaving}>
+              {editSaving ? 'Saving…' : 'Save Settings'}
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              style={{ ...S.btn, background: '#9e2a2a', color: 'white', fontSize: 13 }}>
+              {deleting ? 'Deleting…' : '🗑 Delete Exam'}
+            </button>
+          </div>
+          {editMsg && <div style={S.msg(editMsg.startsWith("✓"))}>{editMsg}</div>}
         </div>
 
         {/* Upload Card */}
