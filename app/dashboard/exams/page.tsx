@@ -107,6 +107,42 @@ const LAB_VALUES = [
   ]},
 ]
 
+const scoreColor = (pct: number) => {
+  if (pct >= 75) return '#6b7c3a'
+  if (pct >= 65) return '#c9a84c'
+  if (pct >= 55) return '#c07040'
+  return '#c0574a'
+}
+
+type AKEntry = { answer: string; topic?: string; concept?: string; system?: string; discipline?: string; options?: number }
+
+function BreakdownTable({ title, data }: { title: string, data: Record<string, {correct:number,total:number}> }) {
+  const rows = Object.entries(data).sort(([,a],[,b]) => (b.correct/b.total) - (a.correct/a.total))
+  if (rows.length === 0) return null
+  return (
+    <div style={{background:'white',border:'0.5px solid #e8dfc8',borderRadius:12,overflow:'hidden',marginBottom:16}}>
+      <div style={{background:'#0d2340',padding:'11px 18px'}}>
+        <div style={{fontSize:13,fontWeight:600,color:'white'}}>{title}</div>
+      </div>
+      <div style={{padding:'8px 0'}}>
+        {rows.map(([name, s]) => {
+          const pct = Math.round((s.correct/s.total)*100)
+          return (
+            <div key={name} style={{display:'flex',alignItems:'center',gap:12,padding:'7px 18px',borderBottom:'0.5px solid #faf8f4'}}>
+              <div style={{width:160,fontSize:13,color:'#1a1008',flexShrink:0}}>{name}</div>
+              <div style={{flex:1,height:7,background:'#f0ece0',borderRadius:4,overflow:'hidden'}}>
+                <div style={{height:'100%',width:`${pct}%`,background:scoreColor(pct),borderRadius:4}}/>
+              </div>
+              <div style={{width:36,fontSize:13,fontWeight:700,color:scoreColor(pct),textAlign:'right',flexShrink:0}}>{pct}%</div>
+              <div style={{width:52,fontSize:11,color:'#a89870',flexShrink:0,textAlign:'right'}}>{s.correct}/{s.total}</div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 export default function ExamCenter() {
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
@@ -123,7 +159,7 @@ export default function ExamCenter() {
 
   // PDF exam state
   const [pdfUrl, setPdfUrl] = useState<string|null>(null)
-  const [answerKey, setAnswerKey] = useState<Record<string, {answer:string, topic?:string, concept?:string, system?:string, discipline?:string}>>({})
+  const [answerKey, setAnswerKey] = useState<Record<string, AKEntry>>({})
   const [resultsFilter, setResultsFilter] = useState<'all'|'correct'|'incorrect'>('all')
   const [resultsTab, setResultsTab] = useState<'system'|'subject'|'topic'|'questions'>('system')
   const [currentSection, setCurrentSection] = useState(1)
@@ -131,7 +167,6 @@ export default function ExamCenter() {
   const [sectionTimeLeft, setSectionTimeLeft] = useState(0)
   const [sectionMinutes, setSectionMinutes] = useState(60)
   const [sectionSubmitted, setSectionSubmitted] = useState([false,false,false,false])
-  const [sectionTimeExpired, setSectionTimeExpired] = useState(false)
 
   // PDF page navigation
   const [pdfPage, setPdfPage] = useState(1)
@@ -181,7 +216,7 @@ export default function ExamCenter() {
     clearInterval(timerRef.current)
     timerRef.current = setInterval(() => {
       setSectionTimeLeft(prev => {
-        if (prev <= 1) { clearInterval(timerRef.current); setSectionTimeExpired(true); return 0 }
+        if (prev <= 1) { clearInterval(timerRef.current); submitSectionRef.current(); return 0 }
         return prev - 1
       })
     }, 1000)
@@ -195,13 +230,6 @@ export default function ExamCenter() {
     }
   }, [view])
 
-  // Trigger submit when time expires (avoids stale closure inside timer)
-  useEffect(() => {
-    if (sectionTimeExpired) {
-      setSectionTimeExpired(false)
-      submitSectionRef.current()
-    }
-  }, [sectionTimeExpired])
 
   const parseTimeLimit = (timeStr: string) => {
     if (!timeStr) return 240
@@ -217,8 +245,6 @@ export default function ExamCenter() {
     return data?.signedUrl || null
   }
 
-  type AKEntry = { answer: string; topic?: string; concept?: string; system?: string; discipline?: string }
-
   const parseAnswerKey = (json: any): Record<string, AKEntry> => {
     // Unwrap nested { questions: { "1": {...} } } format
     const data = (json && typeof json === 'object' && !Array.isArray(json) && json.questions)
@@ -231,6 +257,7 @@ export default function ExamCenter() {
       discipline: v.subject ?? v.discipline,
       topic: v.topic,
       concept: v.concept,
+      options: v.options ? Number(v.options) : undefined,
     })
     if (Array.isArray(data)) {
       const out: Record<string, AKEntry> = {}
@@ -329,23 +356,6 @@ export default function ExamCenter() {
     await supabase.from('answer_sheets').update({answers: allAnswers}).eq('id', activeSheet.id)
   }
 
-  const submitSection = async (timeUp = false) => {
-    clearInterval(timerRef.current)
-    const newSubmitted = [...sectionSubmitted]
-    newSubmitted[currentSection - 1] = true
-    setSectionSubmitted(newSubmitted)
-
-    if (currentSection < 4) {
-      const next = currentSection + 1
-      setCurrentSection(next)
-      setSectionTimeLeft(sectionMinutes * 60)
-      setPdfPage(BLOCK_PAGES[next - 1].start)
-    } else {
-      await submitExam(timeUp)
-    }
-  }
-  submitSectionRef.current = () => submitSection(true)
-
   const submitExam = async (timeUp = false) => {
     setSubmitting(true)
     clearInterval(timerRef.current)
@@ -417,6 +427,22 @@ export default function ExamCenter() {
       setSubmitting(false)
     }
   }
+
+  const submitSection = async (timeUp = false) => {
+    clearInterval(timerRef.current)
+    const newSubmitted = [...sectionSubmitted]
+    newSubmitted[currentSection - 1] = true
+    setSectionSubmitted(newSubmitted)
+    if (currentSection < 4) {
+      const next = currentSection + 1
+      setCurrentSection(next)
+      setSectionTimeLeft(sectionMinutes * 60)
+      setPdfPage(BLOCK_PAGES[next - 1].start)
+    } else {
+      await submitExam(timeUp)
+    }
+  }
+  useEffect(() => { submitSectionRef.current = () => submitSection(true) })
 
   const viewSessionReport = async (session: any) => {
     setSubmitting(true)
@@ -531,13 +557,6 @@ export default function ExamCenter() {
   const diffColor = (d: string) => ({
     Baseline: '#4a8c84', Moderate: '#6b7c3a', Hard: '#c07040', Hardest: '#9e2a2a'
   }[d] || '#c9a84c')
-
-  const scoreColor = (pct: number) => {
-    if (pct >= 75) return '#6b7c3a'
-    if (pct >= 65) return '#c9a84c'
-    if (pct >= 55) return '#c07040'
-    return '#c0574a'
-  }
 
   const navGroups = [
     {section: 'Overview', items: [{name: 'Dashboard', path: '/dashboard'}]},
@@ -680,7 +699,7 @@ export default function ExamCenter() {
               </div>
             )}
             <button
-              onClick={() => { if (window.confirm(`End Section ${currentSection}? You cannot return to it.`)) submitSection() }}
+              onClick={() => { if (window.confirm(`End Section ${currentSection}? You cannot return to it.`)) submitSectionRef.current() }}
               disabled={submitting}
               style={{padding:'8px 20px',background:'#c9a84c',border:'none',borderRadius:8,color:'#0d2340',fontFamily:'Sora,sans-serif',fontSize:14,fontWeight:700,cursor:submitting?'not-allowed':'pointer'}}>
               {submitting ? 'Saving...' : currentSection < 4 ? 'End Block →' : 'Submit Exam →'}
@@ -740,15 +759,27 @@ export default function ExamCenter() {
               {Array.from({length:50},(_,i) => {
                 const qNum = sectionStart + i
                 const sel = curSecAnswers[qNum]
+                const entry = answerKey[String(qNum)]
+                const numOpts = Math.max(5, entry?.options ?? 0, entry?.answer ? entry.answer.charCodeAt(0) - 64 : 0)
+                const opts = Array.from({length:numOpts},(_,j) => String.fromCharCode(65+j))
+                const row1 = opts.slice(0,5)
+                const row2 = opts.slice(5)
+                const btnStyle = (opt: string) => ({
+                  width:28,height:24,borderRadius:4,border:sel===opt?'none':'1px solid #d8cfc0',
+                  background:sel===opt?'#0d2340':'#f7f4ee',color:sel===opt?'#c9a84c':'#8a7d6a',
+                  fontSize:11,fontWeight:700,cursor:'pointer',fontFamily:'Sora,sans-serif',flexShrink:0 as const
+                })
                 return (
-                  <div key={qNum} style={{display:'flex',alignItems:'center',gap:5,padding:'4px 10px',borderBottom:'0.5px solid #faf8f4'}}>
-                    <div style={{width:26,fontSize:11,color:'#a89870',fontWeight:500,flexShrink:0,textAlign:'right',paddingRight:4}}>{qNum}</div>
-                    {(['A','B','C','D'] as const).map(opt => (
-                      <button key={opt} onClick={() => saveSectionAnswer(qNum, opt)}
-                        style={{flex:1,height:26,borderRadius:5,border:sel===opt?'none':'1px solid #d8cfc0',background:sel===opt?'#0d2340':'#f7f4ee',color:sel===opt?'#c9a84c':'#8a7d6a',fontSize:12,fontWeight:700,cursor:'pointer',fontFamily:'Sora,sans-serif'}}>
-                        {opt}
-                      </button>
-                    ))}
+                  <div key={qNum} style={{padding:'4px 10px',borderBottom:'0.5px solid #faf8f4'}}>
+                    <div style={{display:'flex',alignItems:'center',gap:3}}>
+                      <div style={{width:26,fontSize:11,color:'#a89870',fontWeight:500,flexShrink:0,textAlign:'right',paddingRight:4}}>{qNum}</div>
+                      {row1.map(opt => <button key={opt} onClick={() => saveSectionAnswer(qNum, opt)} style={btnStyle(opt)}>{opt}</button>)}
+                    </div>
+                    {row2.length > 0 && (
+                      <div style={{display:'flex',alignItems:'center',gap:3,marginTop:3,paddingLeft:30}}>
+                        {row2.map(opt => <button key={opt} onClick={() => saveSectionAnswer(qNum, opt)} style={btnStyle(opt)}>{opt}</button>)}
+                      </div>
+                    )}
                   </div>
                 )
               })}
@@ -767,33 +798,6 @@ export default function ExamCenter() {
         : results.predictedStep1 >= 196 ? '#c07040'
         : '#c0574a'
       : '#8a7d6a'
-
-    const BreakdownTable = ({ title, data }: { title: string, data: Record<string, {correct:number,total:number}> }) => {
-      const rows = Object.entries(data).sort(([,a],[,b]) => (b.correct/b.total) - (a.correct/a.total))
-      if (rows.length === 0) return null
-      return (
-        <div style={{background:'white',border:'0.5px solid #e8dfc8',borderRadius:12,overflow:'hidden',marginBottom:16}}>
-          <div style={{background:'#0d2340',padding:'11px 18px'}}>
-            <div style={{fontSize:13,fontWeight:600,color:'white'}}>{title}</div>
-          </div>
-          <div style={{padding:'8px 0'}}>
-            {rows.map(([name, s]) => {
-              const pct = Math.round((s.correct/s.total)*100)
-              return (
-                <div key={name} style={{display:'flex',alignItems:'center',gap:12,padding:'7px 18px',borderBottom:'0.5px solid #faf8f4'}}>
-                  <div style={{width:160,fontSize:13,color:'#1a1008',flexShrink:0}}>{name}</div>
-                  <div style={{flex:1,height:7,background:'#f0ece0',borderRadius:4,overflow:'hidden'}}>
-                    <div style={{height:'100%',width:`${pct}%`,background:scoreColor(pct),borderRadius:4}}/>
-                  </div>
-                  <div style={{width:36,fontSize:13,fontWeight:700,color:scoreColor(pct),textAlign:'right',flexShrink:0}}>{pct}%</div>
-                  <div style={{width:52,fontSize:11,color:'#a89870',flexShrink:0,textAlign:'right'}}>{s.correct}/{s.total}</div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      )
-    }
 
     const filteredQs: typeof results.questionDetails = (results.questionDetails || []).filter((q: any) =>
       resultsFilter === 'all' ? true : resultsFilter === 'correct' ? q.correct : !q.correct
