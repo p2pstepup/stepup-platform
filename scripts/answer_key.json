@@ -6,205 +6,1452 @@
   "questions_per_block": 50,
   "notes": "B3Q1 and B4Q47 pages were blank in source PDF; answers for those questions are marked with answer=null.",
   "questions": {
-    "1": {"answer": "D","system": "Immunology","subject": "Immunodeficiencies","topic": "B-Cell Disorders","concept": "Bruton agammaglobulinemia - absent gamma globulin peak on serum electrophoresis"},
-    "2": {"answer": "B","system": "Biochemistry","subject": "Purine Metabolism","topic": "Salvage Pathways","concept": "Lesch-Nyhan syndrome - HGPRT deficiency - guanine/hypoxanthine salvage defect"},
-    "3": {"answer": "E","system": "Renal","subject": "Acute Kidney Injury","topic": "Acute Tubular Necrosis","concept": "ATN from rhabdomyolysis after compartment syndrome - myoglobinuria"},
-    "4": {"answer": "A","system": "Dermatology","subject": "Blistering Disorders","topic": "Genetic Skin Disorders","concept": "Epidermolysis bullosa - anchoring fibril (collagen VII) defect causing blisters"},
-    "5": {"answer": "E","system": "Cardiology","subject": "Pericardial Disease","topic": "Constrictive Pericarditis","concept": "Constrictive pericarditis vs cirrhosis - increased JVP distinguishes the two"},
-    "6": {"answer": "D","system": "Gastroenterology","subject": "Small Intestine","topic": "Intestinal Anatomy","concept": "Jejunum vs ileum - prominent plicae circulares give greater mucosal surface area and feathery appearance"},
-    "7": {"answer": "B","system": "Hematology","subject": "Hemolytic Anemias","topic": "Autoimmune Hemolytic Anemia","concept": "Warm AIHA in CLL - autoantibodies produced by malignant B cells"},
-    "8": {"answer": "E","system": "Cardiology","subject": "Valvular Heart Disease","topic": "Mitral Regurgitation","concept": "Rupture of chordae tendineae post-MI - acute severe MR - increased LA pressure during systole"},
-    "9": {"answer": "A","system": "Renal","subject": "Fluid and Electrolytes","topic": "Osmolality and ADH","concept": "Mannitol infusion - increases plasma osmolality - increases ADH (arrow A: up osmolality, up ADH)"},
-    "10": {"answer": "B","system": "Infectious Disease","subject": "Viral Hepatitis","topic": "Hepatitis A","concept": "HAV from raw oysters - fecal-oral transmission - jaundice, hepatomegaly, self-limited"},
-    "11": {"answer": "D","system": "Psychiatry","subject": "ADHD","topic": "Stimulant Pharmacology","concept": "Methylphenidate/amphetamine - increased presynaptic release of dopamine and norepinephrine"},
-    "12": {"answer": "D","system": "Pulmonology","subject": "Acid-Base Disorders","topic": "Respiratory Acidosis","concept": "Barbiturate overdose - hypoventilation - respiratory acidosis - normal A-a gradient (PO2=50, PCO2=80, A-a=10)"},
-    "13": {"answer": "B","system": "Musculoskeletal","subject": "Arthritis","topic": "Osteoarthritis","concept": "OA - clear yellowish fluid, low leukocytes, normal glucose - non-inflammatory aspirate"},
-    "14": {"answer": "B","system": "Cardiology","subject": "Cardiac Physiology","topic": "Stroke Volume and Cardiac Cycle","concept": "PVC (beat B) - shortened diastolic filling time - smallest stroke volume"},
-    "15": {"answer": "A","system": "Infectious Disease","subject": "Sexually Transmitted Infections","topic": "Bacterial Vaginosis","concept": "BV - Gardnerella vaginalis - clue cells, fishy amine odor, pH>4.5, treated with metronidazole","options": 10},
-    "16": {"answer": "A","system": "Neurology","subject": "Peripheral Nerve Anatomy","topic": "Ulnar Nerve","concept": "Ulnar nerve - innervates interossei and hypothenar muscles - abduction and adduction of fingers"},
-    "17": {"answer": "C","system": "Pulmonology","subject": "Pleural Disorders","topic": "Pneumothorax","concept": "Tension pneumothorax - hyperresonant percussion - absent breath sounds - tracheal deviation away","options": 7},
-    "18": {"answer": "A","system": "Neurology","subject": "Traumatic Brain Injury","topic": "ICP Management","concept": "Therapeutic hyperventilation in head trauma - hypocapnia causes cerebral vasoconstriction - reduces ICP"},
-    "19": {"answer": "E","system": "Behavioral Science","subject": "Physician-Patient Relationship","topic": "Difficult Patients","concept": "Difficult anxious patient making excessive phone calls - set conditions and establish limits, schedule regular visits"},
-    "20": {"answer": "A","system": "Hematology","subject": "Platelet Physiology","topic": "Platelet Aggregation","concept": "ADP - rapid and irreversible platelet aggregation via P2Y1 and P2Y12 receptors"},
-    "21": {"answer": "E","system": "Obstetrics","subject": "Postpartum Hemorrhage","topic": "Abnormal Placentation","concept": "Placenta accreta - abnormal myometrial attachment after prior cesarean - requires hysterectomy","options": 6},
-    "22": {"answer": "C","system": "Infectious Disease","subject": "Viral Infections","topic": "Measles Complications","concept": "Measles virus in HIV patient - giant cell pneumonia - rare except in immunosuppressed"},
-    "23": {"answer": "C","system": "Biostatistics","subject": "Diagnostic Testing","topic": "ROC Curve Analysis","concept": "Raising cutoff threshold from A to B - increases false negatives, decreases false positives - decreased sensitivity"},
-    "24": {"answer": "C","system": "Urology","subject": "Voiding Dysfunction","topic": "Overflow Incontinence","concept": "Pelvic nerve injury after pelvic fracture - loss of parasympathetic bladder contraction - overflow incontinence"},
-    "25": {"answer": "G","system": "Genetics","subject": "Molecular Biology","topic": "RNA Processing Mutations","concept": "PKU - point mutation in intron masks splice site - RNA splice error causing exon 12 skipping","options": 8},
-    "26": {"answer": "B","system": "Biostatistics","subject": "Descriptive Statistics","topic": "Measures of Central Tendency","concept": "Median blood glucose - middle value in ordered dataset - 105 mg/dL for 15 patients"},
-    "27": {"answer": "A","system": "Pharmacology","subject": "Antibiotics","topic": "Tetracyclines","concept": "Doxycycline for Lyme disease - inhibits attachment of aminoacyl-tRNA to 30S ribosome"},
-    "28": {"answer": "E","system": "Embryology","subject": "Craniofacial Development","topic": "Craniosynostosis","concept": "Sagittal suture premature closure - scaphocephaly (elongated AP diameter)"},
-    "29": {"answer": "B","system": "Cardiology","subject": "Antihypertensives","topic": "ACE Inhibitors","concept": "ACE inhibitor (lisinopril) - blocks conversion Ang I to Ang II - increases Ang I, decreases Ang II, increases bradykinin"},
-    "30": {"answer": "D","system": "Immunology","subject": "Acute Phase Reactants","topic": "C-Reactive Protein","concept": "CRP - acute phase reactant synthesized by the liver in response to IL-6 - elevated in SLE flares","options": 6},
-    "31": {"answer": "E","system": "Urology","subject": "Scrotal Disorders","topic": "Varicocele","concept": "Left varicocele - left gonadal vein drains into left renal vein - bag of worms appearance"},
-    "32": {"answer": "E","system": "Endocrinology","subject": "Pancreatic Tumors","topic": "Glucagonoma","concept": "Glucagonoma - necrolytic migratory erythema, weight loss, diabetes - partial oxidation of fatty acids for energy"},
-    "33": {"answer": "D","system": "Hematology","subject": "Megaloblastic Anemia","topic": "Folate vs B12 Deficiency","concept": "Folate deficiency (homeless alcoholic) - normal methylmalonic acid, increased homocysteine","options": 9},
-    "34": {"answer": "B","system": "Hematology","subject": "Normocytic Anemia","topic": "Anemia of Chronic Disease","concept": "Anemia of chronic disease in RA - Prussian blue shows iron in macrophages - low serum iron, low TIBC, high ferritin","options": 6},
-    "35": {"answer": "B","system": "Endocrinology","subject": "Adrenal Disorders","topic": "Congenital Adrenal Hyperplasia","concept": "CAH (21-hydroxylase deficiency) - virilized 46XX female, elevated 17-OHP, androstenedione, testosterone - defect in adrenal steroid biosynthesis"},
-    "36": {"answer": "C","system": "Pharmacology","subject": "Muscle Relaxants","topic": "GABA-B Agonists","concept": "Baclofen - GABA-B receptor agonist - hyperpolarizes muscle cells - treats spasticity in MS"},
-    "37": {"answer": "E","system": "Behavioral Science","subject": "Developmental Milestones","topic": "Toddler Development","concept": "20-month-old playing alone and hitting - normal behavior (parallel play, not cooperative play until age 4)"},
-    "38": {"answer": "B","system": "Psychiatry","subject": "Substance Use Disorders","topic": "Alcohol Withdrawal","concept": "Delirium tremens 48-96 hours post admission - tachycardia, diaphoresis, visual hallucinations in physician with femur fracture"},
-    "39": {"answer": "D","system": "Microbiology","subject": "Virology","topic": "HIV Lifecycle","concept": "HIV - LTR mutation in long terminal repeat - impairs integration of provirus into host cell genome"},
-    "40": {"answer": "A","system": "Anatomy","subject": "Head and Neck","topic": "Thyroid Surgery Anatomy","concept": "Superior thyroid artery landmark - external branch of superior laryngeal nerve - innervates cricothyroid"},
-    "41": {"answer": "A","system": "Biostatistics","subject": "Study Design","topic": "Observational Studies","concept": "West Nile virus study - 25 consecutive patients described - case series (no control group)"},
-    "42": {"answer": "A","system": "Infectious Disease","subject": "Parasitic Infections","topic": "Babesiosis","concept": "Babesia microti - asplenic patient, NE US, Ixodes tick, intraerythrocytic rings, tetrad formation"},
-    "43": {"answer": "A","system": "Infectious Disease","subject": "TORCH Infections","topic": "Congenital CMV","concept": "Congenital CMV - periventricular calcifications, hearing loss, petechial rash, hepatomegaly, seizures"},
-    "44": {"answer": "E","system": "Immunology","subject": "Cytokines","topic": "Granuloma Formation","concept": "IL-12 activates NK cells and T cells to release IFN-gamma - macrophage activation - tuberculosis granuloma formation"},
-    "45": {"answer": "A","system": "Neurology","subject": "CNS Pathology","topic": "Stroke Histopathology","concept": "Ischemic stroke - 6 months later - glial scar composed of proliferated astrocytes"},
-    "46": {"answer": "B","system": "Gastroenterology","subject": "Peptic Ulcer Disease","topic": "Zollinger-Ellison Syndrome","concept": "ZES - gastrin-secreting pancreatic tumor - gastrin IHC staining - peptic ulcers, diarrhea, melena","options": 9},
-    "47": {"answer": "E","system": "Neurology","subject": "Cerebral Cortex","topic": "Motor Cortex Somatotopy","concept": "Mass in lateral precentral gyrus (frontal lobe) - weakness of left lower face (contralateral UMN facial palsy)","options": 6},
-    "48": {"answer": "E","system": "Renal","subject": "Acid-Base Disorders","topic": "Renal Tubular Acidosis","concept": "Non-anion gap metabolic acidosis - normal urine pH > 5.5 context would be type 1 RTA but here criteria point to RTA","options": 6},
-    "49": {"answer": "C","system": "Oncology","subject": "Colorectal Cancer","topic": "Cell Cycle and Cancer","concept": "Genomic instability during S, G2, and M phases - microsatellite and chromosomal instability - chemo resistance"},
-    "50": {"answer": "B","system": "Immunology","subject": "Innate Immunity","topic": "Neutrophil Adhesion","concept": "LFA-1 antagonism blocks integrin-mediated adhesion to endothelium - impairs neutrophil recruitment to infection"},
-    "51": {"answer": "A","system": "Genetics","subject": "Population Genetics","topic": "Hardy-Weinberg Equilibrium","concept": "Appreciable rate of gene mutation disrupts Hardy-Weinberg equilibrium"},
-    "52": {"answer": "B","system": "Renal","subject": "Nephrotic Syndrome","topic": "Edema Pathophysiology","concept": "Massive proteinuria (15g/day) - decreased plasma oncotic pressure - edema"},
-    "53": {"answer": "B","system": "Ophthalmology","subject": "Retinal Vascular Disease","topic": "Central Retinal Artery Occlusion","concept": "CRAO - diabetic with sudden painless monocular vision loss - pale retina with cherry red spot - retinal artery embolism"},
-    "54": {"answer": "C","system": "Genetics","subject": "Molecular Biology","topic": "RNA Splicing","concept": "Beta-thalassemia - splice acceptor site mutation - impairs snRNP modification of transcript"},
-    "55": {"answer": "C","system": "Psychiatry","subject": "Eating Disorders","topic": "Bulimia Nervosa","concept": "Bulimia nervosa - purging type - dental caries from gastric acid, normal BMI","options": 7},
-    "56": {"answer": "C","system": "Microbiology","subject": "Bacteriology","topic": "Clostridium","concept": "C. tetani - tetanospasmin exotoxin - neutralized by toxoid vaccine-induced antibodies","options": 6},
-    "57": {"answer": "D","system": "Pharmacology","subject": "Anesthesia","topic": "Inhaled Anesthetics","concept": "Rapid induction of anesthesia - low blood solubility - sevoflurane/desflurane type agent for fearful child"},
-    "58": {"answer": "C","system": "Neurology","subject": "Brain Anatomy","topic": "Limbic System","concept": "Short-term memory loss after chemo and radiation - mesial temporal lobe (hippocampus) damage - label C","options": 6},
-    "59": {"answer": "B","system": "Musculoskeletal","subject": "Bone Tumors","topic": "Chondrosarcoma","concept": "Chondrosarcoma - slow-growing, axial skeleton, hyaline cartilage histology, ring-and-arc calcification","options": 7},
-    "60": {"answer": "D","system": "Anatomy","subject": "Spine Anatomy","topic": "Spinal Canal Access","concept": "Laminectomy - surgical access to neural canal - lamina (posterior bony arch - label D)"},
-    "61": {"answer": "C","system": "Pharmacology","subject": "Bronchodilators","topic": "Prostaglandins","concept": "PGE2 relaxes bronchial smooth muscle - stimulates adenylyl cyclase - increases cAMP - inhibits MLCK"},
-    "62": {"answer": "E","system": "Microbiology","subject": "Virology","topic": "Herpes Viruses","concept": "Genital herpes (HSV) - vesicular penile lesions - guanosine analog activated by viral thymidine kinase"},
-    "63": {"answer": "B","system": "Reproductive","subject": "Menstrual Cycle","topic": "Endometrial Histology","concept": "Proliferative endometrium - straight glands, spiral arteries, abundant stroma - late follicular phase (label B)"},
-    "64": {"answer": "E","system": "Biochemistry","subject": "Fatty Acid Metabolism","topic": "Beta-Oxidation","concept": "LCHAD deficiency - hypoketotic hypoglycemia, hepatomegaly, responds to medium-chain triglycerides","options": 6},
-    "65": {"answer": "A","system": "Biochemistry","subject": "Chromatin and Epigenetics","topic": "Histone Modification","concept": "Histone acetyltransferase - acetylates lysine residues - decreases affinity of histones for DNA - euchromatin","options": 6},
-    "66": {"answer": "F","system": "Cardiology","subject": "Heart Failure","topic": "Right Ventricular Hypertrophy","concept": "Parasternal heave from chronic lung disease - right ventricular hypertrophy secondary to pulmonary hypertension","options": 6},
-    "67": {"answer": "A","system": "Biostatistics","subject": "Study Design","topic": "Case-Control Studies","concept": "Brain tumors and cell phone use - cases (with tumor) vs controls (without) - odds ratio - case-control study","options": 6},
-    "68": {"answer": "D","system": "Pharmacology","subject": "Anti-inflammatory Drugs","topic": "Corticosteroids","concept": "Topical corticosteroids for allergic contact dermatitis (poison ivy) - inhibit phospholipase A2"},
-    "69": {"answer": "C","system": "Pulmonology","subject": "Neonatal Respiratory","topic": "NRDS/Surfactant","concept": "Premature infant - surfactant deficiency - increased lung elastic recoil - alveolar collapse"},
-    "70": {"answer": "B","system": "Endocrinology","subject": "Parathyroid","topic": "Primary Hyperparathyroidism","concept": "Chief cell adenoma - osteitis fibrosa cystica, renal calculi, hypercalcemia, hypophosphatemia"},
-    "71": {"answer": "F","system": "Hematology","subject": "Coagulopathy","topic": "Vitamin K Deficiency","concept": "Cystic fibrosis - fat malabsorption - vitamin K deficiency - elevated PT - easy bruising","options": 7},
-    "72": {"answer": "E","system": "Biochemistry","subject": "Cell Signaling","topic": "Steroid Hormone Receptors","concept": "Steroid hormones - intracellular receptors - zinc-containing DNA-binding domains (zinc finger motifs)"},
-    "73": {"answer": "E","system": "Microbiology","subject": "Bacteriology","topic": "Anaerobic Bacteria","concept": "Ruptured appendix abscess - Bacteroides fragilis - gram-negative anaerobe - won't grow on MacConkey agar"},
-    "74": {"answer": "E","system": "Infectious Disease","subject": "Opportunistic Infections","topic": "CMV in Immunocompromised","concept": "CMV pneumonitis with diffuse alveolar damage - owl-eye inclusions - post-renal transplant on cyclosporine"},
-    "75": {"answer": "D","system": "Cardiology","subject": "Congenital Heart Disease","topic": "Atrial Septal Defect","concept": "ASD - fixed widely split S2, grade 4/6 systolic murmur - right heart volume overload"},
-    "76": {"answer": "B","system": "Cardiology","subject": "Hemodynamics","topic": "High-Output Heart Failure","concept": "AV fistula - bypasses peripheral resistance - increases venous return - increased resting cardiac output"},
-    "77": {"answer": "A","system": "Biostatistics","subject": "Epidemiology","topic": "Incidence Calculation","concept": "Drug-resistant TB incidence - 32/1000 = 3.2%; after 32 removed, 968 at risk; 3.2% x 968 = ~31 cases next year"},
-    "78": {"answer": "C","system": "Pharmacology","subject": "Anticoagulants","topic": "Heparin","concept": "Heparin-induced thrombocytopenia - IgG antibodies to heparin-PF4 complex - potentiates antithrombin III"},
-    "79": {"answer": "D","system": "Gastroenterology","subject": "Mesenteric Ischemia","topic": "Chronic Mesenteric Ischemia","concept": "Superior mesenteric artery stenosis - postprandial abdominal angina - intestinal steal phenomenon"},
-    "80": {"answer": "D","system": "Behavioral Science","subject": "Stages of Change","topic": "Transtheoretical Model","concept": "Patient already changed behavior but worried about relapse - maintenance stage"},
-    "81": {"answer": "A","system": "Immunology","subject": "Innate Immunity","topic": "Pattern Recognition","concept": "Toll-like receptors on neutrophils bind LPS (PAMP) - NF-kB activation - acute diverticulitis"},
-    "82": {"answer": "B","system": "Cardiology","subject": "Secondary Hypertension","topic": "Renovascular Hypertension","concept": "Fibromuscular dysplasia of renal artery - young woman, abdominal bruit, S4 gallop - secondary hypertension"},
-    "83": {"answer": "A","system": "Psychiatry","subject": "Cognitive Disorders","topic": "Delirium","concept": "Delirium - acute confusional state - fluctuating cognition, hyponatremia from SIADH after lung cancer treatment","options": 6},
-    "84": {"answer": "D","system": "Anatomy","subject": "Abdominal Trauma","topic": "Blunt Abdominal Trauma","concept": "CT shows splenic laceration - most commonly injured organ in blunt abdominal trauma"},
-    "85": {"answer": "C","system": "Infectious Disease","subject": "Virology","topic": "Epstein-Barr Virus","concept": "Infectious mononucleosis - EBV infects B cells via CD21 - atypical lymphocytes are CD8+ T cells reacting to EBV"},
-    "86": {"answer": "D","system": "Gastroenterology","subject": "Liver Disease","topic": "Portal Hypertension","concept": "Esophageal varices bleeding - retrograde blood flow from left gastric to azygos veins - portosystemic anastomosis"},
-    "87": {"answer": "D","system": "Biochemistry","subject": "Ketone Metabolism","topic": "Fatty Acid Oxidation","concept": "Spinal muscular atrophy - prolonged fasting - carnitine-acylcarnitine cycle transports long-chain fatty acids for ketogenesis"},
-    "88": {"answer": "E","system": "Pulmonology","subject": "Respiratory Physiology","topic": "Lung Mechanics","concept": "Neonatal RDS - alveolar collapse from surfactant deficiency - increased lung elastic recoil (Choice C)"},
-    "89": {"answer": "E","system": "Hematology","subject": "Plasma Cell Disorders","topic": "Multiple Myeloma","concept": "Multiple myeloma - proteasome inhibitor (bortezomib) - induces apoptosis via unfolded protein accumulation"},
-    "90": {"answer": "C","system": "Oncology","subject": "Breast Pathology","topic": "Mammary Duct Ectasia","concept": "Mammary duct ectasia - perimenopausal, dilated duct with lipid-laden macrophages, periductal fibrosis, no malignancy"},
-    "91": {"answer": "A","system": "Embryology","subject": "Cardiovascular Development","topic": "Aortic Arches","concept": "Patent ductus arteriosus - failure of sixth aortic arch (ductus arteriosus) to close - continuous murmur"},
-    "92": {"answer": "D","system": "Anatomy","subject": "Abdominal Trauma","topic": "Splenic Injury","concept": "CT showing splenic laceration - most commonly injured organ in blunt abdominal trauma - hemodynamic instability"},
-    "93": {"answer": "C","system": "Infectious Disease","subject": "Virology","topic": "Epstein-Barr Virus","concept": "Infectious mononucleosis - EBV infects B cells via CD21 - atypical lymphocytes are reactive CD8+ T cells"},
-    "94": {"answer": "D","system": "Gastroenterology","subject": "Liver Disease","topic": "Portal Hypertension","concept": "Esophageal varices bleeding in cirrhosis - retrograde flow from left gastric to azygos veins - portosystemic anastomosis"},
-    "95": {"answer": "B","system": "Biochemistry","subject": "Ketone Metabolism","topic": "Fatty Acid Transport","concept": "Spinal muscular atrophy child - prolonged fasting - carnitine-acylcarnitine cycle provides long-chain FA for ketogenesis"},
-    "96": {"answer": "C","system": "Cardiology","subject": "Secondary Hypertension","topic": "Renovascular Hypertension","concept": "Fibromuscular dysplasia - young woman post-seizure, abdominal bruit, S4 gallop - secondary hypertension"},
-    "97": {"answer": "E","system": "Behavioral Science","subject": "Stages of Change","topic": "Transtheoretical Model","concept": "Patient exercising, eating well for 14 months but worried about relapse - maintenance stage","options": 6},
-    "98": {"answer": "E","system": "Hematology","subject": "Plasma Cell Disorders","topic": "Multiple Myeloma","concept": "Multiple myeloma - proteasome inhibitor (bortezomib) - blocks protein degradation - induces apoptosis via unfolded protein"},
-    "99": {"answer": "E","system": "Oncology","subject": "Breast Pathology","topic": "Mammary Duct Ectasia","concept": "Mammary duct ectasia - perimenopausal, dilated duct, lipid-laden macrophages, glandular epithelium, periductal fibrosis"},
-    "100": {"answer": "E","system": "Embryology","subject": "Cardiovascular Development","topic": "Aortic Arches","concept": "Patent ductus arteriosus - failure of sixth aortic arch to close - continuous murmur in premature newborn"},
-    "101": {"answer": null,"system": "Genetics","subject": "Molecular Biology","topic": "Transcription Factors","concept": "Tretinoin (retinoic acid) - binds nuclear retinoic acid receptors - activates nuclear gene transcription of collagen"},
-    "102": {"answer": "A","system": "Immunology","subject": "Mucosal Immunity","topic": "IgA and Mucosal Sites","concept": "Inhaled attenuated gonorrhea vaccine - IgA-producing lymphocytes traffic to all mucosal sites including genital tract"},
-    "103": {"answer": "D","system": "Biostatistics","subject": "Epidemiology","topic": "Relative Risk Calculation","concept": "Relative risk of CAD for smoker with high BP and cholesterol vs nonsmoker - graph reading - RR = 60/5 = 12"},
-    "104": {"answer": "A","system": "Biochemistry","subject": "Lipid Metabolism","topic": "Cholesterol Regulation","concept": "Statin inhibits HMG-CoA reductase - decreased intrahepatic cholesterol - upregulation of LDL receptors"},
-    "105": {"answer": "C","system": "Biochemistry","subject": "Amino Acids","topic": "Nonpolar Amino Acids","concept": "Transmembrane segment of growth hormone receptor - sequence E is all nonpolar/hydrophobic amino acids"},
-    "106": {"answer": "B","system": "Neurology","subject": "Seizure Disorders","topic": "Focal Seizures","concept": "Complex partial (focal with impaired awareness) seizure - lip smacking automatism, postictal confusion"},
-    "107": {"answer": "B","system": "Urology","subject": "Bladder Cancer","topic": "Risk Factors","concept": "Schistosoma haematobium infection - strongest risk factor for squamous cell carcinoma of bladder in endemic areas"},
-    "108": {"answer": "F","system": "Oncology","subject": "Leukemia","topic": "Drug Resistance","concept": "CML blast crisis - P-glycoprotein efflux pump activity in leukemic cells - removes intracellular chemo drugs","options": 8},
-    "109": {"answer": "E","system": "Gynecology","subject": "Ovarian Tumors","topic": "Sex Cord-Stromal Tumors","concept": "Granulosa cell tumor - estrogen-secreting, precocious puberty in 8-year-old - Call-Exner bodies on histology"},
-    "110": {"answer": "C","system": "Biochemistry","subject": "Amino Acid Disorders","topic": "Homocystinuria","concept": "Homocystinuria - cystathionine synthase deficiency - lens dislocation downward, thrombosis, intellectual disability","options": 6},
-    "111": {"answer": "A","system": "Psychiatry","subject": "Sexual Dysfunction","topic": "Erectile Dysfunction","concept": "Psychogenic erectile dysfunction - normal libido, normal nocturnal erections - grieving widower with new partner","options": 6},
-    "112": {"answer": "B","system": "Neurology","subject": "Neurotransmitters","topic": "Excitotoxicity","concept": "Glutamate excitotoxicity - cerebral ischemia - NMDA receptor activation - calcium influx - neuronal death"},
-    "113": {"answer": "A","system": "Endocrinology","subject": "Bone Metabolism","topic": "Rickets","concept": "Childhood vitamin D deficiency (rickets) - frontal bossing, tibial bowing, hypoplastic teeth - skeletal defects in ancient child"},
-    "114": {"answer": "C","system": "Pharmacology","subject": "Hepatotoxicity","topic": "Acetaminophen Toxicity","concept": "Chronic alcohol - CYP450 induction - increased NAPQI production from acetaminophen - hepatotoxicity"},
-    "115": {"answer": "C","system": "Biochemistry","subject": "Antioxidants","topic": "Glutathione","concept": "Hepatic oxidative stress from Drug X - GSH:GSSG ratio is best measure - decreases with oxidative stress"},
-    "116": {"answer": "C","system": "Immunology","subject": "Hypersensitivity Reactions","topic": "Type IV Hypersensitivity","concept": "Sarcoidosis - non-caseating granulomas in lymph node biopsy - type IV (delayed) hypersensitivity"},
-    "117": {"answer": "E","system": "Embryology","subject": "Fetal Development","topic": "Embryonic Staging","concept": "20-day embryo - gastrulation occurred - neural plate present, neural tube not yet formed","options": 6},
-    "118": {"answer": "B","system": "Pulmonology","subject": "Respiratory Physiology","topic": "Aging and Lung Function","concept": "Aging - increased residual volume, decreased arterial PO2, increased A-a gradient"},
-    "119": {"answer": "F","system": "Biostatistics","subject": "Statistical Tests","topic": "Chi-Square Test","concept": "Comparing allele frequency (categorical) between two groups - chi-square test","options": 6},
-    "120": {"answer": "A","system": "Neurology","subject": "Intracranial Hypertension","topic": "Pseudotumor Cerebri","concept": "Pseudotumor cerebri (idiopathic IH) - acetazolamide - decreased CSF production by choroid plexus","options": 6},
-    "121": {"answer": "E","system": "Neurology","subject": "Neuromuscular Junction","topic": "Lambert-Eaton Syndrome","concept": "Lambert-Eaton - antibodies against voltage-gated Ca2+ channels in presynaptic terminal - proximal weakness improves with use","options": 7},
-    "122": {"answer": "B","system": "Pulmonology","subject": "Obstructive Lung Disease","topic": "Asthma","concept": "Asthma exacerbation in child - diffuse inspiratory and expiratory wheezes, decreased fremitus, viral URI trigger"},
-    "123": {"answer": "D","system": "Pharmacology","subject": "Anesthesia","topic": "Malignant Hyperthermia","concept": "Malignant hyperthermia - succinylcholine + volatile anesthetic - ryanodine receptor mutation - muscle rigidity, hyperthermia"},
-    "124": {"answer": "C","system": "Cardiology","subject": "Coronary Artery Disease","topic": "Stress Echocardiography","concept": "Right coronary artery stenosis - posterior LV hypokinesis on stress echo - PDA supplies posterior LV"},
-    "125": {"answer": "F","system": "Microbiology","subject": "Bacteriology","topic": "Frameshift Mutations","concept": "Helicobacter pylori - slipped-strand mispairing in repetitive cytidine sequence - frameshift - truncated protein","options": 6},
-    "126": {"answer": "E","system": "Renal","subject": "Renal Tubular Disorders","topic": "Fanconi Syndrome","concept": "Cystinosis - Fanconi syndrome - impaired proximal tubule bicarbonate reabsorption - crystals in cornea, leg bowing"},
-    "127": {"answer": "E","system": "Biostatistics","subject": "Study Design","topic": "Internal Validity","concept": "Lack of blinding (parents know treatment) - most significant limitation to internal validity of cough study"},
-    "128": {"answer": "E","system": "Gastroenterology","subject": "Hepatic Encephalopathy","topic": "Ammonia Reduction","concept": "Neomycin for hepatic encephalopathy - kills ammonia-generating gut bacteria"},
-    "129": {"answer": "C","system": "Renal","subject": "Renal Tubular Physiology","topic": "Ammoniagenesis","concept": "Renal tubular acidosis - glutamine is primary substrate for ammoniagenesis in proximal tubule"},
-    "130": {"answer": "B","system": "Behavioral Science","subject": "Stages of Change","topic": "Transtheoretical Model","concept": "Patient knows insulin benefits but uncertain - ambivalent about starting - contemplation stage","options": 6},
-    "131": {"answer": "B","system": "Endocrinology","subject": "Thyroid Disorders","topic": "Thyroiditis","concept": "Subacute granulomatous (de Quervain) thyroiditis - painful tender thyroid, transient hyperthyroidism, post-viral"},
-    "132": {"answer": "A","system": "Microbiology","subject": "Mycology","topic": "Tinea Versicolor","concept": "Malassezia furfur - tinea versicolor - hypopigmented patches after sun exposure, KOH shows spaghetti and meatballs"},
-    "133": {"answer": "C","system": "Neurology","subject": "Peripheral Neuropathy","topic": "Cisplatin Neurotoxicity","concept": "Cisplatin damages dorsal root ganglia (label B) - sensory neuropathy - hyporeflexia from disrupted reflex arc"},
-    "134": {"answer": "A","system": "Renal","subject": "Nephrolithiasis","topic": "Struvite Stones","concept": "Struvite (magnesium ammonium phosphate) stones - urease-positive Klebsiella - alkaline urine, recurrent UTIs"},
-    "135": {"answer": "E","system": "Anatomy","subject": "Wrist Anatomy","topic": "Distal Radius Fracture","concept": "Colles fracture - fall on outstretched hand - distal radius fracture - most common wrist fracture"},
-    "136": {"answer": "E","system": "Anatomy","subject": "Portal Venous System","topic": "TIPS Procedure","concept": "TIPS procedure - stent between portal vein branch and hepatic vein - relieves portal hypertension"},
-    "137": {"answer": "C","system": "Gastroenterology","subject": "Esophageal Disease","topic": "GERD","concept": "Erosive esophagitis - PPI mechanism - irreversible inhibition of H+/K+-ATPase on parietal cells"},
-    "138": {"answer": "F","system": "Oncology","subject": "Leukemia","topic": "CML","concept": "Philadelphia chromosome (t9;22) - BCR-ABL fusion protein - constitutively active tyrosine kinase - cell cycle dysregulation","options": 6},
-    "139": {"answer": "A","system": "Biostatistics","subject": "Study Design","topic": "Internal Validity","concept": "Cough medication RCT - parents know treatment assigned - lack of blinding most significant limitation to internal validity"},
-    "140": {"answer": "E","system": "Gastroenterology","subject": "Hepatic Encephalopathy","topic": "Ammonia Reduction","concept": "Neomycin for hepatic encephalopathy - kills Gram-negative ammonia-generating gut bacteria"},
-    "141": {"answer": "B","system": "Renal","subject": "Renal Tubular Physiology","topic": "Ammoniagenesis","concept": "Renal tubular acidosis - glutamine is primary substrate for proximal tubule ammoniagenesis"},
-    "142": {"answer": "B","system": "Behavioral Science","subject": "Stages of Change","topic": "Transtheoretical Model","concept": "Type 2 DM patient aware of insulin benefits but uncertain - ambivalent - contemplation stage"},
-    "143": {"answer": "C","system": "Endocrinology","subject": "Thyroid Disorders","topic": "Thyroiditis","concept": "Subacute granulomatous (de Quervain) thyroiditis - tender thyroid, transient hyperthyroidism, post-viral"},
-    "144": {"answer": "A","system": "Dermatology","subject": "Fungal Infections","topic": "Tinea Versicolor","concept": "Malassezia furfur - tinea versicolor - hypopigmented patches worse after sun, KOH spaghetti and meatballs"},
-    "145": {"answer": "D","system": "Neurology","subject": "Peripheral Neuropathy","topic": "Cisplatin Neurotoxicity","concept": "Cisplatin damages dorsal root ganglia (label B) - sensory neuropathy - hyporeflexia from disrupted reflex arc"},
-    "146": {"answer": "C","system": "Renal","subject": "Nephrolithiasis","topic": "Struvite Stones","concept": "Struvite (magnesium ammonium phosphate) stones - Klebsiella urease - alkaline urine pH 8, recurrent UTIs"},
-    "147": {"answer": "E","system": "Anatomy","subject": "Wrist Anatomy","topic": "Distal Radius Fracture","concept": "Colles fracture - FOOSH injury - fracture of distal radius - most common wrist fracture in elderly women"},
-    "148": {"answer": "B","system": "Anatomy","subject": "Portal Venous System","topic": "TIPS Procedure","concept": "TIPS - transjugular intrahepatic portosystemic shunt - stent between portal vein branch and hepatic vein"},
-    "149": {"answer": "E","system": "Gastroenterology","subject": "Esophageal Disease","topic": "GERD","concept": "Severe erosive esophagitis - PPI mechanism - irreversible inhibition of H+/K+-ATPase on parietal cells"},
-    "150": {"answer": "B","system": "Oncology","subject": "Leukemia","topic": "CML","concept": "CML - Philadelphia chromosome t(9;22) - BCR-ABL fusion protein - constitutively active tyrosine kinase - fusion protein influence on cell cycle"},
-    "151": {"answer": "G","system": "Hematology","subject": "Bleeding Disorders","topic": "von Willebrand Disease","concept": "vWD - prolonged bleeding time, decreased Factor VIII, abnormal platelet adhesion to collagen - easy bruising, menorrhagia","options": 7},
-    "152": {"answer": "E","system": "Psychiatry","subject": "Mood Disorders","topic": "Depression in Adolescents","concept": "Adolescent MDD - somatic symptoms, anhedonia, social withdrawal - suicidal ideation most critical to assess"},
-    "153": {"answer": "D","system": "Physiology","subject": "Respiratory Physiology","topic": "CO2 Transport","concept": "Haldane effect - deoxyhemoglobin is better buffer of H+ than oxyhemoglobin - carries more CO2 for given PCO2","options": 6},
-    "154": {"answer": "B","system": "Cardiology","subject": "Superior Vena Cava Syndrome","topic": "Mediastinal Mass","concept": "SVC syndrome from lung cancer - increased JVP, bilateral conjunctival edema, upper extremity swelling"},
-    "155": {"answer": "B","system": "Hematology","subject": "Polycythemia","topic": "Secondary Polycythemia","concept": "COPD - chronic hypoxemia - increased EPO - secondary polycythemia - normochromic, normocytic erythrocytosis"},
-    "156": {"answer": "F","system": "Biostatistics","subject": "Epidemiology","topic": "Attributable Risk","concept": "Attributable (excess) risk for DVT group - AR = (25/100) - (10/200) = 25% - 5% = 20 per 100","options": 8},
-    "157": {"answer": "E","system": "Biochemistry","subject": "Vitamins","topic": "Vitamin C","concept": "Scurvy (vitamin C deficiency) - bleeding gums, bruising - impairs prolyl hydroxylase needed for collagen synthesis","options": 7},
-    "158": {"answer": "C","system": "Behavioral Science","subject": "Communication Skills","topic": "Emotional Validation","concept": "Physician should validate patient's emotion about rosacea - mindreading technique - 'It's upsetting when...' "},
-    "159": {"answer": "F","system": "Endocrinology","subject": "Calcium Metabolism","topic": "PTH Mechanism","concept": "PTH stimulates 1-alpha-hydroxylase in kidney - increases 1,25-dihydroxycholecalciferol production - hypercalcemia","options": 6},
-    "160": {"answer": "C","system": "Endocrinology","subject": "Growth Hormone Axis","topic": "IGF-1","concept": "IGF-1 deficiency in knockout mouse - shortened long bones - narrow epiphyseal plates"},
-    "161": {"answer": "C","system": "Cardiology","subject": "Arrhythmias","topic": "Supraventricular Premature Beats","concept": "Supraventricular premature beats (PACs) - caffeine-induced, narrow QRS with compensatory pause"},
-    "162": {"answer": "B","system": "Immunology","subject": "Innate Immunity","topic": "Neutrophil Bactericidal Activity","concept": "Respiratory burst - hypochlorite (from MPO + H2O2 + Cl-) - most efficient bactericidal compound"},
-    "163": {"answer": "J","system": "Pulmonology","subject": "ARDS","topic": "Alveolar Repair","concept": "ARDS from sepsis - alveolar repair via type II pneumocyte hyperplasia - differentiate into type I pneumocytes","options": 10},
-    "164": {"answer": "C","system": "Oncology","subject": "Skin Cancer","topic": "Melanoma","concept": "Melanoma - melanocytes derived from neural crest cells - ABCDE criteria"},
-    "165": {"answer": "C","system": "Pharmacology","subject": "Cholinergics","topic": "Cholinesterase Inhibitors","concept": "Neostigmine overdose - cholinergic crisis - desensitization of nicotinic receptors by excess ACh","options": 6},
-    "166": {"answer": "C","system": "Obstetrics","subject": "Labor and Delivery","topic": "Oxytocin Pharmacology","concept": "Oxytocin binds G-protein coupled receptor - activates ligand-gated calcium channels in uterine smooth muscle"},
-    "167": {"answer": "C","system": "Pharmacology","subject": "Aminoglycosides","topic": "Pharmacokinetics","concept": "Gentamicin dosing - trough too high - maintain dose but extend interval to 12 hours to allow drug clearance"},
-    "168": {"answer": "F","system": "Renal","subject": "Congenital Renal Anomalies","topic": "Hydronephrosis","concept": "Congenital ureteral obstruction - chronic vesicoureteral reflux - hydronephrosis - dilated calyces compressing parenchyma","options": 10},
-    "169": {"answer": "C","system": "Microbiology","subject": "Virology","topic": "HIV Antiretrovirals","concept": "HIV protease inhibitor - blocks protein cleavage - immature viral particles with no mature core"},
-    "170": {"answer": "B","system": "Neurology","subject": "Somatosensory Cortex","topic": "Sensory Cortex Anatomy","concept": "Right anterolateral parietal lobe (postcentral gyrus, label B) - mediates sensation of contralateral distal upper extremity","options": 10},
-    "171": {"answer": "E","system": "Renal","subject": "Renal Papillary Necrosis","topic": "Sickle Cell Complications","concept": "Renal papillary necrosis in sickle cell trait - medullary ischemia - hematuria, flank pain, ureteral obstruction"},
-    "172": {"answer": "E","system": "Pharmacology","subject": "Dementia Drugs","topic": "Cholinesterase Inhibitors","concept": "Donepezil - prolongs ACh in synaptic cleft by inhibiting acetylcholinesterase - improves Alzheimer cognition"},
-    "173": {"answer": "H","system": "Endocrinology","subject": "Obesity and Metabolism","topic": "Leptin Physiology","concept": "Primary leptin deficiency - high BMI with low leptin (patient H) - adipocytes cannot produce functional leptin","options": 8},
-    "174": {"answer": "D","system": "Pharmacology","subject": "Drug Interactions","topic": "CYP450 Inhibitors","concept": "Cimetidine inhibits CYP450 - decreases phenytoin metabolism - phenytoin toxicity (nystagmus, ataxia)"},
-    "175": {"answer": "B","system": "Oncology","subject": "Esophageal Cancer","topic": "Squamous Cell Carcinoma","concept": "Squamous cell carcinoma of mid-esophagus - foci of keratinization (keratin pearls) on biopsy - smoking/alcohol risk"},
-    "176": {"answer": "C","system": "Obstetrics","subject": "Gestational Trophoblastic Disease","topic": "Hydatidiform Mole","concept": "Partial hydatidiform mole - fetal tissue present, chorionic villi with focal edema, trophoblastic proliferation"},
-    "177": {"answer": "A","system": "Biochemistry","subject": "Fatty Acid Metabolism","topic": "Carnitine Shuttle","concept": "Carnitine-acylcarnitine translocase deficiency - long-chain fatty acids accumulate - hypoketotic hypoglycemia, responds to medium-chain triglycerides"},
-    "178": {"answer": "D","system": "Endocrinology","subject": "Adrenal Disorders","topic": "Primary Hyperaldosteronism","concept": "Conn syndrome - hypokalemia, metabolic alkalosis, hypertension, undetectable plasma renin - adrenal adenoma"},
-    "179": {"answer": "E","system": "Pharmacology","subject": "Substance Abuse","topic": "Opioid Intoxication","concept": "Opioid intoxication - miosis (pinpoint pupils), bradycardia, respiratory depression, stupor - classic toxidrome"},
-    "180": {"answer": "C","system": "Musculoskeletal","subject": "Muscle Physiology","topic": "Muscle Repair","concept": "Laceration with fibrotic scar - collagen replaces muscle fibers - decreased passive stretching (joint contracture)"},
-    "181": {"answer": "H","system": "Biostatistics","subject": "Epidemiology","topic": "Prevalence","concept": "Prevalence of obesity at 5 years = 150 obese / 900 total participants = 150/900","options": 8},
-    "182": {"answer": "B","system": "Neurology","subject": "Horner Syndrome","topic": "Sympathetic Pathway","concept": "Pancoast tumor - Horner syndrome - lesion at ciliospinal center of Budge (T1, label B) - ipsilateral ptosis, miosis, anhidrosis","options": 6},
-    "183": {"answer": "C","system": "Obstetrics","subject": "Medical Abortion","topic": "Mifepristone","concept": "Mifepristone - progesterone antagonist - given first in medical abortion protocol before misoprostol"},
-    "184": {"answer": "A","system": "Pharmacology","subject": "Toxicology","topic": "Methanol Poisoning","concept": "Methanol toxicity (paint thinner) - fomepizole inhibits alcohol dehydrogenase - prevents formate production"},
-    "185": {"answer": "B","system": "Neurology","subject": "Stroke","topic": "Lacunar Infarcts","concept": "Lacunar infarct of internal capsule - hypertension - pure motor hemiparesis - dysarthria, clumsy hand"},
-    "186": {"answer": "D","system": "Gastroenterology","subject": "Peptic Ulcer Disease","topic": "Duodenal Ulcer Perforation","concept": "Retroperitoneal air - perforated duodenal ulcer (2nd-4th segments retroperitoneal) - H. pylori related"},
-    "187": {"answer": "A","system": "Biochemistry","subject": "Lysosomal Storage Diseases","topic": "I-Cell Disease","concept": "I-cell disease (mucolipidosis II) - defective N-acetylglucosaminyl-1-phosphotransferase - abnormal targeting of lysosomal enzymes"},
-    "188": {"answer": "C","system": "Immunology","subject": "Innate Immunity","topic": "Acute Inflammatory Response","concept": "Cat scratch causing immediate red streaks - histamine-stimulated vasodilation from mast cells/basophils"},
-    "189": {"answer": "A","system": "Gastroenterology","subject": "Diverticular Disease","topic": "Diverticulosis","concept": "Diverticulosis - increased intraluminal pressure - herniation of mucosa/submucosa through muscularis propria"},
-    "190": {"answer": "A","system": "Immunology","subject": "Transplant Immunology","topic": "Graft-Versus-Host Disease","concept": "Bone marrow transplant - HLA mismatch (HLA-B 19 vs 7) - acute GVHD - donor T cells attack host tissues"},
-    "191": {"answer": "C","system": "Neurology","subject": "Movement Disorders","topic": "Huntington Disease","concept": "Huntington disease - autosomal dominant - woman has 50% chance, son has 50% x 50% = 25% risk"},
-    "192": {"answer": "D","system": "Anatomy","subject": "Cardiac Anatomy","topic": "Anterior Heart Structures","concept": "Penetrating injury to inferior sternum - right ventricle most anterior cardiac structure - shrapnel injury"},
-    "193": {"answer": "C","system": "Physiology","subject": "Exercise Physiology","topic": "Vascular Resistance During Exercise","concept": "Splanchnic vascular resistance increases most during exercise - sympathetic vasoconstriction redirects blood to muscles","options": 7},
-    "194": {"answer": "B","system": "Anatomy","subject": "Scrotal Layers","topic": "Testicular Surgery","concept": "External spermatic fascia is derived from external abdominal oblique - next layer after dartos during orchiectomy"},
-    "195": {"answer": "E","system": "Pulmonology","subject": "Pulmonary Neoplasms","topic": "Pulmonary Hamartoma","concept": "Pulmonary hamartoma - disorganized normal tissue - mature cartilage, fat, respiratory epithelium - benign solitary nodule"},
-    "196": {"answer": "E","system": "Pharmacology","subject": "Anticonvulsants","topic": "Anticonvulsant Mechanisms","concept": "Methanol poisoning treatment - fomepizole inhibits alcohol dehydrogenase - blocks conversion to formaldehyde","options": 6},
-    "197": {"answer": null,"system": "Microbiology","subject": "Mycology","topic": "Histoplasmosis","concept": "Histoplasma capsulatum - bat droppings exposure - grows inside nonactivated macrophages - virulence mechanism"},
-    "198": {"answer": "B","system": "Pulmonology","subject": "Obstructive Lung Disease","topic": "COPD Diagnosis","concept": "COPD - FEV1/FVC < 70%, decreased FEV1, decreased breath sounds, prolonged expiration"},
-    "199": {"answer": "B","system": "Oncology","subject": "Cutaneous Lymphoma","topic": "Mycosis Fungoides","concept": "Mycosis fungoides - cutaneous T-cell lymphoma - malignant T lymphocyte infiltration of epidermis - eosinophilia, elevated IgA/IgE","options": 6},
-    "200": {"answer": "F","system": "Gastroenterology","subject": "Lysosomal Storage Disease","topic": "I-Cell Disease","concept": "I-cell disease - plasma lysosomal enzymes elevated due to abnormal targeting (mannose-6-phosphate tagging defect)","options": 6}
+    "1": {
+      "answer": "D",
+      "system": "Immunology",
+      "subject": "Immunodeficiencies",
+      "topic": "B-Cell Disorders",
+      "concept": "Bruton agammaglobulinemia - absent gamma globulin peak on serum electrophoresis"
+    },
+    "2": {
+      "answer": "B",
+      "system": "Biochemistry",
+      "subject": "Purine Metabolism",
+      "topic": "Salvage Pathways",
+      "concept": "Lesch-Nyhan syndrome - HGPRT deficiency - guanine/hypoxanthine salvage defect"
+    },
+    "3": {
+      "answer": "E",
+      "system": "Renal",
+      "subject": "Acute Kidney Injury",
+      "topic": "Acute Tubular Necrosis",
+      "concept": "ATN from rhabdomyolysis after compartment syndrome - myoglobinuria"
+    },
+    "4": {
+      "answer": "A",
+      "system": "Dermatology",
+      "subject": "Blistering Disorders",
+      "topic": "Genetic Skin Disorders",
+      "concept": "Epidermolysis bullosa - anchoring fibril (collagen VII) defect causing blisters"
+    },
+    "5": {
+      "answer": "E",
+      "system": "Cardiology",
+      "subject": "Pericardial Disease",
+      "topic": "Constrictive Pericarditis",
+      "concept": "Constrictive pericarditis vs cirrhosis - increased JVP distinguishes the two"
+    },
+    "6": {
+      "answer": "D",
+      "system": "Gastroenterology",
+      "subject": "Small Intestine",
+      "topic": "Intestinal Anatomy",
+      "concept": "Jejunum vs ileum - prominent plicae circulares give greater mucosal surface area and feathery appearance"
+    },
+    "7": {
+      "answer": "B",
+      "system": "Hematology",
+      "subject": "Hemolytic Anemias",
+      "topic": "Autoimmune Hemolytic Anemia",
+      "concept": "Warm AIHA in CLL - autoantibodies produced by malignant B cells"
+    },
+    "8": {
+      "answer": "E",
+      "system": "Cardiology",
+      "subject": "Valvular Heart Disease",
+      "topic": "Mitral Regurgitation",
+      "concept": "Rupture of chordae tendineae post-MI - acute severe MR - increased LA pressure during systole"
+    },
+    "9": {
+      "answer": "A",
+      "system": "Renal",
+      "subject": "Fluid and Electrolytes",
+      "topic": "Osmolality and ADH",
+      "concept": "Mannitol infusion - increases plasma osmolality - increases ADH (arrow A: up osmolality, up ADH)"
+    },
+    "10": {
+      "answer": "B",
+      "system": "Infectious Disease",
+      "subject": "Viral Hepatitis",
+      "topic": "Hepatitis A",
+      "concept": "HAV from raw oysters - fecal-oral transmission - jaundice, hepatomegaly, self-limited"
+    },
+    "11": {
+      "answer": "D",
+      "system": "Psychiatry",
+      "subject": "ADHD",
+      "topic": "Stimulant Pharmacology",
+      "concept": "Methylphenidate/amphetamine - increased presynaptic release of dopamine and norepinephrine"
+    },
+    "12": {
+      "answer": "D",
+      "system": "Pulmonology",
+      "subject": "Acid-Base Disorders",
+      "topic": "Respiratory Acidosis",
+      "concept": "Barbiturate overdose - hypoventilation - respiratory acidosis - normal A-a gradient (PO2=50, PCO2=80, A-a=10)"
+    },
+    "13": {
+      "answer": "B",
+      "system": "Musculoskeletal",
+      "subject": "Arthritis",
+      "topic": "Osteoarthritis",
+      "concept": "OA - clear yellowish fluid, low leukocytes, normal glucose - non-inflammatory aspirate"
+    },
+    "14": {
+      "answer": "B",
+      "system": "Cardiology",
+      "subject": "Cardiac Physiology",
+      "topic": "Stroke Volume and Cardiac Cycle",
+      "concept": "PVC (beat B) - shortened diastolic filling time - smallest stroke volume"
+    },
+    "15": {
+      "answer": "A",
+      "system": "Infectious Disease",
+      "subject": "Sexually Transmitted Infections",
+      "topic": "Bacterial Vaginosis",
+      "concept": "BV - Gardnerella vaginalis - clue cells, fishy amine odor, pH>4.5, treated with metronidazole",
+      "options": 10
+    },
+    "16": {
+      "answer": "A",
+      "system": "Neurology",
+      "subject": "Peripheral Nerve Anatomy",
+      "topic": "Ulnar Nerve",
+      "concept": "Ulnar nerve - innervates interossei and hypothenar muscles - abduction and adduction of fingers"
+    },
+    "17": {
+      "answer": "C",
+      "system": "Pulmonology",
+      "subject": "Pleural Disorders",
+      "topic": "Pneumothorax",
+      "concept": "Tension pneumothorax - hyperresonant percussion - absent breath sounds - tracheal deviation away",
+      "options": 7
+    },
+    "18": {
+      "answer": "A",
+      "system": "Neurology",
+      "subject": "Traumatic Brain Injury",
+      "topic": "ICP Management",
+      "concept": "Therapeutic hyperventilation in head trauma - hypocapnia causes cerebral vasoconstriction - reduces ICP"
+    },
+    "19": {
+      "answer": "E",
+      "system": "Behavioral Science",
+      "subject": "Physician-Patient Relationship",
+      "topic": "Difficult Patients",
+      "concept": "Difficult anxious patient making excessive phone calls - set conditions and establish limits, schedule regular visits"
+    },
+    "20": {
+      "answer": "A",
+      "system": "Hematology",
+      "subject": "Platelet Physiology",
+      "topic": "Platelet Aggregation",
+      "concept": "ADP - rapid and irreversible platelet aggregation via P2Y1 and P2Y12 receptors"
+    },
+    "21": {
+      "answer": "E",
+      "system": "Obstetrics",
+      "subject": "Postpartum Hemorrhage",
+      "topic": "Abnormal Placentation",
+      "concept": "Placenta accreta - abnormal myometrial attachment after prior cesarean - requires hysterectomy",
+      "options": 6
+    },
+    "22": {
+      "answer": "C",
+      "system": "Infectious Disease",
+      "subject": "Viral Infections",
+      "topic": "Measles Complications",
+      "concept": "Measles virus in HIV patient - giant cell pneumonia - rare except in immunosuppressed"
+    },
+    "23": {
+      "answer": "C",
+      "system": "Biostatistics",
+      "subject": "Diagnostic Testing",
+      "topic": "ROC Curve Analysis",
+      "concept": "Raising cutoff threshold from A to B - increases false negatives, decreases false positives - decreased sensitivity"
+    },
+    "24": {
+      "answer": "C",
+      "system": "Urology",
+      "subject": "Voiding Dysfunction",
+      "topic": "Overflow Incontinence",
+      "concept": "Pelvic nerve injury after pelvic fracture - loss of parasympathetic bladder contraction - overflow incontinence"
+    },
+    "25": {
+      "answer": "G",
+      "system": "Genetics",
+      "subject": "Molecular Biology",
+      "topic": "RNA Processing Mutations",
+      "concept": "PKU - point mutation in intron masks splice site - RNA splice error causing exon 12 skipping",
+      "options": 7
+    },
+    "26": {
+      "answer": "B",
+      "system": "Biostatistics",
+      "subject": "Descriptive Statistics",
+      "topic": "Measures of Central Tendency",
+      "concept": "Median blood glucose - middle value in ordered dataset - 105 mg/dL for 15 patients"
+    },
+    "27": {
+      "answer": "A",
+      "system": "Pharmacology",
+      "subject": "Antibiotics",
+      "topic": "Tetracyclines",
+      "concept": "Doxycycline for Lyme disease - inhibits attachment of aminoacyl-tRNA to 30S ribosome"
+    },
+    "28": {
+      "answer": "E",
+      "system": "Embryology",
+      "subject": "Craniofacial Development",
+      "topic": "Craniosynostosis",
+      "concept": "Sagittal suture premature closure - scaphocephaly (elongated AP diameter)"
+    },
+    "29": {
+      "answer": "B",
+      "system": "Cardiology",
+      "subject": "Antihypertensives",
+      "topic": "ACE Inhibitors",
+      "concept": "ACE inhibitor (lisinopril) - blocks conversion Ang I to Ang II - increases Ang I, decreases Ang II, increases bradykinin"
+    },
+    "30": {
+      "answer": "D",
+      "system": "Immunology",
+      "subject": "Acute Phase Reactants",
+      "topic": "C-Reactive Protein",
+      "concept": "CRP - acute phase reactant synthesized by the liver in response to IL-6 - elevated in SLE flares",
+      "options": 6
+    },
+    "31": {
+      "answer": "E",
+      "system": "Urology",
+      "subject": "Scrotal Disorders",
+      "topic": "Varicocele",
+      "concept": "Left varicocele - left gonadal vein drains into left renal vein - bag of worms appearance"
+    },
+    "32": {
+      "answer": "E",
+      "system": "Endocrinology",
+      "subject": "Pancreatic Tumors",
+      "topic": "Glucagonoma",
+      "concept": "Glucagonoma - necrolytic migratory erythema, weight loss, diabetes - partial oxidation of fatty acids for energy"
+    },
+    "33": {
+      "answer": "D",
+      "system": "Hematology",
+      "subject": "Megaloblastic Anemia",
+      "topic": "Folate vs B12 Deficiency",
+      "concept": "Folate deficiency (homeless alcoholic) - normal methylmalonic acid, increased homocysteine",
+      "options": 9
+    },
+    "34": {
+      "answer": "B",
+      "system": "Hematology",
+      "subject": "Normocytic Anemia",
+      "topic": "Anemia of Chronic Disease",
+      "concept": "Anemia of chronic disease in RA - Prussian blue shows iron in macrophages - low serum iron, low TIBC, high ferritin",
+      "options": 6
+    },
+    "35": {
+      "answer": "B",
+      "system": "Endocrinology",
+      "subject": "Adrenal Disorders",
+      "topic": "Congenital Adrenal Hyperplasia",
+      "concept": "CAH (21-hydroxylase deficiency) - virilized 46XX female, elevated 17-OHP, androstenedione, testosterone - defect in adrenal steroid biosynthesis"
+    },
+    "36": {
+      "answer": "C",
+      "system": "Pharmacology",
+      "subject": "Muscle Relaxants",
+      "topic": "GABA-B Agonists",
+      "concept": "Baclofen - GABA-B receptor agonist - hyperpolarizes muscle cells - treats spasticity in MS"
+    },
+    "37": {
+      "answer": "E",
+      "system": "Behavioral Science",
+      "subject": "Developmental Milestones",
+      "topic": "Toddler Development",
+      "concept": "20-month-old playing alone and hitting - normal behavior (parallel play, not cooperative play until age 4)"
+    },
+    "38": {
+      "answer": "B",
+      "system": "Psychiatry",
+      "subject": "Substance Use Disorders",
+      "topic": "Alcohol Withdrawal",
+      "concept": "Delirium tremens 48-96 hours post admission - tachycardia, diaphoresis, visual hallucinations in physician with femur fracture"
+    },
+    "39": {
+      "answer": "D",
+      "system": "Microbiology",
+      "subject": "Virology",
+      "topic": "HIV Lifecycle",
+      "concept": "HIV - LTR mutation in long terminal repeat - impairs integration of provirus into host cell genome"
+    },
+    "40": {
+      "answer": "A",
+      "system": "Anatomy",
+      "subject": "Head and Neck",
+      "topic": "Thyroid Surgery Anatomy",
+      "concept": "Superior thyroid artery landmark - external branch of superior laryngeal nerve - innervates cricothyroid"
+    },
+    "41": {
+      "answer": "A",
+      "system": "Biostatistics",
+      "subject": "Study Design",
+      "topic": "Observational Studies",
+      "concept": "West Nile virus study - 25 consecutive patients described - case series (no control group)"
+    },
+    "42": {
+      "answer": "A",
+      "system": "Infectious Disease",
+      "subject": "Parasitic Infections",
+      "topic": "Babesiosis",
+      "concept": "Babesia microti - asplenic patient, NE US, Ixodes tick, intraerythrocytic rings, tetrad formation"
+    },
+    "43": {
+      "answer": "A",
+      "system": "Infectious Disease",
+      "subject": "TORCH Infections",
+      "topic": "Congenital CMV",
+      "concept": "Congenital CMV - periventricular calcifications, hearing loss, petechial rash, hepatomegaly, seizures"
+    },
+    "44": {
+      "answer": "E",
+      "system": "Immunology",
+      "subject": "Cytokines",
+      "topic": "Granuloma Formation",
+      "concept": "IL-12 activates NK cells and T cells to release IFN-gamma - macrophage activation - tuberculosis granuloma formation"
+    },
+    "45": {
+      "answer": "A",
+      "system": "Neurology",
+      "subject": "CNS Pathology",
+      "topic": "Stroke Histopathology",
+      "concept": "Ischemic stroke - 6 months later - glial scar composed of proliferated astrocytes"
+    },
+    "46": {
+      "answer": "B",
+      "system": "Gastroenterology",
+      "subject": "Peptic Ulcer Disease",
+      "topic": "Zollinger-Ellison Syndrome",
+      "concept": "ZES - gastrin-secreting pancreatic tumor - gastrin IHC staining - peptic ulcers, diarrhea, melena",
+      "options": 9
+    },
+    "47": {
+      "answer": "E",
+      "system": "Neurology",
+      "subject": "Cerebral Cortex",
+      "topic": "Motor Cortex Somatotopy",
+      "concept": "Mass in lateral precentral gyrus (frontal lobe) - weakness of left lower face (contralateral UMN facial palsy)",
+      "options": 6
+    },
+    "48": {
+      "answer": "E",
+      "system": "Renal",
+      "subject": "Acid-Base Disorders",
+      "topic": "Renal Tubular Acidosis",
+      "concept": "Non-anion gap metabolic acidosis - normal urine pH > 5.5 context would be type 1 RTA but here criteria point to RTA",
+      "options": 6
+    },
+    "49": {
+      "answer": "C",
+      "system": "Oncology",
+      "subject": "Colorectal Cancer",
+      "topic": "Cell Cycle and Cancer",
+      "concept": "Genomic instability during S, G2, and M phases - microsatellite and chromosomal instability - chemo resistance"
+    },
+    "50": {
+      "answer": "B",
+      "system": "Immunology",
+      "subject": "Innate Immunity",
+      "topic": "Neutrophil Adhesion",
+      "concept": "LFA-1 antagonism blocks integrin-mediated adhesion to endothelium - impairs neutrophil recruitment to infection"
+    },
+    "51": {
+      "answer": "A",
+      "system": "Genetics",
+      "subject": "Population Genetics",
+      "topic": "Hardy-Weinberg Equilibrium",
+      "concept": "Appreciable rate of gene mutation disrupts Hardy-Weinberg equilibrium"
+    },
+    "52": {
+      "answer": "B",
+      "system": "Renal",
+      "subject": "Nephrotic Syndrome",
+      "topic": "Edema Pathophysiology",
+      "concept": "Massive proteinuria (15g/day) - decreased plasma oncotic pressure - edema"
+    },
+    "53": {
+      "answer": "B",
+      "system": "Ophthalmology",
+      "subject": "Retinal Vascular Disease",
+      "topic": "Central Retinal Artery Occlusion",
+      "concept": "CRAO - diabetic with sudden painless monocular vision loss - pale retina with cherry red spot - retinal artery embolism"
+    },
+    "54": {
+      "answer": "C",
+      "system": "Genetics",
+      "subject": "Molecular Biology",
+      "topic": "RNA Splicing",
+      "concept": "Beta-thalassemia - splice acceptor site mutation - impairs snRNP modification of transcript"
+    },
+    "55": {
+      "answer": "C",
+      "system": "Psychiatry",
+      "subject": "Eating Disorders",
+      "topic": "Bulimia Nervosa",
+      "concept": "Bulimia nervosa - purging type - dental caries from gastric acid, normal BMI",
+      "options": 7
+    },
+    "56": {
+      "answer": "C",
+      "system": "Microbiology",
+      "subject": "Bacteriology",
+      "topic": "Clostridium",
+      "concept": "C. tetani - tetanospasmin exotoxin - neutralized by toxoid vaccine-induced antibodies",
+      "options": 6
+    },
+    "57": {
+      "answer": "D",
+      "system": "Pharmacology",
+      "subject": "Anesthesia",
+      "topic": "Inhaled Anesthetics",
+      "concept": "Rapid induction of anesthesia - low blood solubility - sevoflurane/desflurane type agent for fearful child"
+    },
+    "58": {
+      "answer": "C",
+      "system": "Neurology",
+      "subject": "Brain Anatomy",
+      "topic": "Limbic System",
+      "concept": "Short-term memory loss after chemo and radiation - mesial temporal lobe (hippocampus) damage - label C",
+      "options": 6
+    },
+    "59": {
+      "answer": "B",
+      "system": "Musculoskeletal",
+      "subject": "Bone Tumors",
+      "topic": "Chondrosarcoma",
+      "concept": "Chondrosarcoma - slow-growing, axial skeleton, hyaline cartilage histology, ring-and-arc calcification",
+      "options": 7
+    },
+    "60": {
+      "answer": "D",
+      "system": "Anatomy",
+      "subject": "Spine Anatomy",
+      "topic": "Spinal Canal Access",
+      "concept": "Laminectomy - surgical access to neural canal - lamina (posterior bony arch - label D)"
+    },
+    "61": {
+      "answer": "C",
+      "system": "Pharmacology",
+      "subject": "Bronchodilators",
+      "topic": "Prostaglandins",
+      "concept": "PGE2 relaxes bronchial smooth muscle - stimulates adenylyl cyclase - increases cAMP - inhibits MLCK"
+    },
+    "62": {
+      "answer": "E",
+      "system": "Microbiology",
+      "subject": "Virology",
+      "topic": "Herpes Viruses",
+      "concept": "Genital herpes (HSV) - vesicular penile lesions - guanosine analog activated by viral thymidine kinase"
+    },
+    "63": {
+      "answer": "B",
+      "system": "Reproductive",
+      "subject": "Menstrual Cycle",
+      "topic": "Endometrial Histology",
+      "concept": "Proliferative endometrium - straight glands, spiral arteries, abundant stroma - late follicular phase (label B)"
+    },
+    "64": {
+      "answer": "E",
+      "system": "Biochemistry",
+      "subject": "Fatty Acid Metabolism",
+      "topic": "Beta-Oxidation",
+      "concept": "LCHAD deficiency - hypoketotic hypoglycemia, hepatomegaly, responds to medium-chain triglycerides",
+      "options": 6
+    },
+    "65": {
+      "answer": "A",
+      "system": "Biochemistry",
+      "subject": "Chromatin and Epigenetics",
+      "topic": "Histone Modification",
+      "concept": "Histone acetyltransferase - acetylates lysine residues - decreases affinity of histones for DNA - euchromatin",
+      "options": 6
+    },
+    "66": {
+      "answer": "F",
+      "system": "Cardiology",
+      "subject": "Heart Failure",
+      "topic": "Right Ventricular Hypertrophy",
+      "concept": "Parasternal heave from chronic lung disease - right ventricular hypertrophy secondary to pulmonary hypertension",
+      "options": 6
+    },
+    "67": {
+      "answer": "A",
+      "system": "Biostatistics",
+      "subject": "Study Design",
+      "topic": "Case-Control Studies",
+      "concept": "Brain tumors and cell phone use - cases (with tumor) vs controls (without) - odds ratio - case-control study",
+      "options": 6
+    },
+    "68": {
+      "answer": "D",
+      "system": "Pharmacology",
+      "subject": "Anti-inflammatory Drugs",
+      "topic": "Corticosteroids",
+      "concept": "Topical corticosteroids for allergic contact dermatitis (poison ivy) - inhibit phospholipase A2"
+    },
+    "69": {
+      "answer": "C",
+      "system": "Pulmonology",
+      "subject": "Neonatal Respiratory",
+      "topic": "NRDS/Surfactant",
+      "concept": "Premature infant - surfactant deficiency - increased lung elastic recoil - alveolar collapse"
+    },
+    "70": {
+      "answer": "B",
+      "system": "Endocrinology",
+      "subject": "Parathyroid",
+      "topic": "Primary Hyperparathyroidism",
+      "concept": "Chief cell adenoma - osteitis fibrosa cystica, renal calculi, hypercalcemia, hypophosphatemia"
+    },
+    "71": {
+      "answer": "F",
+      "system": "Hematology",
+      "subject": "Coagulopathy",
+      "topic": "Vitamin K Deficiency",
+      "concept": "Cystic fibrosis - fat malabsorption - vitamin K deficiency - elevated PT - easy bruising",
+      "options": 7
+    },
+    "72": {
+      "answer": "E",
+      "system": "Biochemistry",
+      "subject": "Cell Signaling",
+      "topic": "Steroid Hormone Receptors",
+      "concept": "Steroid hormones - intracellular receptors - zinc-containing DNA-binding domains (zinc finger motifs)"
+    },
+    "73": {
+      "answer": "E",
+      "system": "Microbiology",
+      "subject": "Bacteriology",
+      "topic": "Anaerobic Bacteria",
+      "concept": "Ruptured appendix abscess - Bacteroides fragilis - gram-negative anaerobe - won't grow on MacConkey agar"
+    },
+    "74": {
+      "answer": "E",
+      "system": "Infectious Disease",
+      "subject": "Opportunistic Infections",
+      "topic": "CMV in Immunocompromised",
+      "concept": "CMV pneumonitis with diffuse alveolar damage - owl-eye inclusions - post-renal transplant on cyclosporine"
+    },
+    "75": {
+      "answer": "D",
+      "system": "Cardiology",
+      "subject": "Congenital Heart Disease",
+      "topic": "Atrial Septal Defect",
+      "concept": "ASD - fixed widely split S2, grade 4/6 systolic murmur - right heart volume overload"
+    },
+    "76": {
+      "answer": "B",
+      "system": "Cardiology",
+      "subject": "Hemodynamics",
+      "topic": "High-Output Heart Failure",
+      "concept": "AV fistula - bypasses peripheral resistance - increases venous return - increased resting cardiac output"
+    },
+    "77": {
+      "answer": "A",
+      "system": "Biostatistics",
+      "subject": "Epidemiology",
+      "topic": "Incidence Calculation",
+      "concept": "Drug-resistant TB incidence - 32/1000 = 3.2%; after 32 removed, 968 at risk; 3.2% x 968 = ~31 cases next year"
+    },
+    "78": {
+      "answer": "C",
+      "system": "Pharmacology",
+      "subject": "Anticoagulants",
+      "topic": "Heparin",
+      "concept": "Heparin-induced thrombocytopenia - IgG antibodies to heparin-PF4 complex - potentiates antithrombin III"
+    },
+    "79": {
+      "answer": "D",
+      "system": "Gastroenterology",
+      "subject": "Mesenteric Ischemia",
+      "topic": "Chronic Mesenteric Ischemia",
+      "concept": "Superior mesenteric artery stenosis - postprandial abdominal angina - intestinal steal phenomenon"
+    },
+    "80": {
+      "answer": "D",
+      "system": "Behavioral Science",
+      "subject": "Stages of Change",
+      "topic": "Transtheoretical Model",
+      "concept": "Patient already changed behavior but worried about relapse - maintenance stage"
+    },
+    "81": {
+      "answer": "A",
+      "system": "Immunology",
+      "subject": "Innate Immunity",
+      "topic": "Pattern Recognition",
+      "concept": "Toll-like receptors on neutrophils bind LPS (PAMP) - NF-kB activation - acute diverticulitis"
+    },
+    "82": {
+      "answer": "B",
+      "system": "Cardiology",
+      "subject": "Secondary Hypertension",
+      "topic": "Renovascular Hypertension",
+      "concept": "Fibromuscular dysplasia of renal artery - young woman, abdominal bruit, S4 gallop - secondary hypertension"
+    },
+    "83": {
+      "answer": "A",
+      "system": "Psychiatry",
+      "subject": "Cognitive Disorders",
+      "topic": "Delirium",
+      "concept": "Delirium - acute confusional state - fluctuating cognition, hyponatremia from SIADH after lung cancer treatment",
+      "options": 6
+    },
+    "84": {
+      "answer": "D",
+      "system": "Anatomy",
+      "subject": "Abdominal Trauma",
+      "topic": "Blunt Abdominal Trauma",
+      "concept": "CT shows splenic laceration - most commonly injured organ in blunt abdominal trauma"
+    },
+    "85": {
+      "answer": "C",
+      "system": "Infectious Disease",
+      "subject": "Virology",
+      "topic": "Epstein-Barr Virus",
+      "concept": "Infectious mononucleosis - EBV infects B cells via CD21 - atypical lymphocytes are CD8+ T cells reacting to EBV"
+    },
+    "86": {
+      "answer": "D",
+      "system": "Gastroenterology",
+      "subject": "Liver Disease",
+      "topic": "Portal Hypertension",
+      "concept": "Esophageal varices bleeding - retrograde blood flow from left gastric to azygos veins - portosystemic anastomosis"
+    },
+    "87": {
+      "answer": "D",
+      "system": "Biochemistry",
+      "subject": "Ketone Metabolism",
+      "topic": "Fatty Acid Oxidation",
+      "concept": "Spinal muscular atrophy - prolonged fasting - carnitine-acylcarnitine cycle transports long-chain fatty acids for ketogenesis"
+    },
+    "88": {
+      "answer": "E",
+      "system": "Pulmonology",
+      "subject": "Respiratory Physiology",
+      "topic": "Lung Mechanics",
+      "concept": "Neonatal RDS - alveolar collapse from surfactant deficiency - increased lung elastic recoil (Choice C)"
+    },
+    "89": {
+      "answer": "E",
+      "system": "Hematology",
+      "subject": "Plasma Cell Disorders",
+      "topic": "Multiple Myeloma",
+      "concept": "Multiple myeloma - proteasome inhibitor (bortezomib) - induces apoptosis via unfolded protein accumulation"
+    },
+    "90": {
+      "answer": "C",
+      "system": "Oncology",
+      "subject": "Breast Pathology",
+      "topic": "Mammary Duct Ectasia",
+      "concept": "Mammary duct ectasia - perimenopausal, dilated duct with lipid-laden macrophages, periductal fibrosis, no malignancy"
+    },
+    "91": {
+      "answer": "A",
+      "system": "Embryology",
+      "subject": "Cardiovascular Development",
+      "topic": "Aortic Arches",
+      "concept": "Patent ductus arteriosus - failure of sixth aortic arch (ductus arteriosus) to close - continuous murmur"
+    },
+    "92": {
+      "answer": "D",
+      "system": "Anatomy",
+      "subject": "Abdominal Trauma",
+      "topic": "Splenic Injury",
+      "concept": "CT showing splenic laceration - most commonly injured organ in blunt abdominal trauma - hemodynamic instability"
+    },
+    "93": {
+      "answer": "C",
+      "system": "Infectious Disease",
+      "subject": "Virology",
+      "topic": "Epstein-Barr Virus",
+      "concept": "Infectious mononucleosis - EBV infects B cells via CD21 - atypical lymphocytes are reactive CD8+ T cells"
+    },
+    "94": {
+      "answer": "D",
+      "system": "Gastroenterology",
+      "subject": "Liver Disease",
+      "topic": "Portal Hypertension",
+      "concept": "Esophageal varices bleeding in cirrhosis - retrograde flow from left gastric to azygos veins - portosystemic anastomosis"
+    },
+    "95": {
+      "answer": "B",
+      "system": "Biochemistry",
+      "subject": "Ketone Metabolism",
+      "topic": "Fatty Acid Transport",
+      "concept": "Spinal muscular atrophy child - prolonged fasting - carnitine-acylcarnitine cycle provides long-chain FA for ketogenesis"
+    },
+    "96": {
+      "answer": "C",
+      "system": "Cardiology",
+      "subject": "Secondary Hypertension",
+      "topic": "Renovascular Hypertension",
+      "concept": "Fibromuscular dysplasia - young woman post-seizure, abdominal bruit, S4 gallop - secondary hypertension"
+    },
+    "97": {
+      "answer": "E",
+      "system": "Behavioral Science",
+      "subject": "Stages of Change",
+      "topic": "Transtheoretical Model",
+      "concept": "Patient exercising, eating well for 14 months but worried about relapse - maintenance stage",
+      "options": 6
+    },
+    "98": {
+      "answer": "E",
+      "system": "Hematology",
+      "subject": "Plasma Cell Disorders",
+      "topic": "Multiple Myeloma",
+      "concept": "Multiple myeloma - proteasome inhibitor (bortezomib) - blocks protein degradation - induces apoptosis via unfolded protein"
+    },
+    "99": {
+      "answer": "E",
+      "system": "Oncology",
+      "subject": "Breast Pathology",
+      "topic": "Mammary Duct Ectasia",
+      "concept": "Mammary duct ectasia - perimenopausal, dilated duct, lipid-laden macrophages, glandular epithelium, periductal fibrosis"
+    },
+    "100": {
+      "answer": "E",
+      "system": "Embryology",
+      "subject": "Cardiovascular Development",
+      "topic": "Aortic Arches",
+      "concept": "Patent ductus arteriosus - failure of sixth aortic arch to close - continuous murmur in premature newborn"
+    },
+    "101": {
+      "answer": null,
+      "system": "Genetics",
+      "subject": "Molecular Biology",
+      "topic": "Transcription Factors",
+      "concept": "Tretinoin (retinoic acid) - binds nuclear retinoic acid receptors - activates nuclear gene transcription of collagen"
+    },
+    "102": {
+      "answer": "A",
+      "system": "Immunology",
+      "subject": "Mucosal Immunity",
+      "topic": "IgA and Mucosal Sites",
+      "concept": "Inhaled attenuated gonorrhea vaccine - IgA-producing lymphocytes traffic to all mucosal sites including genital tract"
+    },
+    "103": {
+      "answer": "D",
+      "system": "Biostatistics",
+      "subject": "Epidemiology",
+      "topic": "Relative Risk Calculation",
+      "concept": "Relative risk of CAD for smoker with high BP and cholesterol vs nonsmoker - graph reading - RR = 60/5 = 12"
+    },
+    "104": {
+      "answer": "A",
+      "system": "Biochemistry",
+      "subject": "Lipid Metabolism",
+      "topic": "Cholesterol Regulation",
+      "concept": "Statin inhibits HMG-CoA reductase - decreased intrahepatic cholesterol - upregulation of LDL receptors"
+    },
+    "105": {
+      "answer": "C",
+      "system": "Biochemistry",
+      "subject": "Amino Acids",
+      "topic": "Nonpolar Amino Acids",
+      "concept": "Transmembrane segment of growth hormone receptor - sequence E is all nonpolar/hydrophobic amino acids"
+    },
+    "106": {
+      "answer": "B",
+      "system": "Neurology",
+      "subject": "Seizure Disorders",
+      "topic": "Focal Seizures",
+      "concept": "Complex partial (focal with impaired awareness) seizure - lip smacking automatism, postictal confusion"
+    },
+    "107": {
+      "answer": "B",
+      "system": "Urology",
+      "subject": "Bladder Cancer",
+      "topic": "Risk Factors",
+      "concept": "Schistosoma haematobium infection - strongest risk factor for squamous cell carcinoma of bladder in endemic areas"
+    },
+    "108": {
+      "answer": "F",
+      "system": "Oncology",
+      "subject": "Leukemia",
+      "topic": "Drug Resistance",
+      "concept": "CML blast crisis - P-glycoprotein efflux pump activity in leukemic cells - removes intracellular chemo drugs",
+      "options": 8
+    },
+    "109": {
+      "answer": "E",
+      "system": "Gynecology",
+      "subject": "Ovarian Tumors",
+      "topic": "Sex Cord-Stromal Tumors",
+      "concept": "Granulosa cell tumor - estrogen-secreting, precocious puberty in 8-year-old - Call-Exner bodies on histology"
+    },
+    "110": {
+      "answer": "C",
+      "system": "Biochemistry",
+      "subject": "Amino Acid Disorders",
+      "topic": "Homocystinuria",
+      "concept": "Homocystinuria - cystathionine synthase deficiency - lens dislocation downward, thrombosis, intellectual disability",
+      "options": 6
+    },
+    "111": {
+      "answer": "A",
+      "system": "Psychiatry",
+      "subject": "Sexual Dysfunction",
+      "topic": "Erectile Dysfunction",
+      "concept": "Psychogenic erectile dysfunction - normal libido, normal nocturnal erections - grieving widower with new partner",
+      "options": 6
+    },
+    "112": {
+      "answer": "B",
+      "system": "Neurology",
+      "subject": "Neurotransmitters",
+      "topic": "Excitotoxicity",
+      "concept": "Glutamate excitotoxicity - cerebral ischemia - NMDA receptor activation - calcium influx - neuronal death"
+    },
+    "113": {
+      "answer": "A",
+      "system": "Endocrinology",
+      "subject": "Bone Metabolism",
+      "topic": "Rickets",
+      "concept": "Childhood vitamin D deficiency (rickets) - frontal bossing, tibial bowing, hypoplastic teeth - skeletal defects in ancient child"
+    },
+    "114": {
+      "answer": "C",
+      "system": "Pharmacology",
+      "subject": "Hepatotoxicity",
+      "topic": "Acetaminophen Toxicity",
+      "concept": "Chronic alcohol - CYP450 induction - increased NAPQI production from acetaminophen - hepatotoxicity"
+    },
+    "115": {
+      "answer": "C",
+      "system": "Biochemistry",
+      "subject": "Antioxidants",
+      "topic": "Glutathione",
+      "concept": "Hepatic oxidative stress from Drug X - GSH:GSSG ratio is best measure - decreases with oxidative stress"
+    },
+    "116": {
+      "answer": "C",
+      "system": "Immunology",
+      "subject": "Hypersensitivity Reactions",
+      "topic": "Type IV Hypersensitivity",
+      "concept": "Sarcoidosis - non-caseating granulomas in lymph node biopsy - type IV (delayed) hypersensitivity"
+    },
+    "117": {
+      "answer": "E",
+      "system": "Embryology",
+      "subject": "Fetal Development",
+      "topic": "Embryonic Staging",
+      "concept": "20-day embryo - gastrulation occurred - neural plate present, neural tube not yet formed",
+      "options": 6
+    },
+    "118": {
+      "answer": "B",
+      "system": "Pulmonology",
+      "subject": "Respiratory Physiology",
+      "topic": "Aging and Lung Function",
+      "concept": "Aging - increased residual volume, decreased arterial PO2, increased A-a gradient"
+    },
+    "119": {
+      "answer": "F",
+      "system": "Biostatistics",
+      "subject": "Statistical Tests",
+      "topic": "Chi-Square Test",
+      "concept": "Comparing allele frequency (categorical) between two groups - chi-square test",
+      "options": 6
+    },
+    "120": {
+      "answer": "A",
+      "system": "Neurology",
+      "subject": "Intracranial Hypertension",
+      "topic": "Pseudotumor Cerebri",
+      "concept": "Pseudotumor cerebri (idiopathic IH) - acetazolamide - decreased CSF production by choroid plexus",
+      "options": 6
+    },
+    "121": {
+      "answer": "E",
+      "system": "Neurology",
+      "subject": "Neuromuscular Junction",
+      "topic": "Lambert-Eaton Syndrome",
+      "concept": "Lambert-Eaton - antibodies against voltage-gated Ca2+ channels in presynaptic terminal - proximal weakness improves with use",
+      "options": 7
+    },
+    "122": {
+      "answer": "B",
+      "system": "Pulmonology",
+      "subject": "Obstructive Lung Disease",
+      "topic": "Asthma",
+      "concept": "Asthma exacerbation in child - diffuse inspiratory and expiratory wheezes, decreased fremitus, viral URI trigger"
+    },
+    "123": {
+      "answer": "D",
+      "system": "Pharmacology",
+      "subject": "Anesthesia",
+      "topic": "Malignant Hyperthermia",
+      "concept": "Malignant hyperthermia - succinylcholine + volatile anesthetic - ryanodine receptor mutation - muscle rigidity, hyperthermia"
+    },
+    "124": {
+      "answer": "C",
+      "system": "Cardiology",
+      "subject": "Coronary Artery Disease",
+      "topic": "Stress Echocardiography",
+      "concept": "Right coronary artery stenosis - posterior LV hypokinesis on stress echo - PDA supplies posterior LV"
+    },
+    "125": {
+      "answer": "F",
+      "system": "Microbiology",
+      "subject": "Bacteriology",
+      "topic": "Frameshift Mutations",
+      "concept": "Helicobacter pylori - slipped-strand mispairing in repetitive cytidine sequence - frameshift - truncated protein",
+      "options": 6
+    },
+    "126": {
+      "answer": "E",
+      "system": "Renal",
+      "subject": "Renal Tubular Disorders",
+      "topic": "Fanconi Syndrome",
+      "concept": "Cystinosis - Fanconi syndrome - impaired proximal tubule bicarbonate reabsorption - crystals in cornea, leg bowing"
+    },
+    "127": {
+      "answer": "E",
+      "system": "Biostatistics",
+      "subject": "Study Design",
+      "topic": "Internal Validity",
+      "concept": "Lack of blinding (parents know treatment) - most significant limitation to internal validity of cough study"
+    },
+    "128": {
+      "answer": "E",
+      "system": "Gastroenterology",
+      "subject": "Hepatic Encephalopathy",
+      "topic": "Ammonia Reduction",
+      "concept": "Neomycin for hepatic encephalopathy - kills ammonia-generating gut bacteria"
+    },
+    "129": {
+      "answer": "C",
+      "system": "Renal",
+      "subject": "Renal Tubular Physiology",
+      "topic": "Ammoniagenesis",
+      "concept": "Renal tubular acidosis - glutamine is primary substrate for ammoniagenesis in proximal tubule"
+    },
+    "130": {
+      "answer": "B",
+      "system": "Behavioral Science",
+      "subject": "Stages of Change",
+      "topic": "Transtheoretical Model",
+      "concept": "Patient knows insulin benefits but uncertain - ambivalent about starting - contemplation stage",
+      "options": 6
+    },
+    "131": {
+      "answer": "B",
+      "system": "Endocrinology",
+      "subject": "Thyroid Disorders",
+      "topic": "Thyroiditis",
+      "concept": "Subacute granulomatous (de Quervain) thyroiditis - painful tender thyroid, transient hyperthyroidism, post-viral"
+    },
+    "132": {
+      "answer": "A",
+      "system": "Microbiology",
+      "subject": "Mycology",
+      "topic": "Tinea Versicolor",
+      "concept": "Malassezia furfur - tinea versicolor - hypopigmented patches after sun exposure, KOH shows spaghetti and meatballs"
+    },
+    "133": {
+      "answer": "C",
+      "system": "Neurology",
+      "subject": "Peripheral Neuropathy",
+      "topic": "Cisplatin Neurotoxicity",
+      "concept": "Cisplatin damages dorsal root ganglia (label B) - sensory neuropathy - hyporeflexia from disrupted reflex arc"
+    },
+    "134": {
+      "answer": "A",
+      "system": "Renal",
+      "subject": "Nephrolithiasis",
+      "topic": "Struvite Stones",
+      "concept": "Struvite (magnesium ammonium phosphate) stones - urease-positive Klebsiella - alkaline urine, recurrent UTIs"
+    },
+    "135": {
+      "answer": "E",
+      "system": "Anatomy",
+      "subject": "Wrist Anatomy",
+      "topic": "Distal Radius Fracture",
+      "concept": "Colles fracture - fall on outstretched hand - distal radius fracture - most common wrist fracture"
+    },
+    "136": {
+      "answer": "E",
+      "system": "Anatomy",
+      "subject": "Portal Venous System",
+      "topic": "TIPS Procedure",
+      "concept": "TIPS procedure - stent between portal vein branch and hepatic vein - relieves portal hypertension"
+    },
+    "137": {
+      "answer": "C",
+      "system": "Gastroenterology",
+      "subject": "Esophageal Disease",
+      "topic": "GERD",
+      "concept": "Erosive esophagitis - PPI mechanism - irreversible inhibition of H+/K+-ATPase on parietal cells"
+    },
+    "138": {
+      "answer": "F",
+      "system": "Oncology",
+      "subject": "Leukemia",
+      "topic": "CML",
+      "concept": "Philadelphia chromosome (t9;22) - BCR-ABL fusion protein - constitutively active tyrosine kinase - cell cycle dysregulation",
+      "options": 6
+    },
+    "139": {
+      "answer": "A",
+      "system": "Biostatistics",
+      "subject": "Study Design",
+      "topic": "Internal Validity",
+      "concept": "Cough medication RCT - parents know treatment assigned - lack of blinding most significant limitation to internal validity"
+    },
+    "140": {
+      "answer": "E",
+      "system": "Gastroenterology",
+      "subject": "Hepatic Encephalopathy",
+      "topic": "Ammonia Reduction",
+      "concept": "Neomycin for hepatic encephalopathy - kills Gram-negative ammonia-generating gut bacteria"
+    },
+    "141": {
+      "answer": "B",
+      "system": "Renal",
+      "subject": "Renal Tubular Physiology",
+      "topic": "Ammoniagenesis",
+      "concept": "Renal tubular acidosis - glutamine is primary substrate for proximal tubule ammoniagenesis"
+    },
+    "142": {
+      "answer": "B",
+      "system": "Behavioral Science",
+      "subject": "Stages of Change",
+      "topic": "Transtheoretical Model",
+      "concept": "Type 2 DM patient aware of insulin benefits but uncertain - ambivalent - contemplation stage"
+    },
+    "143": {
+      "answer": "C",
+      "system": "Endocrinology",
+      "subject": "Thyroid Disorders",
+      "topic": "Thyroiditis",
+      "concept": "Subacute granulomatous (de Quervain) thyroiditis - tender thyroid, transient hyperthyroidism, post-viral"
+    },
+    "144": {
+      "answer": "A",
+      "system": "Dermatology",
+      "subject": "Fungal Infections",
+      "topic": "Tinea Versicolor",
+      "concept": "Malassezia furfur - tinea versicolor - hypopigmented patches worse after sun, KOH spaghetti and meatballs"
+    },
+    "145": {
+      "answer": "D",
+      "system": "Neurology",
+      "subject": "Peripheral Neuropathy",
+      "topic": "Cisplatin Neurotoxicity",
+      "concept": "Cisplatin damages dorsal root ganglia (label B) - sensory neuropathy - hyporeflexia from disrupted reflex arc"
+    },
+    "146": {
+      "answer": "C",
+      "system": "Renal",
+      "subject": "Nephrolithiasis",
+      "topic": "Struvite Stones",
+      "concept": "Struvite (magnesium ammonium phosphate) stones - Klebsiella urease - alkaline urine pH 8, recurrent UTIs"
+    },
+    "147": {
+      "answer": "E",
+      "system": "Anatomy",
+      "subject": "Wrist Anatomy",
+      "topic": "Distal Radius Fracture",
+      "concept": "Colles fracture - FOOSH injury - fracture of distal radius - most common wrist fracture in elderly women"
+    },
+    "148": {
+      "answer": "B",
+      "system": "Anatomy",
+      "subject": "Portal Venous System",
+      "topic": "TIPS Procedure",
+      "concept": "TIPS - transjugular intrahepatic portosystemic shunt - stent between portal vein branch and hepatic vein"
+    },
+    "149": {
+      "answer": "E",
+      "system": "Gastroenterology",
+      "subject": "Esophageal Disease",
+      "topic": "GERD",
+      "concept": "Severe erosive esophagitis - PPI mechanism - irreversible inhibition of H+/K+-ATPase on parietal cells"
+    },
+    "150": {
+      "answer": "B",
+      "system": "Oncology",
+      "subject": "Leukemia",
+      "topic": "CML",
+      "concept": "CML - Philadelphia chromosome t(9;22) - BCR-ABL fusion protein - constitutively active tyrosine kinase - fusion protein influence on cell cycle"
+    },
+    "151": {
+      "answer": "G",
+      "system": "Hematology",
+      "subject": "Bleeding Disorders",
+      "topic": "von Willebrand Disease",
+      "concept": "vWD - prolonged bleeding time, decreased Factor VIII, abnormal platelet adhesion to collagen - easy bruising, menorrhagia",
+      "options": 7
+    },
+    "152": {
+      "answer": "E",
+      "system": "Psychiatry",
+      "subject": "Mood Disorders",
+      "topic": "Depression in Adolescents",
+      "concept": "Adolescent MDD - somatic symptoms, anhedonia, social withdrawal - suicidal ideation most critical to assess"
+    },
+    "153": {
+      "answer": "D",
+      "system": "Physiology",
+      "subject": "Respiratory Physiology",
+      "topic": "CO2 Transport",
+      "concept": "Haldane effect - deoxyhemoglobin is better buffer of H+ than oxyhemoglobin - carries more CO2 for given PCO2",
+      "options": 6
+    },
+    "154": {
+      "answer": "B",
+      "system": "Cardiology",
+      "subject": "Superior Vena Cava Syndrome",
+      "topic": "Mediastinal Mass",
+      "concept": "SVC syndrome from lung cancer - increased JVP, bilateral conjunctival edema, upper extremity swelling"
+    },
+    "155": {
+      "answer": "B",
+      "system": "Hematology",
+      "subject": "Polycythemia",
+      "topic": "Secondary Polycythemia",
+      "concept": "COPD - chronic hypoxemia - increased EPO - secondary polycythemia - normochromic, normocytic erythrocytosis"
+    },
+    "156": {
+      "answer": "F",
+      "system": "Biostatistics",
+      "subject": "Epidemiology",
+      "topic": "Attributable Risk",
+      "concept": "Attributable (excess) risk for DVT group - AR = (25/100) - (10/200) = 25% - 5% = 20 per 100",
+      "options": 8
+    },
+    "157": {
+      "answer": "E",
+      "system": "Biochemistry",
+      "subject": "Vitamins",
+      "topic": "Vitamin C",
+      "concept": "Scurvy (vitamin C deficiency) - bleeding gums, bruising - impairs prolyl hydroxylase needed for collagen synthesis",
+      "options": 7
+    },
+    "158": {
+      "answer": "C",
+      "system": "Behavioral Science",
+      "subject": "Communication Skills",
+      "topic": "Emotional Validation",
+      "concept": "Physician should validate patient's emotion about rosacea - mindreading technique - 'It's upsetting when...' "
+    },
+    "159": {
+      "answer": "F",
+      "system": "Endocrinology",
+      "subject": "Calcium Metabolism",
+      "topic": "PTH Mechanism",
+      "concept": "PTH stimulates 1-alpha-hydroxylase in kidney - increases 1,25-dihydroxycholecalciferol production - hypercalcemia",
+      "options": 6
+    },
+    "160": {
+      "answer": "C",
+      "system": "Endocrinology",
+      "subject": "Growth Hormone Axis",
+      "topic": "IGF-1",
+      "concept": "IGF-1 deficiency in knockout mouse - shortened long bones - narrow epiphyseal plates"
+    },
+    "161": {
+      "answer": "C",
+      "system": "Cardiology",
+      "subject": "Arrhythmias",
+      "topic": "Supraventricular Premature Beats",
+      "concept": "Supraventricular premature beats (PACs) - caffeine-induced, narrow QRS with compensatory pause"
+    },
+    "162": {
+      "answer": "B",
+      "system": "Immunology",
+      "subject": "Innate Immunity",
+      "topic": "Neutrophil Bactericidal Activity",
+      "concept": "Respiratory burst - hypochlorite (from MPO + H2O2 + Cl-) - most efficient bactericidal compound"
+    },
+    "163": {
+      "answer": "J",
+      "system": "Pulmonology",
+      "subject": "ARDS",
+      "topic": "Alveolar Repair",
+      "concept": "ARDS from sepsis - alveolar repair via type II pneumocyte hyperplasia - differentiate into type I pneumocytes",
+      "options": 10
+    },
+    "164": {
+      "answer": "C",
+      "system": "Oncology",
+      "subject": "Skin Cancer",
+      "topic": "Melanoma",
+      "concept": "Melanoma - melanocytes derived from neural crest cells - ABCDE criteria"
+    },
+    "165": {
+      "answer": "C",
+      "system": "Pharmacology",
+      "subject": "Cholinergics",
+      "topic": "Cholinesterase Inhibitors",
+      "concept": "Neostigmine overdose - cholinergic crisis - desensitization of nicotinic receptors by excess ACh",
+      "options": 6
+    },
+    "166": {
+      "answer": "C",
+      "system": "Obstetrics",
+      "subject": "Labor and Delivery",
+      "topic": "Oxytocin Pharmacology",
+      "concept": "Oxytocin binds G-protein coupled receptor - activates ligand-gated calcium channels in uterine smooth muscle"
+    },
+    "167": {
+      "answer": "C",
+      "system": "Pharmacology",
+      "subject": "Aminoglycosides",
+      "topic": "Pharmacokinetics",
+      "concept": "Gentamicin dosing - trough too high - maintain dose but extend interval to 12 hours to allow drug clearance"
+    },
+    "168": {
+      "answer": "F",
+      "system": "Renal",
+      "subject": "Congenital Renal Anomalies",
+      "topic": "Hydronephrosis",
+      "concept": "Congenital ureteral obstruction - chronic vesicoureteral reflux - hydronephrosis - dilated calyces compressing parenchyma",
+      "options": 10
+    },
+    "169": {
+      "answer": "C",
+      "system": "Microbiology",
+      "subject": "Virology",
+      "topic": "HIV Antiretrovirals",
+      "concept": "HIV protease inhibitor - blocks protein cleavage - immature viral particles with no mature core"
+    },
+    "170": {
+      "answer": "B",
+      "system": "Neurology",
+      "subject": "Somatosensory Cortex",
+      "topic": "Sensory Cortex Anatomy",
+      "concept": "Right anterolateral parietal lobe (postcentral gyrus, label B) - mediates sensation of contralateral distal upper extremity",
+      "options": 10
+    },
+    "171": {
+      "answer": "E",
+      "system": "Renal",
+      "subject": "Renal Papillary Necrosis",
+      "topic": "Sickle Cell Complications",
+      "concept": "Renal papillary necrosis in sickle cell trait - medullary ischemia - hematuria, flank pain, ureteral obstruction"
+    },
+    "172": {
+      "answer": "E",
+      "system": "Pharmacology",
+      "subject": "Dementia Drugs",
+      "topic": "Cholinesterase Inhibitors",
+      "concept": "Donepezil - prolongs ACh in synaptic cleft by inhibiting acetylcholinesterase - improves Alzheimer cognition"
+    },
+    "173": {
+      "answer": "H",
+      "system": "Endocrinology",
+      "subject": "Obesity and Metabolism",
+      "topic": "Leptin Physiology",
+      "concept": "Primary leptin deficiency - high BMI with low leptin (patient H) - adipocytes cannot produce functional leptin",
+      "options": 8
+    },
+    "174": {
+      "answer": "D",
+      "system": "Pharmacology",
+      "subject": "Drug Interactions",
+      "topic": "CYP450 Inhibitors",
+      "concept": "Cimetidine inhibits CYP450 - decreases phenytoin metabolism - phenytoin toxicity (nystagmus, ataxia)"
+    },
+    "175": {
+      "answer": "B",
+      "system": "Oncology",
+      "subject": "Esophageal Cancer",
+      "topic": "Squamous Cell Carcinoma",
+      "concept": "Squamous cell carcinoma of mid-esophagus - foci of keratinization (keratin pearls) on biopsy - smoking/alcohol risk"
+    },
+    "176": {
+      "answer": "C",
+      "system": "Obstetrics",
+      "subject": "Gestational Trophoblastic Disease",
+      "topic": "Hydatidiform Mole",
+      "concept": "Partial hydatidiform mole - fetal tissue present, chorionic villi with focal edema, trophoblastic proliferation"
+    },
+    "177": {
+      "answer": "A",
+      "system": "Biochemistry",
+      "subject": "Fatty Acid Metabolism",
+      "topic": "Carnitine Shuttle",
+      "concept": "Carnitine-acylcarnitine translocase deficiency - long-chain fatty acids accumulate - hypoketotic hypoglycemia, responds to medium-chain triglycerides"
+    },
+    "178": {
+      "answer": "D",
+      "system": "Endocrinology",
+      "subject": "Adrenal Disorders",
+      "topic": "Primary Hyperaldosteronism",
+      "concept": "Conn syndrome - hypokalemia, metabolic alkalosis, hypertension, undetectable plasma renin - adrenal adenoma"
+    },
+    "179": {
+      "answer": "E",
+      "system": "Pharmacology",
+      "subject": "Substance Abuse",
+      "topic": "Opioid Intoxication",
+      "concept": "Opioid intoxication - miosis (pinpoint pupils), bradycardia, respiratory depression, stupor - classic toxidrome"
+    },
+    "180": {
+      "answer": "C",
+      "system": "Musculoskeletal",
+      "subject": "Muscle Physiology",
+      "topic": "Muscle Repair",
+      "concept": "Laceration with fibrotic scar - collagen replaces muscle fibers - decreased passive stretching (joint contracture)"
+    },
+    "181": {
+      "answer": "H",
+      "system": "Biostatistics",
+      "subject": "Epidemiology",
+      "topic": "Prevalence",
+      "concept": "Prevalence of obesity at 5 years = 150 obese / 900 total participants = 150/900",
+      "options": 8
+    },
+    "182": {
+      "answer": "B",
+      "system": "Neurology",
+      "subject": "Horner Syndrome",
+      "topic": "Sympathetic Pathway",
+      "concept": "Pancoast tumor - Horner syndrome - lesion at ciliospinal center of Budge (T1, label B) - ipsilateral ptosis, miosis, anhidrosis",
+      "options": 6
+    },
+    "183": {
+      "answer": "C",
+      "system": "Obstetrics",
+      "subject": "Medical Abortion",
+      "topic": "Mifepristone",
+      "concept": "Mifepristone - progesterone antagonist - given first in medical abortion protocol before misoprostol"
+    },
+    "184": {
+      "answer": "A",
+      "system": "Pharmacology",
+      "subject": "Toxicology",
+      "topic": "Methanol Poisoning",
+      "concept": "Methanol toxicity (paint thinner) - fomepizole inhibits alcohol dehydrogenase - prevents formate production"
+    },
+    "185": {
+      "answer": "B",
+      "system": "Neurology",
+      "subject": "Stroke",
+      "topic": "Lacunar Infarcts",
+      "concept": "Lacunar infarct of internal capsule - hypertension - pure motor hemiparesis - dysarthria, clumsy hand"
+    },
+    "186": {
+      "answer": "D",
+      "system": "Gastroenterology",
+      "subject": "Peptic Ulcer Disease",
+      "topic": "Duodenal Ulcer Perforation",
+      "concept": "Retroperitoneal air - perforated duodenal ulcer (2nd-4th segments retroperitoneal) - H. pylori related"
+    },
+    "187": {
+      "answer": "A",
+      "system": "Biochemistry",
+      "subject": "Lysosomal Storage Diseases",
+      "topic": "I-Cell Disease",
+      "concept": "I-cell disease (mucolipidosis II) - defective N-acetylglucosaminyl-1-phosphotransferase - abnormal targeting of lysosomal enzymes"
+    },
+    "188": {
+      "answer": "C",
+      "system": "Immunology",
+      "subject": "Innate Immunity",
+      "topic": "Acute Inflammatory Response",
+      "concept": "Cat scratch causing immediate red streaks - histamine-stimulated vasodilation from mast cells/basophils"
+    },
+    "189": {
+      "answer": "A",
+      "system": "Gastroenterology",
+      "subject": "Diverticular Disease",
+      "topic": "Diverticulosis",
+      "concept": "Diverticulosis - increased intraluminal pressure - herniation of mucosa/submucosa through muscularis propria"
+    },
+    "190": {
+      "answer": "A",
+      "system": "Immunology",
+      "subject": "Transplant Immunology",
+      "topic": "Graft-Versus-Host Disease",
+      "concept": "Bone marrow transplant - HLA mismatch (HLA-B 19 vs 7) - acute GVHD - donor T cells attack host tissues"
+    },
+    "191": {
+      "answer": "C",
+      "system": "Neurology",
+      "subject": "Movement Disorders",
+      "topic": "Huntington Disease",
+      "concept": "Huntington disease - autosomal dominant - woman has 50% chance, son has 50% x 50% = 25% risk"
+    },
+    "192": {
+      "answer": "D",
+      "system": "Anatomy",
+      "subject": "Cardiac Anatomy",
+      "topic": "Anterior Heart Structures",
+      "concept": "Penetrating injury to inferior sternum - right ventricle most anterior cardiac structure - shrapnel injury"
+    },
+    "193": {
+      "answer": "C",
+      "system": "Physiology",
+      "subject": "Exercise Physiology",
+      "topic": "Vascular Resistance During Exercise",
+      "concept": "Splanchnic vascular resistance increases most during exercise - sympathetic vasoconstriction redirects blood to muscles",
+      "options": 7
+    },
+    "194": {
+      "answer": "B",
+      "system": "Anatomy",
+      "subject": "Scrotal Layers",
+      "topic": "Testicular Surgery",
+      "concept": "External spermatic fascia is derived from external abdominal oblique - next layer after dartos during orchiectomy"
+    },
+    "195": {
+      "answer": "E",
+      "system": "Pulmonology",
+      "subject": "Pulmonary Neoplasms",
+      "topic": "Pulmonary Hamartoma",
+      "concept": "Pulmonary hamartoma - disorganized normal tissue - mature cartilage, fat, respiratory epithelium - benign solitary nodule"
+    },
+    "196": {
+      "answer": "E",
+      "system": "Pharmacology",
+      "subject": "Anticonvulsants",
+      "topic": "Anticonvulsant Mechanisms",
+      "concept": "Methanol poisoning treatment - fomepizole inhibits alcohol dehydrogenase - blocks conversion to formaldehyde",
+      "options": 6
+    },
+    "197": {
+      "answer": null,
+      "system": "Microbiology",
+      "subject": "Mycology",
+      "topic": "Histoplasmosis",
+      "concept": "Histoplasma capsulatum - bat droppings exposure - grows inside nonactivated macrophages - virulence mechanism"
+    },
+    "198": {
+      "answer": "B",
+      "system": "Pulmonology",
+      "subject": "Obstructive Lung Disease",
+      "topic": "COPD Diagnosis",
+      "concept": "COPD - FEV1/FVC < 70%, decreased FEV1, decreased breath sounds, prolonged expiration"
+    },
+    "199": {
+      "answer": "B",
+      "system": "Oncology",
+      "subject": "Cutaneous Lymphoma",
+      "topic": "Mycosis Fungoides",
+      "concept": "Mycosis fungoides - cutaneous T-cell lymphoma - malignant T lymphocyte infiltration of epidermis - eosinophilia, elevated IgA/IgE",
+      "options": 6
+    },
+    "200": {
+      "answer": "F",
+      "system": "Gastroenterology",
+      "subject": "Lysosomal Storage Disease",
+      "topic": "I-Cell Disease",
+      "concept": "I-cell disease - plasma lysosomal enzymes elevated due to abnormal targeting (mannose-6-phosphate tagging defect)",
+      "options": 6
+    }
   }
 }
