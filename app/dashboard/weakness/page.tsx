@@ -3,16 +3,33 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '../../../utils/supabase'
 
-const TOPICS = ['Cardiology','Psychiatry','Renal','Biochemistry','Pharmacology','Microbiology','Anatomy','Pathology','Physiology','Reproductive','Neurology','Endocrinology','Immunology','Mixed']
-const REASONS = ['Knowledge','Knowledge Gap','Silly Mistake','Luck']
+const accColor = (pct: number) => {
+  if (pct >= 75) return '#6b7c3a'
+  if (pct >= 65) return '#c9a84c'
+  if (pct >= 55) return '#c07040'
+  return '#9e2a2a'
+}
+const accLabel = (pct: number) => {
+  if (pct >= 75) return 'Strong'
+  if (pct >= 65) return 'Developing'
+  if (pct >= 55) return 'Needs work'
+  return 'Priority'
+}
 
-type LogEntry = { topic: string; answer: string; reason: string | null; source: 'qbank' | 'nbme' }
+type SystemStat = {
+  system: string
+  correct: number
+  total: number
+  subtopics: Record<string, { correct: number; total: number }>
+}
 
 export default function WeaknessMap() {
-  const [user, setUser] = useState<{id: string; email?: string} | null>(null)
+  const [user, setUser] = useState<{ id: string; email?: string } | null>(null)
   const [profile, setProfile] = useState<any>(null)
-  const [sessions, setSessions] = useState<Array<{id: string; topic: string; questions_total: number; questions_correct: number}>>([])
-  const [logs, setLogs] = useState<LogEntry[]>([])
+  const [systemMap, setSystemMap] = useState<Record<string, SystemStat>>({})
+  const [examSessionCount, setExamSessionCount] = useState(0)
+  const [totalQuestions, setTotalQuestions] = useState(0)
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({})
   const [loading, setLoading] = useState(true)
   const router = useRouter()
   const supabase = createClient()
@@ -25,85 +42,49 @@ export default function WeaknessMap() {
       const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single()
       setProfile(profileData)
 
-      const [{ data: sessionsData }, { data: nbmeData }] = await Promise.all([
-        supabase.from('qbank_sessions').select('id, topic, questions_total, questions_correct').eq('student_id', user.id),
-        supabase.from('nbme_scores').select('id').eq('student_id', user.id),
-      ])
+      const map: Record<string, SystemStat> = {}
 
-      setSessions(sessionsData || [])
+      const add = (system: string, correct: boolean, topic?: string | null) => {
+        if (!system) return
+        if (!map[system]) map[system] = { system, correct: 0, total: 0, subtopics: {} }
+        map[system].total++
+        if (correct) map[system].correct++
+        if (topic) {
+          if (!map[system].subtopics[topic]) map[system].subtopics[topic] = { correct: 0, total: 0 }
+          map[system].subtopics[topic].total++
+          if (correct) map[system].subtopics[topic].correct++
+        }
+      }
 
-      const sessionIds = (sessionsData || []).map((s: {id: string}) => s.id)
-      const examIds = (nbmeData || []).map((s: {id: string}) => s.id)
+      // 1. Qbank question logs (topic = system name)
+      const { data: qbSessions } = await supabase.from('qbank_sessions').select('id').eq('student_id', user.id)
+      const qbSessionIds = (qbSessions || []).map((s: any) => s.id)
+      if (qbSessionIds.length > 0) {
+        const { data: qbLogs } = await supabase.from('qbank_question_logs').select('topic, answer').in('session_id', qbSessionIds)
+        ;(qbLogs || []).forEach((l: any) => { if (l.topic) add(l.topic, l.answer === 'Correct') })
+      }
 
-      const [qLogsRes, nLogsRes] = await Promise.all([
-        sessionIds.length > 0
-          ? supabase.from('qbank_question_logs').select('topic, answer, reason').in('session_id', sessionIds)
-          : Promise.resolve({ data: [] }),
-        examIds.length > 0
-          ? supabase.from('nbme_question_logs').select('topic, answer, reason').in('exam_id', examIds)
-          : Promise.resolve({ data: [] }),
-      ])
+      // 2. NBME question logs (topic = system name)
+      const { data: nbmeScores } = await supabase.from('nbme_scores').select('id').eq('student_id', user.id)
+      const nbmeIds = (nbmeScores || []).map((s: any) => s.id)
+      if (nbmeIds.length > 0) {
+        const { data: nLogs } = await supabase.from('nbme_question_logs').select('topic, answer').in('exam_id', nbmeIds)
+        ;(nLogs || []).forEach((l: any) => { if (l.topic) add(l.topic, l.answer === 'Correct') })
+      }
 
-      const combined: LogEntry[] = [
-        ...((qLogsRes.data || []).map((l: {topic: string; answer: string; reason: string | null}) => ({ ...l, source: 'qbank' as const }))),
-        ...((nLogsRes.data || []).map((l: {topic: string; answer: string; reason: string | null}) => ({ ...l, source: 'nbme' as const }))),
-      ]
-      setLogs(combined)
+      // 3. Exam center question logs (system + topic subtopics)
+      const { data: examLogs } = await supabase.from('exam_question_logs').select('system, topic, correct, exam_session_id').eq('student_id', user.id)
+      ;(examLogs || []).forEach((l: any) => { if (l.system) add(l.system, l.correct, l.topic) })
+      const sessionIds = [...new Set((examLogs || []).map((l: any) => l.exam_session_id).filter(Boolean))]
+      setExamSessionCount(sessionIds.length)
+
+      const total = Object.values(map).reduce((a, s) => a + s.total, 0)
+      setTotalQuestions(total)
+      setSystemMap(map)
       setLoading(false)
     }
     init()
   }, [])
-
-  const getAccColor = (acc: number) => {
-    if (acc >= 75) return '#6b7c3a'
-    if (acc >= 65) return '#c9a84c'
-    if (acc >= 55) return '#c07040'
-    return '#9e2a2a'
-  }
-  const getAccLabel = (acc: number) => {
-    if (acc >= 75) return 'Strong'
-    if (acc >= 65) return 'Developing'
-    if (acc >= 55) return 'Needs work'
-    return 'Priority'
-  }
-
-  // Session-level stats per topic
-  const sessionStats = (topic: string) => {
-    const ts = sessions.filter(s => s.topic === topic)
-    if (ts.length === 0) return null
-    const total = ts.reduce((a, s) => a + s.questions_total, 0)
-    const correct = ts.reduce((a, s) => a + s.questions_correct, 0)
-    return { total, correct, acc: Math.round((correct / total) * 100), sessions: ts.length }
-  }
-
-  // Question log stats per topic (both sources)
-  const logStats = (topic: string) => {
-    const tl = logs.filter(l => l.topic === topic)
-    if (tl.length === 0) return null
-    const wrong = tl.filter(l => l.answer === 'Wrong').length
-    const correct = tl.filter(l => l.answer === 'Correct').length
-    const total = tl.length
-    const acc = Math.round((correct / total) * 100)
-    const qbankCount = tl.filter(l => l.source === 'qbank').length
-    const nbmeCount = tl.filter(l => l.source === 'nbme').length
-    const reasons: Record<string, number> = {}
-    tl.filter(l => l.answer === 'Wrong' && l.reason).forEach(l => {
-      reasons[l.reason!] = (reasons[l.reason!] || 0) + 1
-    })
-    return { total, correct, wrong, acc, qbankCount, nbmeCount, reasons }
-  }
-
-  const topicsWithSessions = TOPICS.filter(t => sessionStats(t) !== null)
-  const topicsWithLogs = TOPICS.filter(t => logStats(t) !== null)
-  const topicsWithoutData = TOPICS.filter(t => sessionStats(t) === null && logStats(t) === null)
-
-  const sortedBySessions = [...topicsWithSessions].sort((a, b) => (sessionStats(a)?.acc || 0) - (sessionStats(b)?.acc || 0))
-  const sortedByLogs = [...topicsWithLogs].sort((a, b) => (logStats(b)?.wrong || 0) - (logStats(a)?.wrong || 0))
-
-  const totalLogged = logs.length
-  const totalWrong = logs.filter(l => l.answer === 'Wrong').length
-  const totalCorrect = logs.filter(l => l.answer === 'Correct').length
-  const overallLogAcc = totalLogged > 0 ? Math.round((totalCorrect / totalLogged) * 100) : null
 
   const navGroups = [
     { section: 'Overview', items: [{ name: 'Dashboard', path: '/dashboard' }] },
@@ -136,12 +117,20 @@ export default function WeaknessMap() {
     </main>
   )
 
-  const hasAnyData = sessions.length > 0 || logs.length > 0
+  const systems = Object.values(systemMap).sort((a, b) => {
+    const accA = a.total > 0 ? a.correct / a.total : 1
+    const accB = b.total > 0 ? b.correct / b.total : 1
+    return accA - accB
+  })
+
+  const totalCorrect = systems.reduce((a, s) => a + s.correct, 0)
+  const overallAcc = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : null
+  const hasData = systems.length > 0
 
   return (
     <main style={{ minHeight: '100vh', display: 'flex', background: '#f7f4ee', fontFamily: 'Sora, sans-serif', fontSize: '17.6px' }}>
 
-      {/* SIDEBAR */}
+      {/* Sidebar */}
       <nav style={{ width: 220, flexShrink: 0, background: '#0d2340', display: 'flex', flexDirection: 'column', height: '100vh', position: 'sticky', top: 0 }}>
         <div style={{ padding: '20px 18px 16px', borderBottom: '0.5px solid rgba(201,168,76,0.2)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -156,7 +145,7 @@ export default function WeaknessMap() {
           {navGroups.map(group => (
             <div key={group.section}>
               <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'rgba(255,255,255,0.28)', padding: '0 8px', margin: '12px 0 4px' }}>{group.section}</div>
-              {group.items.map((item: {name: string; path: string; active?: boolean}) => (
+              {group.items.map((item: { name: string; path: string; active?: boolean }) => (
                 <div key={item.name} onClick={() => router.push(item.path)}
                   style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 7, color: item.active ? '#c9a84c' : 'rgba(255,255,255,0.55)', fontSize: 13.5, marginBottom: 2, background: item.active ? 'rgba(255,255,255,0.09)' : 'transparent', cursor: 'pointer' }}>
                   <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'currentColor', flexShrink: 0 }}/>{item.name}
@@ -180,23 +169,23 @@ export default function WeaknessMap() {
         </div>
       </nav>
 
-      {/* MAIN */}
+      {/* Main */}
       <div style={{ flex: 1, minWidth: 0, overflowY: 'auto', padding: '32px 36px' }}>
 
         <div style={{ marginBottom: 28 }}>
           <div style={{ fontFamily: 'Georgia, serif', fontSize: 30, color: '#0d2340', letterSpacing: -0.5 }}>Weakness Map</div>
-          <div style={{ fontSize: 14, color: '#8a7d6a', marginTop: 5 }}>Built from Qbank sessions · Qbank question logs · NBME question logs</div>
+          <div style={{ fontSize: 14, color: '#8a7d6a', marginTop: 5 }}>Built from Qbank · NBME logs · Exam Center — sorted by weakest system first</div>
         </div>
 
-        {!hasAnyData ? (
+        {!hasData ? (
           <div style={{ background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, padding: '60px', textAlign: 'center' }}>
             <div style={{ fontSize: 18, fontWeight: 500, color: '#0d2340', marginBottom: 10 }}>No data yet</div>
-            <div style={{ fontSize: 14, color: '#8a7d6a', maxWidth: 400, margin: '0 auto 24px', lineHeight: 1.7 }}>
-              Log Qbank sessions, then use the Question Log on the Qbank Tracker or NBME Score Tracker to review individual questions. Your weakness map builds automatically.
+            <div style={{ fontSize: 14, color: '#8a7d6a', maxWidth: 420, margin: '0 auto 24px', lineHeight: 1.7 }}>
+              Complete an exam in the Exam Center or log Qbank sessions to build your weakness map.
             </div>
-            <div onClick={() => router.push('/dashboard/qbank')}
+            <div onClick={() => router.push('/dashboard/exams')}
               style={{ display: 'inline-flex', padding: '12px 24px', background: '#0d2340', borderRadius: 10, fontSize: 14, color: '#c9a84c', fontWeight: 600, cursor: 'pointer' }}>
-              Go to Qbank Tracker →
+              Go to Exam Center →
             </div>
           </div>
         ) : (
@@ -205,155 +194,93 @@ export default function WeaknessMap() {
             {/* Summary cards */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: 12 }}>
               {[
-                { label: 'Qbank sessions', value: sessions.length.toString(), delta: `${sessions.reduce((a,s) => a + s.questions_total, 0).toLocaleString()} total questions` },
-                { label: 'Questions reviewed', value: totalLogged.toString(), delta: `${logs.filter(l=>l.source==='qbank').length} Qbank · ${logs.filter(l=>l.source==='nbme').length} NBME` },
-                { label: 'Log accuracy', value: overallLogAcc !== null ? `${overallLogAcc}%` : '—', delta: overallLogAcc !== null ? `${totalWrong} wrong logged` : 'Log questions to see' },
-                { label: 'Topics covered', value: topicsWithSessions.length.toString(), delta: `${topicsWithoutData.length} not yet practiced` },
+                { label: 'Exams completed', value: examSessionCount.toString(), sub: 'via Exam Center' },
+                { label: 'Questions tracked', value: totalQuestions.toLocaleString(), sub: 'across all sources' },
+                { label: 'Overall accuracy', value: overallAcc !== null ? `${overallAcc}%` : '—', sub: overallAcc !== null ? accLabel(overallAcc) : 'Log data to see' },
+                { label: 'Systems tracked', value: systems.length.toString(), sub: `${systems.filter(s => Math.round((s.correct/s.total)*100) < 65).length} need attention` },
               ].map((m, i) => (
                 <div key={i} style={{ background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 10, padding: '14px 16px' }}>
                   <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#a89870', marginBottom: 8 }}>{m.label}</div>
                   <div style={{ fontFamily: 'Georgia, serif', fontSize: 28, color: '#0d2340' }}>{m.value}</div>
-                  <div style={{ fontSize: 12, color: '#a89870', marginTop: 4 }}>{m.delta}</div>
+                  <div style={{ fontSize: 12, color: '#a89870', marginTop: 4 }}>{m.sub}</div>
                 </div>
               ))}
             </div>
 
-            {/* Priority topics from sessions */}
-            {sortedBySessions.filter(t => (sessionStats(t)?.acc || 0) < 65).length > 0 && (
-              <div style={{ background: '#fff5f5', border: '1px solid #f5c6c6', borderRadius: 12, padding: '18px 22px' }}>
-                <div style={{ fontSize: 15, fontWeight: 600, color: '#9e2a2a', marginBottom: 14 }}>Priority focus — session accuracy below 65%</div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
-                  {sortedBySessions.filter(t => (sessionStats(t)?.acc || 0) < 65).map(topic => {
-                    const stats = sessionStats(topic)!
-                    return (
-                      <div key={topic} style={{ background: 'white', border: '0.5px solid #f5c6c6', borderRadius: 9, padding: '12px 14px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                          <div style={{ fontSize: 14, fontWeight: 600, color: '#0d2340' }}>{topic}</div>
-                          <span style={{ fontSize: 14, fontWeight: 700, color: getAccColor(stats.acc) }}>{stats.acc}%</span>
-                        </div>
-                        <div style={{ height: 6, background: '#f0ece0', borderRadius: 3, overflow: 'hidden', marginBottom: 6 }}>
-                          <div style={{ height: '100%', background: getAccColor(stats.acc), width: `${stats.acc}%`, borderRadius: 3 }}/>
-                        </div>
-                        <div style={{ fontSize: 11, color: '#a89870' }}>{stats.total} questions · {stats.sessions} sessions</div>
-                      </div>
-                    )
-                  })}
+            {/* System bars */}
+            <div style={{ background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, overflow: 'hidden' }}>
+              <div style={{ padding: '16px 22px', borderBottom: '0.5px solid #f0ece0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: '#0d2340' }}>Performance by System</div>
+                  <div style={{ fontSize: 12, color: '#8a7d6a', marginTop: 2 }}>Click + to expand topic detail</div>
                 </div>
-              </div>
-            )}
-
-            {/* Question log analysis */}
-            {topicsWithLogs.length > 0 && (
-              <div style={{ background: '#0d2340', borderRadius: 12, padding: '18px 22px' }}>
-                <div style={{ fontSize: 15, fontWeight: 600, color: 'white', marginBottom: 4 }}>Question Log Analysis</div>
-                <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 18 }}>Per-question data from Qbank + NBME logs · sorted by most wrong answers</div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {sortedByLogs.map(topic => {
-                    const ls = logStats(topic)!
-                    const maxWrong = Math.max(...sortedByLogs.map(t => logStats(t)?.wrong || 0))
-                    return (
-                      <div key={topic} style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 10, padding: '14px 16px', border: '0.5px solid rgba(255,255,255,0.08)' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: ls.reasons && Object.keys(ls.reasons).length > 0 ? 10 : 0 }}>
-                          <div style={{ width: 120, flexShrink: 0 }}>
-                            <div style={{ fontSize: 13, fontWeight: 600, color: 'white' }}>{topic}</div>
-                            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', marginTop: 2 }}>
-                              {ls.qbankCount > 0 && `${ls.qbankCount}Q Qbank`}
-                              {ls.qbankCount > 0 && ls.nbmeCount > 0 && ' · '}
-                              {ls.nbmeCount > 0 && `${ls.nbmeCount}Q NBME`}
-                            </div>
-                          </div>
-                          <div style={{ flex: 1 }}>
-                            <div style={{ display: 'flex', gap: 3, height: 8, borderRadius: 4, overflow: 'hidden', marginBottom: 4 }}>
-                              <div style={{ background: '#4a7a2a', width: `${(ls.correct / ls.total) * 100}%`, transition: 'width 0.3s' }}/>
-                              <div style={{ background: '#9e2a2a', width: `${(ls.wrong / ls.total) * 100}%`, transition: 'width 0.3s' }}/>
-                            </div>
-                            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>{ls.correct} correct · {ls.wrong} wrong</div>
-                          </div>
-                          <div style={{ flexShrink: 0, textAlign: 'right' }}>
-                            <div style={{ fontSize: 15, fontWeight: 700, color: getAccColor(ls.acc) }}>{ls.acc}%</div>
-                            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', marginTop: 1 }}>{ls.total} logged</div>
-                          </div>
-                          {/* Wrong answer bar relative to worst topic */}
-                          {maxWrong > 0 && ls.wrong > 0 && (
-                            <div style={{ width: 80, flexShrink: 0 }}>
-                              <div style={{ height: 6, background: 'rgba(255,255,255,0.1)', borderRadius: 3, overflow: 'hidden' }}>
-                                <div style={{ height: '100%', background: '#c0574a', borderRadius: 3, width: `${(ls.wrong / maxWrong) * 100}%` }}/>
-                              </div>
-                              <div style={{ fontSize: 10, color: '#f5a0a0', marginTop: 2 }}>{ls.wrong} wrong</div>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Reason breakdown */}
-                        {Object.keys(ls.reasons).length > 0 && (
-                          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', paddingTop: 8, borderTop: '0.5px solid rgba(255,255,255,0.08)' }}>
-                            {REASONS.filter(r => ls.reasons[r]).map(r => (
-                              <span key={r} style={{ fontSize: 11, padding: '3px 9px', borderRadius: 20, background: 'rgba(201,168,76,0.15)', color: '#c9a84c', border: '0.5px solid rgba(201,168,76,0.3)' }}>
-                                {r}: {ls.reasons[r]}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Legend */}
-            <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
-              {[
-                { color: '#9e2a2a', label: 'Priority (<55%)' },
-                { color: '#c07040', label: 'Needs work (55–64%)' },
-                { color: '#c9a84c', label: 'Developing (65–74%)' },
-                { color: '#6b7c3a', label: 'Strong (75%+)' },
-              ].map(l => (
-                <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <div style={{ width: 10, height: 10, borderRadius: '50%', background: l.color }}/>
-                  <span style={{ fontSize: 12, color: '#8a7d6a' }}>{l.label}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* All subjects — session accuracy */}
-            {topicsWithSessions.length > 0 && (
-              <div style={{ background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, padding: '18px 22px' }}>
-                <div style={{ fontSize: 15, fontWeight: 600, color: '#0d2340', marginBottom: 4 }}>Session accuracy by subject</div>
-                <div style={{ fontSize: 12, color: '#8a7d6a', marginBottom: 16 }}>Based on Qbank session blocks</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {sortedBySessions.map(topic => {
-                    const stats = sessionStats(topic)!
-                    return (
-                      <div key={topic} style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                        <div style={{ width: 110, fontSize: 13, color: '#3d3020', flexShrink: 0 }}>{topic}</div>
-                        <div style={{ flex: 1, height: 8, background: '#f0ece0', borderRadius: 4, overflow: 'hidden' }}>
-                          <div style={{ height: '100%', background: getAccColor(stats.acc), width: `${stats.acc}%`, borderRadius: 4 }}/>
-                        </div>
-                        <div style={{ width: 36, fontSize: 13, fontWeight: 700, color: getAccColor(stats.acc), textAlign: 'right', flexShrink: 0 }}>{stats.acc}%</div>
-                        <div style={{ width: 80, flexShrink: 0 }}>
-                          <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 10, background: `${getAccColor(stats.acc)}18`, color: getAccColor(stats.acc), fontWeight: 500 }}>{getAccLabel(stats.acc)}</span>
-                        </div>
-                        <div style={{ fontSize: 11, color: '#a89870', width: 80, flexShrink: 0 }}>{stats.total}Q · {stats.sessions} sessions</div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Not yet practiced */}
-            {topicsWithoutData.length > 0 && (
-              <div style={{ background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, padding: '18px 22px' }}>
-                <div style={{ fontSize: 15, fontWeight: 600, color: '#0d2340', marginBottom: 14 }}>Not yet practiced</div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                  {topicsWithoutData.map(t => (
-                    <span key={t} style={{ fontSize: 13, padding: '5px 12px', borderRadius: 8, background: '#f7f4ee', color: '#8a7d6a', border: '0.5px solid #e8dfc8' }}>{t}</span>
+                <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
+                  {[
+                    { color: '#9e2a2a', label: 'Priority <55%' },
+                    { color: '#c07040', label: 'Needs work 55–64%' },
+                    { color: '#c9a84c', label: 'Developing 65–74%' },
+                    { color: '#6b7c3a', label: 'Strong 75%+' },
+                  ].map(l => (
+                    <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: l.color, flexShrink: 0 }}/>
+                      <span style={{ fontSize: 11, color: '#8a7d6a' }}>{l.label}</span>
+                    </div>
                   ))}
                 </div>
               </div>
-            )}
+
+              {systems.map((s, idx) => {
+                const acc = s.total > 0 ? Math.round((s.correct / s.total) * 100) : 0
+                const color = accColor(acc)
+                const isOpen = !!expanded[s.system]
+                const subtopicList = Object.entries(s.subtopics)
+                  .map(([name, d]) => ({ name, acc: Math.round((d.correct / d.total) * 100), correct: d.correct, total: d.total }))
+                  .sort((a, b) => a.acc - b.acc)
+                const hasSubtopics = subtopicList.length > 0
+
+                return (
+                  <div key={s.system} style={{ borderBottom: idx < systems.length - 1 ? '0.5px solid #f0ece0' : 'none' }}>
+                    {/* System row */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '13px 22px' }}>
+                      <div style={{ width: 130, fontSize: 13, fontWeight: 600, color: '#0d2340', flexShrink: 0 }}>{s.system}</div>
+                      <div style={{ flex: 1, height: 8, background: '#f0ece0', borderRadius: 4, overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: `${acc}%`, background: color, borderRadius: 4, transition: 'width 0.4s' }}/>
+                      </div>
+                      <div style={{ width: 40, fontSize: 14, fontWeight: 700, color, textAlign: 'right', flexShrink: 0 }}>{acc}%</div>
+                      <div style={{ width: 90, flexShrink: 0 }}>
+                        <span style={{ fontSize: 11, padding: '3px 9px', borderRadius: 10, background: `${color}18`, color, fontWeight: 600 }}>{accLabel(acc)}</span>
+                      </div>
+                      <div style={{ width: 60, fontSize: 11, color: '#a89870', flexShrink: 0 }}>{s.correct}/{s.total}</div>
+                      <button
+                        onClick={() => setExpanded(e => ({ ...e, [s.system]: !e[s.system] }))}
+                        disabled={!hasSubtopics}
+                        style={{ width: 26, height: 26, borderRadius: 6, border: '1px solid #d8cfc0', background: isOpen ? '#0d2340' : '#f7f4ee', color: isOpen ? '#c9a84c' : hasSubtopics ? '#5a4f3a' : '#c8c0b0', fontSize: 15, fontWeight: 700, cursor: hasSubtopics ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, lineHeight: 1 }}>
+                        {isOpen ? '−' : '+'}
+                      </button>
+                    </div>
+
+                    {/* Subtopic expand */}
+                    {isOpen && hasSubtopics && (
+                      <div style={{ background: '#faf8f4', borderTop: '0.5px solid #f0ece0', padding: '10px 22px 14px 52px' }}>
+                        <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#a89870', marginBottom: 10 }}>Topics within {s.system}</div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                          {subtopicList.map(t => (
+                            <div key={t.name} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                              <div style={{ width: 220, fontSize: 12, color: '#3d3020', flexShrink: 0 }}>{t.name}</div>
+                              <div style={{ flex: 1, height: 5, background: '#e8dfc8', borderRadius: 3, overflow: 'hidden' }}>
+                                <div style={{ height: '100%', width: `${t.acc}%`, background: accColor(t.acc), borderRadius: 3 }}/>
+                              </div>
+                              <div style={{ width: 36, fontSize: 12, fontWeight: 700, color: accColor(t.acc), textAlign: 'right', flexShrink: 0 }}>{t.acc}%</div>
+                              <div style={{ width: 44, fontSize: 11, color: '#a89870', flexShrink: 0, textAlign: 'right' }}>{t.correct}/{t.total}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
 
           </div>
         )}

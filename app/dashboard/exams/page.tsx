@@ -411,6 +411,11 @@ export default function ExamCenter() {
         percent_correct: percentCorrect, predicted_step1: predictedStep1,
       }).eq('id', activeSession.id)
 
+      const logRows = questionDetails
+        .filter(q => q.system || q.topic || q.discipline)
+        .map(q => ({ student_id: user.id, exam_session_id: activeSession.id, question_number: q.qNum, system: q.system || null, topic: q.topic || null, discipline: q.discipline || null, correct: q.correct }))
+      if (logRows.length > 0) await supabase.from('exam_question_logs').insert(logRows)
+
       const { data: sessionData } = await supabase.from('exam_sessions')
         .select('*, answer_sheets(*)').eq('student_id', user.id).order('created_at', {ascending: false})
       setPastSessions(sessionData || [])
@@ -510,11 +515,18 @@ export default function ExamCenter() {
       const actualMinutes = session.actual_minutes ?? 0
       const withinLimit = session.within_limit ?? true
 
-      // Persist corrected scores back to DB
       await supabase.from('exam_sessions').update({
         score: correct, wrong_count: wrongCount,
         percent_correct: percentCorrect, predicted_step1: predictedStep1,
       }).eq('id', session.id)
+
+      const logRows = questionDetails
+        .filter(q => q.system || q.topic || q.discipline)
+        .map(q => ({ student_id: user.id, exam_session_id: session.id, question_number: q.qNum, system: q.system || null, topic: q.topic || null, discipline: q.discipline || null, correct: q.correct }))
+      if (logRows.length > 0) {
+        await supabase.from('exam_question_logs').delete().eq('exam_session_id', session.id)
+        await supabase.from('exam_question_logs').insert(logRows)
+      }
 
       setResultsFilter('all')
       setResultsTab('system')
