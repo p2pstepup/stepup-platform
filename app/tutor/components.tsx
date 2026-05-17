@@ -641,11 +641,8 @@ export function ExamsManager({ supabase, onSuccess }: any) {
   const deleteExam = async (id: string, name: string) => {
     if (!window.confirm(`Remove "${name}"? This will also delete all student sessions for this exam.`)) return
     setDeleting(id)
-    // Delete related records first to avoid FK constraint errors
-    await supabase.from('exam_question_logs').delete().eq('exam_session_id',
-      supabase.from('exam_sessions').select('id').eq('exam_name', name)
-    )
-    const { data: sessions } = await supabase.from('exam_sessions').select('id').eq('exam_name', name)
+    // Get all session IDs for this exam (by exam_id FK, not name)
+    const { data: sessions } = await supabase.from('exam_sessions').select('id').eq('exam_id', id)
     if (sessions && sessions.length > 0) {
       const sessionIds = sessions.map((s: any) => s.id)
       await supabase.from('exam_question_logs').delete().in('exam_session_id', sessionIds)
