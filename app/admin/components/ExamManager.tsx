@@ -391,11 +391,13 @@ export default function ExamManager() {
     let pdfUrl = selectedExam.pdf_url;
     let keyUrl = selectedExam.answer_key_url;
 
+    const ts = Date.now();
+
     if (pdfFile) {
       setPdfProgress(0);
       const url = await uploadFile(
         "exam-pdfs",
-        `${selectedExam.id}/exam.pdf`,
+        `${selectedExam.id}/exam_${ts}.pdf`,
         pdfFile,
         setPdfProgress
       );
@@ -410,7 +412,7 @@ export default function ExamManager() {
       setKeyProgress(0);
       const url = await uploadFile(
         "exam-keys",
-        `${selectedExam.id}/answer_key.json`,
+        `${selectedExam.id}/answer_key_${ts}.json`,
         keyFile,
         setKeyProgress
       );
