@@ -1030,31 +1030,18 @@ export default function ExamCenter() {
                 const qNum = sectionStart + i
                 const displayNum = i + 1
                 const sel = curSecAnswers[qNum]
-                const entry = answerKey[String(qNum)]
-                const numOpts = Math.max(
-                  entry?.options && entry.options > 0 ? entry.options : 0,
-                  entry?.answer ? entry.answer.charCodeAt(0) - 64 : 4,
-                  4
-                )
-                const opts = Array.from({length:numOpts},(_,j) => String.fromCharCode(65+j))
-                const row1 = opts.slice(0,7)
-                const row2 = opts.slice(7)
+                const opts = ['A','B','C','D','E','F','G','H','I','J']
                 const btnStyle = (opt: string) => ({
-                  width:28,height:24,borderRadius:4,border:sel===opt?'none':'1px solid #d8cfc0',
+                  width:24,height:22,borderRadius:4,border:sel===opt?'none':'1px solid #d8cfc0',
                   background:sel===opt?'#0d2340':'#f7f4ee',color:sel===opt?'#c9a84c':'#8a7d6a',
-                  fontSize:11,fontWeight:700,cursor:'pointer',fontFamily:'Sora,sans-serif',flexShrink:0 as const
+                  fontSize:10,fontWeight:700,cursor:'pointer',fontFamily:'Sora,sans-serif',flexShrink:0 as const,padding:0
                 })
                 return (
-                  <div key={qNum} style={{padding:'4px 10px',borderBottom:'0.5px solid #faf8f4'}}>
-                    <div style={{display:'flex',alignItems:'center',gap:3}}>
-                      <div style={{width:26,fontSize:11,color:'#a89870',fontWeight:500,flexShrink:0,textAlign:'right',paddingRight:4}}>{displayNum}</div>
-                      {row1.map(opt => <button key={opt} onClick={() => saveSectionAnswer(qNum, opt)} style={btnStyle(opt)}>{opt}</button>)}
+                  <div key={qNum} style={{padding:'3px 8px',borderBottom:'0.5px solid #faf8f4'}}>
+                    <div style={{display:'flex',alignItems:'center',gap:2}}>
+                      <div style={{width:22,fontSize:11,color:'#a89870',fontWeight:500,flexShrink:0,textAlign:'right',paddingRight:3}}>{displayNum}</div>
+                      {opts.map(opt => <button key={opt} onClick={() => saveSectionAnswer(qNum, opt)} style={btnStyle(opt)}>{opt}</button>)}
                     </div>
-                    {row2.length > 0 && (
-                      <div style={{display:'flex',alignItems:'center',gap:3,marginTop:3,paddingLeft:30}}>
-                        {row2.map(opt => <button key={opt} onClick={() => saveSectionAnswer(qNum, opt)} style={btnStyle(opt)}>{opt}</button>)}
-                      </div>
-                    )}
                   </div>
                 )
               })}
