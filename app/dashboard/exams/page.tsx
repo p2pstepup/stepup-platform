@@ -745,7 +745,23 @@ export default function ExamCenter() {
               {pdfUrl ? (
                 <Document
                   file={pdfUrl}
-                  loading={<div style={{color:'#8a7d6a',padding:40,fontSize:15,fontFamily:'Georgia,serif'}}>Loading PDF...</div>}
+                  onLoadProgress={({loaded, total}) => {
+                    const pct = total ? Math.round((loaded/total)*100) : 0
+                    const bar = document.getElementById('pdf-load-bar')
+                    const lbl = document.getElementById('pdf-load-pct')
+                    if (bar) bar.style.width = pct + '%'
+                    if (lbl) lbl.textContent = pct + '%'
+                  }}
+                  loading={
+                    <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'60px 40px',gap:16}}>
+                      <div style={{fontFamily:'Georgia,serif',fontSize:16,color:'#0d2340'}}>Loading exam PDF…</div>
+                      <div style={{width:220,height:6,background:'#e8dfc8',borderRadius:3,overflow:'hidden'}}>
+                        <div id="pdf-load-bar" style={{height:'100%',background:'#c9a84c',borderRadius:3,width:'0%',transition:'width 0.3s'}}/>
+                      </div>
+                      <div id="pdf-load-pct" style={{fontSize:13,color:'#8a7d6a',fontFamily:'Sora,sans-serif'}}>0%</div>
+                      <div style={{fontSize:12,color:'#a89870',fontFamily:'Sora,sans-serif',textAlign:'center',maxWidth:240}}>Large file — this may take a minute on slower connections</div>
+                    </div>
+                  }
                   error={<div style={{color:'#c0574a',padding:40,fontSize:15,fontFamily:'Georgia,serif'}}>Failed to load PDF — contact your admin</div>}
                 >
                   <Page pageNumber={pdfPage} width={pdfWidth * zoomLevel} renderTextLayer={false} renderAnnotationLayer={false}/>
