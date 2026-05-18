@@ -187,10 +187,18 @@ export default function ExamCenter() {
   const [passcodeInput, setPasscodeInput] = useState('')
   const [pendingExam, setPendingExam] = useState<any>(null)
 
+  const [isMobile, setIsMobile] = useState(false)
   const timerRef = useRef<any>(null)
   const submitSectionRef = useRef<() => void>(() => {})
   const router = useRouter()
   const supabase = createClient()
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
 
   useEffect(() => {
     const init = async () => {
@@ -1046,7 +1054,7 @@ export default function ExamCenter() {
         </div>
       )}
 
-      <nav style={{width:220,flexShrink:0,background:'#0d2340',display:'flex',flexDirection:'column',height:'100vh',position:'sticky',top:0}}>
+      <nav style={{width:220,flexShrink:0,background:'#0d2340',display:isMobile?'none':'flex',flexDirection:'column',height:'100vh',position:'sticky',top:0}}>
         <div style={{padding:'20px 18px 16px',borderBottom:'0.5px solid rgba(201,168,76,0.2)'}}>
           <div style={{display:'flex',alignItems:'center',gap:10}}>
             <div style={{width:36,height:36,background:'#c9a84c',borderRadius:9,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
@@ -1084,9 +1092,9 @@ export default function ExamCenter() {
         </div>
       </nav>
 
-      <div style={{flex:1,minWidth:0,overflowY:'auto',padding:'32px 36px'}}>
+      <div style={{flex:1,minWidth:0,overflowY:'auto',padding:isMobile?'20px 16px':'32px 36px'}}>
         <div style={{marginBottom:28}}>
-          <div style={{fontFamily:'Georgia,serif',fontSize:30,color:'#0d2340',letterSpacing:-0.5}}>Exam Center</div>
+          <div style={{fontFamily:'Georgia,serif',fontSize:isMobile?22:30,color:'#0d2340',letterSpacing:-0.5}}>Exam Center</div>
           <div style={{fontSize:14,color:'#8a7d6a',marginTop:5}}>Take timed exams · Get scored instantly · Track your Step 1 prediction</div>
         </div>
 
@@ -1094,6 +1102,41 @@ export default function ExamCenter() {
           <div style={{background:'#0d2340',padding:'14px 20px'}}>
             <div style={{fontSize:14,fontWeight:600,color:'white'}}>Available exams</div>
           </div>
+          {exams.length === 0 ? (
+            <div style={{padding:'24px 16px',textAlign:'center',fontSize:14,color:'#8a7d6a'}}>No exams available</div>
+          ) : isMobile ? (
+            <div>
+              {exams.map((exam, i) => {
+                const attempted = pastSessions.filter(s => s.exam_id === exam.id && s.status === 'submitted')
+                const bestScore = attempted.length > 0 ? Math.max(...attempted.map((s:any) => s.predicted_step1 || s.percent_correct || 0)) : null
+                const bestSession = attempted.find((s:any) => (s.predicted_step1||s.percent_correct||0) === bestScore)
+                const timeLabel = (() => { if (!exam.time_per_section_minutes) return exam.time_limit; const t = exam.time_per_section_minutes * (exam.section_count || 4) / 60; return (Number.isInteger(t) ? t : +t.toFixed(1)) + ' hrs' })()
+                return (
+                  <div key={exam.id} style={{padding:'16px',borderBottom:i<exams.length-1?'0.5px solid #f5f0e8':'none'}}>
+                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:10}}>
+                      <div>
+                        <div style={{fontSize:15,fontWeight:700,color:'#0d2340'}}>{exam.name}</div>
+                        {exam.deadline && <div style={{fontSize:12,color:'#c0574a',fontWeight:500,marginTop:2}}>Due {new Date(exam.deadline).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>}
+                        {attempted.length > 0 && <div style={{fontSize:11,color:'#6b7c3a',marginTop:2}}>Taken {attempted.length}x</div>}
+                      </div>
+                      {bestSession?.predicted_step1 && <span style={{fontSize:16,fontWeight:700,color:scoreColor(bestSession.percent_correct||0)}}>{bestSession.predicted_step1}</span>}
+                    </div>
+                    <div style={{display:'flex',gap:8,alignItems:'center',marginBottom:12,flexWrap:'wrap' as const}}>
+                      <span style={{fontSize:12,color:'#8a7d6a'}}>{exam.questions}Q</span>
+                      <span style={{fontSize:12,color:'#8a7d6a'}}>·</span>
+                      <span style={{fontSize:12,color:'#8a7d6a'}}>{timeLabel}</span>
+                      <span style={{fontSize:12,color:'#8a7d6a'}}>·</span>
+                      <span style={{fontSize:12,padding:'2px 8px',borderRadius:8,background:`${diffColor(exam.difficulty)}18`,color:diffColor(exam.difficulty),fontWeight:500}}>{exam.difficulty}</span>
+                    </div>
+                    <button onClick={() => startExam(exam)}
+                      style={{width:'100%',height:44,background:'#0d2340',border:'none',borderRadius:9,fontSize:15,color:'#c9a84c',fontWeight:700,cursor:'pointer'}}>
+                      {attempted.length > 0 ? 'Retake →' : 'Start →'}
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+          ) : (
           <table style={{width:'100%',borderCollapse:'collapse'}}>
             <thead>
               <tr>
@@ -1103,11 +1146,7 @@ export default function ExamCenter() {
               </tr>
             </thead>
             <tbody>
-              {exams.length === 0 ? (
-                <tr>
-                  <td colSpan={7} style={{padding:'24px 16px',textAlign:'center',fontSize:14,color:'#8a7d6a'}}>No exams available</td>
-                </tr>
-              ) : exams.map((exam, i) => {
+              {exams.map((exam, i) => {
                 const attempted = pastSessions.filter(s => s.exam_id === exam.id && s.status === 'submitted')
                 const bestScore = attempted.length > 0 ? Math.max(...attempted.map((s:any) => s.predicted_step1 || s.percent_correct || 0)) : null
                 const bestSession = attempted.find((s:any) => (s.predicted_step1||s.percent_correct||0) === bestScore)
@@ -1143,6 +1182,7 @@ export default function ExamCenter() {
               })}
             </tbody>
           </table>
+          )}
         </div>
 
         {pastSessions.filter(s => s.status === 'submitted').length > 0 && (
@@ -1150,6 +1190,30 @@ export default function ExamCenter() {
             <div style={{background:'#0d2340',padding:'14px 20px'}}>
               <div style={{fontSize:14,fontWeight:600,color:'white'}}>My exam history</div>
             </div>
+            {isMobile ? (
+              <div>
+                {pastSessions.filter(s=>s.status==='submitted').map((session, i, arr) => (
+                  <div key={session.id} style={{padding:'14px 16px',borderBottom:i<arr.length-1?'0.5px solid #f5f0e8':'none'}}>
+                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:6}}>
+                      <div>
+                        <div style={{fontSize:14,fontWeight:600,color:'#0d2340'}}>{session.exam_name}</div>
+                        <div style={{fontSize:12,color:'#8a7d6a',marginTop:2}}>{new Date(session.started_at).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>
+                      </div>
+                      {session.predicted_step1 && <span style={{fontSize:18,fontWeight:700,color:scoreColor(session.percent_correct||0)}}>{session.predicted_step1}</span>}
+                    </div>
+                    {session.percent_correct != null && (
+                      <div style={{fontSize:13,color:scoreColor(session.percent_correct),fontWeight:500,marginBottom:10}}>
+                        {session.score}/{session.total_questions} ({session.percent_correct}%) · {session.wrong_count ?? 0} wrong
+                      </div>
+                    )}
+                    <button onClick={() => viewSessionReport(session)} disabled={submitting}
+                      style={{width:'100%',height:40,background:'#0d2340',border:'none',borderRadius:8,fontSize:13,color:'#c9a84c',fontWeight:600,cursor:'pointer'}}>
+                      View Report
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
             <table style={{width:'100%',borderCollapse:'collapse'}}>
               <thead>
                 <tr>
@@ -1188,6 +1252,7 @@ export default function ExamCenter() {
                 ))}
               </tbody>
             </table>
+            )}
           </div>
         )}
       </div>
