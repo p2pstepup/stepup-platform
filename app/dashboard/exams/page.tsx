@@ -209,7 +209,7 @@ export default function ExamCenter() {
   const [pdfUrl, setPdfUrl] = useState<string|null>(null)
   const [answerKey, setAnswerKey] = useState<Record<string, AKEntry>>({})
   const [resultsFilter, setResultsFilter] = useState<'all'|'correct'|'incorrect'>('all')
-  const [resultsTab, setResultsTab] = useState<'report'|'questions'>('report')
+  const [resultsTab, setResultsTab] = useState<'report'|'weakness'|'questions'>('report')
   const [currentSection, setCurrentSection] = useState(1)
   const [sectionAnswers, setSectionAnswers] = useState<Record<number, Record<number, string>>>({1:{},2:{},3:{},4:{}})
   const [sectionTimeLeft, setSectionTimeLeft] = useState(0)
@@ -1135,6 +1135,7 @@ export default function ExamCenter() {
           <div style={{display:'flex',gap:0,margin:'20px 0 0',borderBottom:'2px solid #e8dfc8'}}>
             {([
               {key:'report', label:'Score Report'},
+              {key:'weakness', label:'Weakness Map'},
               {key:'questions', label:`Question Review (${results.questionDetails?.length||0})`},
             ] as const).map(t => (
               <button key={t.key} onClick={() => setResultsTab(t.key)}
@@ -1222,6 +1223,138 @@ export default function ExamCenter() {
               </div>
             </div>
           )}
+
+          {/* ── WEAKNESS MAP TAB ── */}
+          {resultsTab === 'weakness' && (() => {
+            const NATIONAL_AVG = 70
+            const buildMap = (data: Record<string, {correct:number,total:number}>) =>
+              Object.entries(data)
+                .map(([name, s]) => ({ name, pct: s.total > 0 ? Math.round((s.correct/s.total)*100) : 0, correct: s.correct, total: s.total, missed: s.total - s.correct }))
+                .sort((a,b) => a.pct - b.pct)
+
+            const systemRows = buildMap(results.systemBreakdown || {})
+            const disciplineRows = buildMap(results.disciplineBreakdown || {})
+
+            const urgency = (pct: number) =>
+              pct < NATIONAL_AVG - 8 ? 'red' : pct < NATIONAL_AVG + 5 ? 'amber' : 'green'
+            const urgencyColor = (u: string) =>
+              u === 'red' ? '#c0574a' : u === 'amber' ? '#c9a84c' : '#6b7c3a'
+            const urgencyBg = (u: string) =>
+              u === 'red' ? '#fdf0ee' : u === 'amber' ? '#fdfaee' : '#f0f5eb'
+            const WeaknessSection = ({ title, rows }: { title: string, rows: ReturnType<typeof buildMap> }) => {
+              if (rows.length === 0) return null
+              const redRows = rows.filter(r => urgency(r.pct) === 'red')
+              const amberRows = rows.filter(r => urgency(r.pct) === 'amber')
+              const greenRows = rows.filter(r => urgency(r.pct) === 'green')
+
+              const RowGroup = ({ label, color, bg, items }: { label:string, color:string, bg:string, items: typeof rows }) => {
+                if (items.length === 0) return null
+                return (
+                  <div style={{marginBottom:16}}>
+                    <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
+                      <div style={{width:10,height:10,borderRadius:'50%',background:color,flexShrink:0}}/>
+                      <div style={{fontSize:11,fontWeight:700,color,textTransform:'uppercase',letterSpacing:'0.08em'}}>{label}</div>
+                    </div>
+                    {items.map(row => {
+                      const barPct = Math.min(row.pct, 100)
+                      const avgMarker = Math.min(NATIONAL_AVG, 100)
+                      const diff = row.pct - NATIONAL_AVG
+                      return (
+                        <div key={row.name} style={{background:bg,borderRadius:8,padding:'12px 16px',marginBottom:6,border:`1px solid ${color}22`}}>
+                          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
+                            <div style={{fontSize:14,fontWeight:600,color:'#0d2340'}}>{row.name}</div>
+                            <div style={{display:'flex',alignItems:'center',gap:12,flexShrink:0}}>
+                              <span style={{fontSize:11,color:'#8a7d6a'}}>{row.correct}/{row.total} correct</span>
+                              <span style={{fontSize:11,fontWeight:600,color:'#c0574a'}}>{row.missed} missed</span>
+                              <span style={{fontFamily:'Georgia,serif',fontSize:18,fontWeight:700,color}}>{row.pct}%</span>
+                              <span style={{fontSize:11,color,fontWeight:600}}>{diff >= 0 ? '+' : ''}{diff}% vs avg</span>
+                            </div>
+                          </div>
+                          <div style={{position:'relative',height:10,background:'#e8e2d8',borderRadius:5,overflow:'visible'}}>
+                            <div style={{height:'100%',width:`${barPct}%`,background:color,borderRadius:5,transition:'width 0.4s'}}/>
+                            <div style={{position:'absolute',top:-4,left:`${avgMarker}%`,width:2,height:18,background:'#0d2340',borderRadius:1,transform:'translateX(-50%)'}}/>
+                          </div>
+                          <div style={{display:'flex',justifyContent:'flex-end',marginTop:3}}>
+                            <span style={{fontSize:10,color:'#a89870'}}>▲ national avg ({NATIONAL_AVG}%)</span>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )
+              }
+
+              return (
+                <div style={{background:'white',border:'1px solid #ccc8be',borderRadius:10,overflow:'hidden',marginBottom:20}}>
+                  <div style={{background:'#d6eeec',padding:'10px 18px'}}>
+                    <div style={{fontSize:13,fontWeight:700,color:'#0d2340'}}>{title}</div>
+                  </div>
+                  <div style={{padding:'16px 18px'}}>
+                    <RowGroup label="Priority Focus — Below National Average" color={urgencyColor('red')} bg={urgencyBg('red')} items={redRows}/>
+                    <RowGroup label="Near National Average" color={urgencyColor('amber')} bg={urgencyBg('amber')} items={amberRows}/>
+                    <RowGroup label="Strength — Above National Average" color={urgencyColor('green')} bg={urgencyBg('green')} items={greenRows}/>
+                  </div>
+                </div>
+              )
+            }
+
+            const topWeakSystems = systemRows.filter(r => urgency(r.pct) === 'red').slice(0,3)
+            const topWeakDisciplines = disciplineRows.filter(r => urgency(r.pct) === 'red').slice(0,3)
+
+            return (
+              <div style={{paddingTop:20}}>
+                {/* Priority banner */}
+                {(topWeakSystems.length > 0 || topWeakDisciplines.length > 0) && (
+                  <div style={{background:'#0d2340',borderRadius:10,padding:'18px 22px',marginBottom:20}}>
+                    <div style={{fontFamily:'Georgia,serif',fontSize:16,color:'#c9a84c',marginBottom:10}}>Your Priority Study Areas</div>
+                    <div style={{display:'flex',gap:20,flexWrap:'wrap'}}>
+                      {topWeakSystems.length > 0 && (
+                        <div>
+                          <div style={{fontSize:10,color:'rgba(255,255,255,0.4)',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:6}}>Organ Systems</div>
+                          {topWeakSystems.map((r,i) => (
+                            <div key={r.name} style={{display:'flex',alignItems:'center',gap:8,marginBottom:4}}>
+                              <span style={{fontFamily:'Georgia,serif',fontSize:13,color:'#c0574a',fontWeight:700,width:18}}>#{i+1}</span>
+                              <span style={{fontSize:13,color:'white',fontWeight:500}}>{r.name}</span>
+                              <span style={{fontSize:12,color:'rgba(255,255,255,0.5)'}}>{r.pct}% · {r.missed} missed</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {topWeakDisciplines.length > 0 && (
+                        <div style={{borderLeft:'1px solid rgba(255,255,255,0.1)',paddingLeft:20}}>
+                          <div style={{fontSize:10,color:'rgba(255,255,255,0.4)',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:6}}>Subjects</div>
+                          {topWeakDisciplines.map((r,i) => (
+                            <div key={r.name} style={{display:'flex',alignItems:'center',gap:8,marginBottom:4}}>
+                              <span style={{fontFamily:'Georgia,serif',fontSize:13,color:'#c0574a',fontWeight:700,width:18}}>#{i+1}</span>
+                              <span style={{fontSize:13,color:'white',fontWeight:500}}>{r.name}</span>
+                              <span style={{fontSize:12,color:'rgba(255,255,255,0.5)'}}>{r.pct}% · {r.missed} missed</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    {topWeakSystems.length === 0 && topWeakDisciplines.length === 0 && (
+                      <div style={{fontSize:13,color:'rgba(255,255,255,0.6)'}}>No priority areas — you are at or above the national average in all content areas.</div>
+                    )}
+                  </div>
+                )}
+
+                <WeaknessSection title="Organ Systems — Weakest to Strongest" rows={systemRows}/>
+                <WeaknessSection title="Subjects / Disciplines — Weakest to Strongest" rows={disciplineRows}/>
+
+                <div style={{display:'flex',gap:12,maxWidth:500,marginTop:8}}>
+                  <button onClick={() => { revokePdfBlob(); setView('list'); setActiveSession(null); setActiveSheet(null); setResults(null) }}
+                    style={{flex:1,height:46,background:'white',border:'1px solid #e8dfc8',borderRadius:10,color:'#0d2340',fontFamily:'Sora,sans-serif',fontSize:14,fontWeight:600,cursor:'pointer'}}>
+                    ← Back to exams
+                  </button>
+                  <button onClick={() => router.push('/dashboard/nbme')}
+                    style={{flex:1,height:46,background:'#0d2340',border:'none',borderRadius:10,color:'#c9a84c',fontFamily:'Sora,sans-serif',fontSize:14,fontWeight:600,cursor:'pointer'}}>
+                    NBME tracker →
+                  </button>
+                </div>
+              </div>
+            )
+          })()}
 
           {/* ── QUESTION REVIEW TAB ── */}
           {resultsTab === 'questions' && (
