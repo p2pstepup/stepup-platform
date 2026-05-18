@@ -1032,14 +1032,14 @@ export default function ExamCenter() {
                 const sel = curSecAnswers[qNum]
                 const opts = ['A','B','C','D','E','F','G','H','I','J']
                 const btnStyle = (opt: string) => ({
-                  width:22,height:22,borderRadius:4,border:sel===opt?'none':'1px solid #d8cfc0',
+                  width:26,height:26,borderRadius:5,border:sel===opt?'none':'1px solid #d8cfc0',
                   background:sel===opt?'#0d2340':'#f7f4ee',color:sel===opt?'#c9a84c':'#8a7d6a',
-                  fontSize:10,fontWeight:700,cursor:'pointer',fontFamily:'Sora,sans-serif',flexShrink:0 as const,padding:0
+                  fontSize:11,fontWeight:700,cursor:'pointer',fontFamily:'Sora,sans-serif',flexShrink:0 as const,padding:0
                 })
                 return (
                   <div key={qNum} style={{padding:'3px 8px',borderBottom:'0.5px solid #faf8f4'}}>
-                    <div style={{display:'flex',alignItems:'center',gap:2}}>
-                      <div style={{width:22,fontSize:11,color:'#a89870',fontWeight:500,flexShrink:0,textAlign:'right',paddingRight:3}}>{displayNum}</div>
+                    <div style={{display:'flex',alignItems:'center',gap:3}}>
+                      <div style={{width:24,fontSize:11,color:'#a89870',fontWeight:500,flexShrink:0,textAlign:'right',paddingRight:3}}>{displayNum}</div>
                       {opts.map(opt => <button key={opt} onClick={() => saveSectionAnswer(qNum, opt)} style={btnStyle(opt)}>{opt}</button>)}
                     </div>
                   </div>
