@@ -143,7 +143,8 @@ function BreakdownTable({ title, data }: { title: string, data: Record<string, {
   )
 }
 
-function NBMEBreakdownTable({ title, data, overallPct }: { title: string, data: Record<string, {correct:number,total:number}>, overallPct: number }) {
+function NBMEBreakdownTable({ title, data }: { title: string, data: Record<string, {correct:number,total:number}> }) {
+  const NATIONAL_AVG = 70
   const rows = Object.entries(data)
   if (rows.length === 0) return null
   return (
@@ -165,8 +166,8 @@ function NBMEBreakdownTable({ title, data, overallPct }: { title: string, data: 
         <tbody>
           {rows.map(([name, s]) => {
             const pct = s.total > 0 ? Math.round((s.correct / s.total) * 100) : 0
-            const diff = pct - overallPct
-            const col = diff > 7 ? 'higher' : diff < -7 ? 'lower' : 'same'
+            const diff = pct - NATIONAL_AVG
+            const col = diff > 5 ? 'higher' : diff < -5 ? 'lower' : 'same'
             return (
               <tr key={name} style={{borderBottom:'0.5px solid #f0ece0'}}>
                 <td style={{padding:'9px 16px',fontSize:13,color:'#1a1008'}}>{name}</td>
@@ -208,7 +209,7 @@ export default function ExamCenter() {
   const [pdfUrl, setPdfUrl] = useState<string|null>(null)
   const [answerKey, setAnswerKey] = useState<Record<string, AKEntry>>({})
   const [resultsFilter, setResultsFilter] = useState<'all'|'correct'|'incorrect'>('all')
-  const [resultsTab, setResultsTab] = useState<'system'|'subject'|'topic'|'questions'>('system')
+  const [resultsTab, setResultsTab] = useState<'report'|'questions'>('report')
   const [currentSection, setCurrentSection] = useState(1)
   const [sectionAnswers, setSectionAnswers] = useState<Record<number, Record<number, string>>>({1:{},2:{},3:{},4:{}})
   const [sectionTimeLeft, setSectionTimeLeft] = useState(0)
@@ -564,7 +565,7 @@ export default function ExamCenter() {
       setPastSessions(sessionData || [])
 
       setResultsFilter('all')
-      setResultsTab('system')
+      setResultsTab('report')
       setResults({ correct, wrongCount, totalQ, percentCorrect, predictedStep1, actualMinutes, withinLimit, examName: activeSession.exam_name, timeUp, systemBreakdown, topicBreakdown, disciplineBreakdown, questionDetails })
       setView('results')
     } catch (err) {
@@ -754,7 +755,7 @@ export default function ExamCenter() {
       }
 
       setResultsFilter('all')
-      setResultsTab('system')
+      setResultsTab('report')
       setResults({ correct, wrongCount, totalQ, percentCorrect, predictedStep1, actualMinutes, withinLimit, examName: session.exam_name, timeUp: false, systemBreakdown, topicBreakdown, disciplineBreakdown, questionDetails })
       setView('results')
     } catch (err) {
@@ -1122,7 +1123,7 @@ export default function ExamCenter() {
           </div>
 
           {/* Name + date bar */}
-          <div style={{background:'white',border:'1px solid #ccc8be',borderTop:'none',padding:'9px 24px',display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:22,borderRadius:'0 0 6px 6px'}}>
+          <div style={{background:'white',border:'1px solid #ccc8be',borderTop:'none',padding:'9px 24px',display:'flex',justifyContent:'space-between',alignItems:'center',borderRadius:'0 0 6px 6px'}}>
             <div style={{fontSize:13,color:'#1a1008'}}>Name: <strong>{profile?.full_name || user?.email?.split('@')[0]}</strong></div>
             <div style={{fontSize:13,color:'#1a1008',display:'flex',gap:16}}>
               <span>Exam: <strong>{results.examName}</strong></span>
@@ -1130,128 +1131,159 @@ export default function ExamCenter() {
             </div>
           </div>
 
-          {/* Answer key warning */}
-          {(!results.questionDetails || results.questionDetails.length === 0) && (
-            <div style={{background:'#fff3cd',border:'1px solid #ffc107',borderRadius:10,padding:'12px 18px',marginBottom:16,fontSize:13,color:'#856404'}}>
-              ⚠ Answer key could not be loaded — breakdown and question details are unavailable. Contact your admin to verify the answer key file.
-            </div>
-          )}
-
-          {/* Main score section */}
-          <div style={{background:'white',border:'1px solid #ccc8be',borderRadius:8,padding:'32px 28px',marginBottom:16,textAlign:'center'}}>
-            <div style={{fontSize:13,color:'#6b6050',letterSpacing:'0.04em',marginBottom:6}}>Total Percent Correct</div>
-            <div style={{fontFamily:'Georgia,serif',fontSize:80,fontWeight:700,color:scoreColor(results.percentCorrect),lineHeight:1}}>{results.percentCorrect}%</div>
-            <div style={{fontSize:13,color:'#8a7d6a',marginTop:8}}>Raw score: {results.correct} correct out of {results.totalQ} questions</div>
-            {results.predictedStep1 && (
-              <div style={{marginTop:20,paddingTop:20,borderTop:'1px solid #f0ece0',fontSize:14,color:'#1a1008',lineHeight:1.7}}>
-                Based on your performance, your predicted Step 1 score is{' '}
-                <strong style={{fontFamily:'Georgia,serif',fontSize:18,color:step1Color}}>{results.predictedStep1}</strong>
-                {passProb && (
-                  <span style={{color:'#6b6050'}}>
-                    {' '}· estimated probability of passing Step 1:{' '}
-                    <strong style={{color:step1Color}}>{passProb}%</strong>
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Summary stats row */}
-          <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:10,marginBottom:28}}>
-            {[
-              {label:'Correct', value:String(results.correct), color:'#6b7c3a'},
-              {label:'Incorrect', value:String(results.wrongCount), color:'#c0574a'},
-              {label:'Time', value:formatDuration(results.actualMinutes), color:'#0d2340'},
-              {label:'Status', value:results.timeUp ? 'Time expired' : results.withinLimit ? 'Within limit' : 'Over limit',
-               color: results.timeUp ? '#c07040' : results.withinLimit ? '#6b7c3a' : '#c07040'},
-            ].map(c => (
-              <div key={c.label} style={{background:'white',border:'1px solid #ccc8be',borderRadius:8,padding:'14px',textAlign:'center'}}>
-                <div style={{fontSize:10,textTransform:'uppercase',letterSpacing:'0.07em',color:'#8a7d6a',marginBottom:6}}>{c.label}</div>
-                <div style={{fontFamily:'Georgia,serif',fontSize:22,fontWeight:700,color:c.color}}>{c.value}</div>
-              </div>
+          {/* Tab bar */}
+          <div style={{display:'flex',gap:0,margin:'20px 0 0',borderBottom:'2px solid #e8dfc8'}}>
+            {([
+              {key:'report', label:'Score Report'},
+              {key:'questions', label:`Question Review (${results.questionDetails?.length||0})`},
+            ] as const).map(t => (
+              <button key={t.key} onClick={() => setResultsTab(t.key)}
+                style={{padding:'10px 24px',border:'none',borderBottom:resultsTab===t.key?'2px solid #c9a84c':'2px solid transparent',marginBottom:-2,
+                  background:'transparent',fontSize:13,fontWeight:resultsTab===t.key?700:500,
+                  color:resultsTab===t.key?'#0d2340':'#a89870',cursor:'pointer',fontFamily:'Sora,sans-serif'}}>
+                {t.label}
+              </button>
             ))}
           </div>
 
-          {/* Relative Strengths & Weaknesses */}
-          {hasBreakdown && (
-            <>
-              <div style={{marginBottom:14}}>
-                <div style={{fontFamily:'Georgia,serif',fontSize:20,color:'#0d2340',marginBottom:8}}>Your Relative Strengths and Weaknesses</div>
-                <div style={{fontSize:13,color:'#6b6050',lineHeight:1.65,maxWidth:780}}>
-                  The boxes below indicate areas of relative strength or weakness compared to your overall score of <strong>{results.percentCorrect}%</strong>. A box in the "Higher" column means you performed better in that content area than your overall average; "Lower" means below your overall average. Use this to identify areas of strength and weakness to guide future study.
-                </div>
-                <div style={{display:'flex',gap:18,alignItems:'center',fontSize:12,color:'#6b6050',marginTop:10}}>
-                  <div style={{display:'flex',gap:6,alignItems:'center'}}><div style={{width:14,height:14,background:'#2a8f8a',borderRadius:3}}/> Score comparison indicator</div>
-                </div>
-              </div>
-              {hasSystem && <NBMEBreakdownTable title="Performance by Organ System" data={results.systemBreakdown} overallPct={results.percentCorrect}/>}
-              {hasDiscipline && <NBMEBreakdownTable title="Performance by Subject / Discipline" data={results.disciplineBreakdown} overallPct={results.percentCorrect}/>}
-              {hasTopic && <NBMEBreakdownTable title="Performance by Topic" data={results.topicBreakdown} overallPct={results.percentCorrect}/>}
-            </>
-          )}
+          {/* ── SCORE REPORT TAB ── */}
+          {resultsTab === 'report' && (
+            <div style={{paddingTop:20}}>
 
-          {/* Question Review */}
-          <div style={{marginTop:28,marginBottom:24}}>
-            <div style={{fontFamily:'Georgia,serif',fontSize:20,color:'#0d2340',marginBottom:14}}>Question Review</div>
-            <div style={{background:'white',border:'0.5px solid #e8dfc8',borderRadius:12,overflow:'hidden'}}>
-              <div style={{background:'#0d2340',padding:'12px 18px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-                <div style={{fontSize:14,fontWeight:600,color:'white'}}>Question Review</div>
-                <div style={{display:'flex',gap:6}}>
-                  {(['all','correct','incorrect'] as const).map(f => (
-                    <button key={f} onClick={() => setResultsFilter(f)}
-                      style={{padding:'4px 14px',borderRadius:6,border:'none',fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:'Sora,sans-serif',
-                        background:resultsFilter===f?'#c9a84c':'rgba(255,255,255,0.12)',
-                        color:resultsFilter===f?'#0d2340':'rgba(255,255,255,0.6)'}}>
-                      {f==='all'?`All (${results.questionDetails?.length||0})`:f==='correct'?`✓ Correct (${results.correct})`:`✗ Incorrect (${results.wrongCount})`}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              {filteredQs.length === 0 ? (
-                <div style={{padding:'32px',textAlign:'center',color:'#a89870',fontSize:14}}>No questions to display</div>
-              ) : (
-                <div style={{overflowX:'auto'}}>
-                  <table style={{width:'100%',borderCollapse:'collapse'}}>
-                    <thead>
-                      <tr style={{background:'#faf8f4'}}>
-                        {['Q#','System','Subject','Topic','Concept','Your Answer','Correct','Result'].map(h => (
-                          <th key={h} style={{fontSize:10,textTransform:'uppercase',letterSpacing:'0.07em',color:'#a89870',padding:'9px 14px',textAlign:'left',borderBottom:'0.5px solid #f0ece0',whiteSpace:'nowrap'}}>{h}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredQs.map((q: any, i: number) => (
-                        <tr key={q.qNum} style={{borderBottom:'0.5px solid #faf8f4',background:i%2===0?'white':'#fdfcfa'}}>
-                          <td style={{padding:'9px 14px',fontSize:13,color:'#0d2340',fontWeight:600,width:40}}>{q.qNum}</td>
-                          <td style={{padding:'9px 14px',fontSize:12,color:'#3d3020',whiteSpace:'nowrap'}}>{q.system||'—'}</td>
-                          <td style={{padding:'9px 14px',fontSize:12,color:'#3d3020',whiteSpace:'nowrap'}}>{q.discipline||'—'}</td>
-                          <td style={{padding:'9px 14px',fontSize:12,color:'#3d3020'}}>{q.topic||'—'}</td>
-                          <td style={{padding:'9px 14px',fontSize:11,color:'#8a7d6a',maxWidth:220}}>{q.concept||'—'}</td>
-                          <td style={{padding:'9px 14px',fontSize:13,fontWeight:700,color:q.correct?'#6b7c3a':'#c0574a',textAlign:'center',width:56}}>{q.studentAnswer}</td>
-                          <td style={{padding:'9px 14px',fontSize:13,fontWeight:700,color:'#0d2340',textAlign:'center',width:56}}>{q.correctAnswer||'—'}</td>
-                          <td style={{padding:'9px 14px',textAlign:'center',width:44}}>
-                            <span style={{fontSize:15,color:q.correct?'#6b7c3a':'#c0574a'}}>{q.correct?'✓':'✗'}</span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+              {/* Answer key warning */}
+              {(!results.questionDetails || results.questionDetails.length === 0) && (
+                <div style={{background:'#fff3cd',border:'1px solid #ffc107',borderRadius:10,padding:'12px 18px',marginBottom:16,fontSize:13,color:'#856404'}}>
+                  ⚠ Answer key could not be loaded — breakdown and question details are unavailable. Contact your admin to verify the answer key file.
                 </div>
               )}
-            </div>
-          </div>
 
-          {/* Actions */}
-          <div style={{display:'flex',gap:12,maxWidth:500}}>
-            <button onClick={() => { revokePdfBlob(); setView('list'); setActiveSession(null); setActiveSheet(null); setResults(null) }}
-              style={{flex:1,height:46,background:'white',border:'1px solid #e8dfc8',borderRadius:10,color:'#0d2340',fontFamily:'Sora,sans-serif',fontSize:14,fontWeight:600,cursor:'pointer'}}>
-              ← Back to exams
-            </button>
-            <button onClick={() => router.push('/dashboard/nbme')}
-              style={{flex:1,height:46,background:'#0d2340',border:'none',borderRadius:10,color:'#c9a84c',fontFamily:'Sora,sans-serif',fontSize:14,fontWeight:600,cursor:'pointer'}}>
-              NBME tracker →
-            </button>
-          </div>
+              {/* Main score section */}
+              <div style={{background:'white',border:'1px solid #ccc8be',borderRadius:8,padding:'32px 28px',marginBottom:16,textAlign:'center'}}>
+                <div style={{fontSize:13,color:'#6b6050',letterSpacing:'0.04em',marginBottom:6}}>Total Percent Correct</div>
+                <div style={{fontFamily:'Georgia,serif',fontSize:80,fontWeight:700,color:scoreColor(results.percentCorrect),lineHeight:1}}>{results.percentCorrect}%</div>
+                <div style={{fontSize:13,color:'#8a7d6a',marginTop:8}}>Raw score: {results.correct} correct out of {results.totalQ} questions</div>
+                {results.predictedStep1 && (
+                  <div style={{marginTop:20,paddingTop:20,borderTop:'1px solid #f0ece0',fontSize:14,color:'#1a1008',lineHeight:1.7}}>
+                    Based on your performance, your predicted Step 1 score is{' '}
+                    <strong style={{fontFamily:'Georgia,serif',fontSize:18,color:step1Color}}>{results.predictedStep1}</strong>
+                    {passProb && (
+                      <span style={{color:'#6b6050'}}>
+                        {' '}· estimated probability of passing Step 1:{' '}
+                        <strong style={{color:step1Color}}>{passProb}%</strong>
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Summary stats row */}
+              <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:10,marginBottom:28}}>
+                {[
+                  {label:'Correct', value:String(results.correct), color:'#6b7c3a'},
+                  {label:'Incorrect', value:String(results.wrongCount), color:'#c0574a'},
+                  {label:'Time', value:formatDuration(results.actualMinutes), color:'#0d2340'},
+                  {label:'Predicted Step 1', value:results.predictedStep1 ? String(results.predictedStep1) : '—', color:step1Color},
+                ].map(c => (
+                  <div key={c.label} style={{background:'white',border:'1px solid #ccc8be',borderRadius:8,padding:'14px',textAlign:'center'}}>
+                    <div style={{fontSize:10,textTransform:'uppercase',letterSpacing:'0.07em',color:'#8a7d6a',marginBottom:6}}>{c.label}</div>
+                    <div style={{fontFamily:'Georgia,serif',fontSize:22,fontWeight:700,color:c.color}}>{c.value}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Relative Strengths & Weaknesses */}
+              {hasBreakdown && (
+                <>
+                  <div style={{marginBottom:14}}>
+                    <div style={{fontFamily:'Georgia,serif',fontSize:20,color:'#0d2340',marginBottom:8}}>Your Relative Strengths and Weaknesses</div>
+                    <div style={{fontSize:13,color:'#6b6050',lineHeight:1.65,maxWidth:780}}>
+                      The boxes below indicate areas of strength or weakness compared to the estimated national average for USMLE Step 1 first-takers (~70%). A box in the &ldquo;Higher&rdquo; column indicates you performed above the national average in that content area; &ldquo;Lower&rdquo; indicates below average. Use this to identify areas to focus future study.
+                    </div>
+                    <div style={{display:'flex',gap:18,alignItems:'center',fontSize:12,color:'#6b6050',marginTop:10}}>
+                      <div style={{display:'flex',gap:6,alignItems:'center'}}><div style={{width:14,height:14,background:'#2a8f8a',borderRadius:3}}/> Score comparison vs. national average</div>
+                    </div>
+                  </div>
+                  {hasSystem && <NBMEBreakdownTable title="Performance by Organ System" data={results.systemBreakdown}/>}
+                  {hasDiscipline && <NBMEBreakdownTable title="Performance by Subject / Discipline" data={results.disciplineBreakdown}/>}
+                  {hasTopic && <NBMEBreakdownTable title="Performance by Topic" data={results.topicBreakdown}/>}
+                </>
+              )}
+
+              {/* Actions */}
+              <div style={{display:'flex',gap:12,maxWidth:500,marginTop:28}}>
+                <button onClick={() => { revokePdfBlob(); setView('list'); setActiveSession(null); setActiveSheet(null); setResults(null) }}
+                  style={{flex:1,height:46,background:'white',border:'1px solid #e8dfc8',borderRadius:10,color:'#0d2340',fontFamily:'Sora,sans-serif',fontSize:14,fontWeight:600,cursor:'pointer'}}>
+                  ← Back to exams
+                </button>
+                <button onClick={() => router.push('/dashboard/nbme')}
+                  style={{flex:1,height:46,background:'#0d2340',border:'none',borderRadius:10,color:'#c9a84c',fontFamily:'Sora,sans-serif',fontSize:14,fontWeight:600,cursor:'pointer'}}>
+                  NBME tracker →
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ── QUESTION REVIEW TAB ── */}
+          {resultsTab === 'questions' && (
+            <div style={{paddingTop:20}}>
+              <div style={{background:'white',border:'0.5px solid #e8dfc8',borderRadius:12,overflow:'hidden',marginBottom:24}}>
+                <div style={{background:'#0d2340',padding:'12px 18px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                  <div style={{fontSize:14,fontWeight:600,color:'white'}}>Question Review</div>
+                  <div style={{display:'flex',gap:6}}>
+                    {(['all','correct','incorrect'] as const).map(f => (
+                      <button key={f} onClick={() => setResultsFilter(f)}
+                        style={{padding:'4px 14px',borderRadius:6,border:'none',fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:'Sora,sans-serif',
+                          background:resultsFilter===f?'#c9a84c':'rgba(255,255,255,0.12)',
+                          color:resultsFilter===f?'#0d2340':'rgba(255,255,255,0.6)'}}>
+                        {f==='all'?`All (${results.questionDetails?.length||0})`:f==='correct'?`✓ Correct (${results.correct})`:`✗ Incorrect (${results.wrongCount})`}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {filteredQs.length === 0 ? (
+                  <div style={{padding:'32px',textAlign:'center',color:'#a89870',fontSize:14}}>No questions to display</div>
+                ) : (
+                  <div style={{overflowX:'auto'}}>
+                    <table style={{width:'100%',borderCollapse:'collapse'}}>
+                      <thead>
+                        <tr style={{background:'#faf8f4'}}>
+                          {['Q#','System','Subject','Topic','Concept','Your Answer','Correct','Result'].map(h => (
+                            <th key={h} style={{fontSize:10,textTransform:'uppercase',letterSpacing:'0.07em',color:'#a89870',padding:'9px 14px',textAlign:'left',borderBottom:'0.5px solid #f0ece0',whiteSpace:'nowrap'}}>{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredQs.map((q: {qNum:number,system?:string,discipline?:string,topic?:string,concept?:string,studentAnswer:string,correctAnswer?:string,correct:boolean}, i: number) => (
+                          <tr key={q.qNum} style={{borderBottom:'0.5px solid #faf8f4',background:i%2===0?'white':'#fdfcfa'}}>
+                            <td style={{padding:'9px 14px',fontSize:13,color:'#0d2340',fontWeight:600,width:40}}>{q.qNum}</td>
+                            <td style={{padding:'9px 14px',fontSize:12,color:'#3d3020',whiteSpace:'nowrap'}}>{q.system||'—'}</td>
+                            <td style={{padding:'9px 14px',fontSize:12,color:'#3d3020',whiteSpace:'nowrap'}}>{q.discipline||'—'}</td>
+                            <td style={{padding:'9px 14px',fontSize:12,color:'#3d3020'}}>{q.topic||'—'}</td>
+                            <td style={{padding:'9px 14px',fontSize:11,color:'#8a7d6a',maxWidth:220}}>{q.concept||'—'}</td>
+                            <td style={{padding:'9px 14px',fontSize:13,fontWeight:700,color:q.correct?'#6b7c3a':'#c0574a',textAlign:'center',width:56}}>{q.studentAnswer}</td>
+                            <td style={{padding:'9px 14px',fontSize:13,fontWeight:700,color:'#0d2340',textAlign:'center',width:56}}>{q.correctAnswer||'—'}</td>
+                            <td style={{padding:'9px 14px',textAlign:'center',width:44}}>
+                              <span style={{fontSize:15,color:q.correct?'#6b7c3a':'#c0574a'}}>{q.correct?'✓':'✗'}</span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+              <div style={{display:'flex',gap:12,maxWidth:500}}>
+                <button onClick={() => { revokePdfBlob(); setView('list'); setActiveSession(null); setActiveSheet(null); setResults(null) }}
+                  style={{flex:1,height:46,background:'white',border:'1px solid #e8dfc8',borderRadius:10,color:'#0d2340',fontFamily:'Sora,sans-serif',fontSize:14,fontWeight:600,cursor:'pointer'}}>
+                  ← Back to exams
+                </button>
+                <button onClick={() => router.push('/dashboard/nbme')}
+                  style={{flex:1,height:46,background:'#0d2340',border:'none',borderRadius:10,color:'#c9a84c',fontFamily:'Sora,sans-serif',fontSize:14,fontWeight:600,cursor:'pointer'}}>
+                  NBME tracker →
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </main>
     )
