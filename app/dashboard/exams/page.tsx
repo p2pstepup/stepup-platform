@@ -143,8 +143,22 @@ function BreakdownTable({ title, data }: { title: string, data: Record<string, {
   )
 }
 
-function NBMEBreakdownTable({ title, data }: { title: string, data: Record<string, {correct:number,total:number}> }) {
-  const NATIONAL_AVG = 70
+const SYSTEM_NATIONAL_AVG: Record<string, number> = {
+  'Cardiology': 71, 'Gastroenterology': 72, 'Musculoskeletal': 75, 'Dermatology': 75,
+  'Neurology': 72, 'Psychiatry': 72, 'Hematology': 74, 'Immunology': 74,
+  'Reproductive': 74, 'Endocrinology': 74, 'Pulmonology': 70, 'Nephrology': 70,
+  'Epidemiology': 76, 'Biostatistics': 76, 'Biochemistry': 73, 'Genetics': 72,
+  'Pharmacology': 75, 'Anatomy': 68, 'Behavioral Science': 83,
+  'Infectious Disease': 70, 'Oncology': 74, 'Toxicology': 70,
+  'Preventive Medicine': 76, 'Pediatrics': 74, 'Respiratory/Infectious Disease': 70,
+}
+const DISCIPLINE_NATIONAL_AVG: Record<string, number> = {
+  'Pathology': 74, 'Pharmacology': 75, 'Microbiology': 72, 'Biochemistry': 73,
+  'Physiology': 73, 'Anatomy': 68, 'Behavioral Science': 83, 'Genetics': 72,
+  'Biostatistics': 76,
+}
+
+function NBMEBreakdownTable({ title, data, avgLookup }: { title: string, data: Record<string, {correct:number,total:number}>, avgLookup?: Record<string, number> }) {
   const rows = Object.entries(data)
   if (rows.length === 0) return null
   return (
@@ -166,7 +180,8 @@ function NBMEBreakdownTable({ title, data }: { title: string, data: Record<strin
         <tbody>
           {rows.map(([name, s]) => {
             const pct = s.total > 0 ? Math.round((s.correct / s.total) * 100) : 0
-            const diff = pct - NATIONAL_AVG
+            const nationalAvg = avgLookup?.[name] ?? 70
+            const diff = pct - nationalAvg
             const col = diff > 5 ? 'higher' : diff < -5 ? 'lower' : 'same'
             return (
               <tr key={name} style={{borderBottom:'0.5px solid #f0ece0'}}>
@@ -210,6 +225,7 @@ export default function ExamCenter() {
   const [answerKey, setAnswerKey] = useState<Record<string, AKEntry>>({})
   const [resultsFilter, setResultsFilter] = useState<'all'|'correct'|'incorrect'>('all')
   const [resultsTab, setResultsTab] = useState<'report'|'weakness'|'questions'>('report')
+  const [expandedWeaknessRows, setExpandedWeaknessRows] = useState<Set<string>>(new Set())
   const [currentSection, setCurrentSection] = useState(1)
   const [sectionAnswers, setSectionAnswers] = useState<Record<number, Record<number, string>>>({1:{},2:{},3:{},4:{}})
   const [sectionTimeLeft, setSectionTimeLeft] = useState(0)
@@ -1204,8 +1220,8 @@ export default function ExamCenter() {
                       <div style={{display:'flex',gap:6,alignItems:'center'}}><div style={{width:14,height:14,background:'#2a8f8a',borderRadius:3}}/> Score comparison vs. national average</div>
                     </div>
                   </div>
-                  {hasSystem && <NBMEBreakdownTable title="Performance by Organ System" data={results.systemBreakdown}/>}
-                  {hasDiscipline && <NBMEBreakdownTable title="Performance by Subject / Discipline" data={results.disciplineBreakdown}/>}
+                  {hasSystem && <NBMEBreakdownTable title="Performance by Organ System" data={results.systemBreakdown} avgLookup={SYSTEM_NATIONAL_AVG}/>}
+                  {hasDiscipline && <NBMEBreakdownTable title="Performance by Subject / Discipline" data={results.disciplineBreakdown} avgLookup={DISCIPLINE_NATIONAL_AVG}/>}
                   {hasTopic && <NBMEBreakdownTable title="Performance by Topic" data={results.topicBreakdown}/>}
                 </>
               )}
@@ -1226,26 +1242,60 @@ export default function ExamCenter() {
 
           {/* ── WEAKNESS MAP TAB ── */}
           {resultsTab === 'weakness' && (() => {
-            const NATIONAL_AVG = 70
-            const buildMap = (data: Record<string, {correct:number,total:number}>) =>
+            // Build system→topics and discipline→topics maps from question details
+            const systemTopics: Record<string, Record<string, {correct:number,total:number}>> = {}
+            const disciplineTopics: Record<string, Record<string, {correct:number,total:number}>> = {}
+            for (const q of (results.questionDetails || [])) {
+              if (q.system && q.topic) {
+                if (!systemTopics[q.system]) systemTopics[q.system] = {}
+                if (!systemTopics[q.system][q.topic]) systemTopics[q.system][q.topic] = {correct:0,total:0}
+                systemTopics[q.system][q.topic].total++
+                if (q.correct) systemTopics[q.system][q.topic].correct++
+              }
+              if (q.discipline && q.topic) {
+                if (!disciplineTopics[q.discipline]) disciplineTopics[q.discipline] = {}
+                if (!disciplineTopics[q.discipline][q.topic]) disciplineTopics[q.discipline][q.topic] = {correct:0,total:0}
+                disciplineTopics[q.discipline][q.topic].total++
+                if (q.correct) disciplineTopics[q.discipline][q.topic].correct++
+              }
+            }
+
+            const buildMap = (data: Record<string, {correct:number,total:number}>, lookup?: Record<string,number>) =>
               Object.entries(data)
-                .map(([name, s]) => ({ name, pct: s.total > 0 ? Math.round((s.correct/s.total)*100) : 0, correct: s.correct, total: s.total, missed: s.total - s.correct }))
+                .map(([name, s]) => {
+                  const pct = s.total > 0 ? Math.round((s.correct/s.total)*100) : 0
+                  const nationalAvg = lookup?.[name] ?? 70
+                  return { name, pct, correct: s.correct, total: s.total, missed: s.total - s.correct, nationalAvg }
+                })
                 .sort((a,b) => a.pct - b.pct)
 
-            const systemRows = buildMap(results.systemBreakdown || {})
-            const disciplineRows = buildMap(results.disciplineBreakdown || {})
+            const systemRows = buildMap(results.systemBreakdown || {}, SYSTEM_NATIONAL_AVG)
+            const disciplineRows = buildMap(results.disciplineBreakdown || {}, DISCIPLINE_NATIONAL_AVG)
 
-            const urgency = (pct: number) =>
-              pct < NATIONAL_AVG - 8 ? 'red' : pct < NATIONAL_AVG + 5 ? 'amber' : 'green'
+            const urgency = (pct: number, nationalAvg: number) =>
+              pct < nationalAvg - 8 ? 'red' : pct < nationalAvg + 5 ? 'amber' : 'green'
             const urgencyColor = (u: string) =>
               u === 'red' ? '#c0574a' : u === 'amber' ? '#c9a84c' : '#6b7c3a'
             const urgencyBg = (u: string) =>
               u === 'red' ? '#fdf0ee' : u === 'amber' ? '#fdfaee' : '#f0f5eb'
-            const WeaknessSection = ({ title, rows }: { title: string, rows: ReturnType<typeof buildMap> }) => {
+
+            const toggleRow = (key: string) =>
+              setExpandedWeaknessRows(prev => {
+                const next = new Set(prev)
+                if (next.has(key)) { next.delete(key) } else { next.add(key) }
+                return next
+              })
+
+            const WeaknessSection = ({ title, rows, subtopicMap, prefix }: {
+              title: string,
+              rows: ReturnType<typeof buildMap>,
+              subtopicMap: Record<string, Record<string, {correct:number,total:number}>>,
+              prefix: string
+            }) => {
               if (rows.length === 0) return null
-              const redRows = rows.filter(r => urgency(r.pct) === 'red')
-              const amberRows = rows.filter(r => urgency(r.pct) === 'amber')
-              const greenRows = rows.filter(r => urgency(r.pct) === 'green')
+              const redRows = rows.filter(r => urgency(r.pct, r.nationalAvg) === 'red')
+              const amberRows = rows.filter(r => urgency(r.pct, r.nationalAvg) === 'amber')
+              const greenRows = rows.filter(r => urgency(r.pct, r.nationalAvg) === 'green')
 
               const RowGroup = ({ label, color, bg, items }: { label:string, color:string, bg:string, items: typeof rows }) => {
                 if (items.length === 0) return null
@@ -1256,18 +1306,29 @@ export default function ExamCenter() {
                       <div style={{fontSize:11,fontWeight:700,color,textTransform:'uppercase',letterSpacing:'0.08em'}}>{label}</div>
                     </div>
                     {items.map(row => {
+                      const rowKey = `${prefix}:${row.name}`
+                      const isExpanded = expandedWeaknessRows.has(rowKey)
                       const barPct = Math.min(row.pct, 100)
-                      const avgMarker = Math.min(NATIONAL_AVG, 100)
-                      const diff = row.pct - NATIONAL_AVG
+                      const avgMarker = Math.min(row.nationalAvg, 100)
+                      const diff = row.pct - row.nationalAvg
+                      const topicEntries = Object.entries(subtopicMap[row.name] || {})
+                        .map(([t, s]) => ({ name: t, pct: s.total > 0 ? Math.round((s.correct/s.total)*100) : 0, correct: s.correct, total: s.total }))
+                        .sort((a,b) => a.pct - b.pct)
                       return (
                         <div key={row.name} style={{background:bg,borderRadius:8,padding:'12px 16px',marginBottom:6,border:`1px solid ${color}22`}}>
                           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
                             <div style={{fontSize:14,fontWeight:600,color:'#0d2340'}}>{row.name}</div>
-                            <div style={{display:'flex',alignItems:'center',gap:12,flexShrink:0}}>
+                            <div style={{display:'flex',alignItems:'center',gap:10,flexShrink:0}}>
                               <span style={{fontSize:11,color:'#8a7d6a'}}>{row.correct}/{row.total} correct</span>
                               <span style={{fontSize:11,fontWeight:600,color:'#c0574a'}}>{row.missed} missed</span>
                               <span style={{fontFamily:'Georgia,serif',fontSize:18,fontWeight:700,color}}>{row.pct}%</span>
                               <span style={{fontSize:11,color,fontWeight:600}}>{diff >= 0 ? '+' : ''}{diff}% vs avg</span>
+                              {topicEntries.length > 0 && (
+                                <button onClick={() => toggleRow(rowKey)}
+                                  style={{width:26,height:26,borderRadius:6,border:`1.5px solid ${color}`,background:'white',color,fontSize:18,fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',lineHeight:1,flexShrink:0,padding:0}}>
+                                  {isExpanded ? '−' : '+'}
+                                </button>
+                              )}
                             </div>
                           </div>
                           <div style={{position:'relative',height:10,background:'#e8e2d8',borderRadius:5,overflow:'visible'}}>
@@ -1275,8 +1336,26 @@ export default function ExamCenter() {
                             <div style={{position:'absolute',top:-4,left:`${avgMarker}%`,width:2,height:18,background:'#0d2340',borderRadius:1,transform:'translateX(-50%)'}}/>
                           </div>
                           <div style={{display:'flex',justifyContent:'flex-end',marginTop:3}}>
-                            <span style={{fontSize:10,color:'#a89870'}}>▲ national avg ({NATIONAL_AVG}%)</span>
+                            <span style={{fontSize:10,color:'#a89870'}}>▲ national avg ({row.nationalAvg}%)</span>
                           </div>
+                          {isExpanded && topicEntries.length > 0 && (
+                            <div style={{marginTop:10,borderTop:`1px solid ${color}33`,paddingTop:10}}>
+                              <div style={{fontSize:10,fontWeight:700,color:'#8a7d6a',textTransform:'uppercase',letterSpacing:'0.07em',marginBottom:8}}>Topics</div>
+                              {topicEntries.map(t => {
+                                const tColor = t.pct < 60 ? '#c0574a' : t.pct < 75 ? '#c9a84c' : '#6b7c3a'
+                                return (
+                                  <div key={t.name} style={{display:'flex',alignItems:'center',gap:10,marginBottom:5,padding:'6px 10px',background:'rgba(255,255,255,0.7)',borderRadius:6}}>
+                                    <div style={{flex:1,fontSize:12,color:'#1a1008',fontWeight:500}}>{t.name}</div>
+                                    <div style={{width:80,height:6,background:'#e8e2d8',borderRadius:3,flexShrink:0}}>
+                                      <div style={{height:'100%',width:`${Math.min(t.pct,100)}%`,background:tColor,borderRadius:3}}/>
+                                    </div>
+                                    <div style={{fontSize:12,fontWeight:700,color:tColor,width:36,textAlign:'right',flexShrink:0}}>{t.pct}%</div>
+                                    <div style={{fontSize:11,color:'#8a7d6a',width:52,textAlign:'right',flexShrink:0}}>{t.correct}/{t.total}</div>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          )}
                         </div>
                       )
                     })}
@@ -1286,8 +1365,9 @@ export default function ExamCenter() {
 
               return (
                 <div style={{background:'white',border:'1px solid #ccc8be',borderRadius:10,overflow:'hidden',marginBottom:20}}>
-                  <div style={{background:'#d6eeec',padding:'10px 18px'}}>
+                  <div style={{background:'#d6eeec',padding:'10px 18px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
                     <div style={{fontSize:13,fontWeight:700,color:'#0d2340'}}>{title}</div>
+                    <div style={{fontSize:10,color:'#5a7a78'}}>Click + to expand topics</div>
                   </div>
                   <div style={{padding:'16px 18px'}}>
                     <RowGroup label="Priority Focus — Below National Average" color={urgencyColor('red')} bg={urgencyBg('red')} items={redRows}/>
@@ -1298,8 +1378,8 @@ export default function ExamCenter() {
               )
             }
 
-            const topWeakSystems = systemRows.filter(r => urgency(r.pct) === 'red').slice(0,3)
-            const topWeakDisciplines = disciplineRows.filter(r => urgency(r.pct) === 'red').slice(0,3)
+            const topWeakSystems = systemRows.filter(r => urgency(r.pct, r.nationalAvg) === 'red').slice(0,3)
+            const topWeakDisciplines = disciplineRows.filter(r => urgency(r.pct, r.nationalAvg) === 'red').slice(0,3)
 
             return (
               <div style={{paddingTop:20}}>
@@ -1339,8 +1419,8 @@ export default function ExamCenter() {
                   </div>
                 )}
 
-                <WeaknessSection title="Organ Systems — Weakest to Strongest" rows={systemRows}/>
-                <WeaknessSection title="Subjects / Disciplines — Weakest to Strongest" rows={disciplineRows}/>
+                <WeaknessSection title="Organ Systems — Weakest to Strongest" rows={systemRows} subtopicMap={systemTopics} prefix="sys"/>
+                <WeaknessSection title="Subjects / Disciplines — Weakest to Strongest" rows={disciplineRows} subtopicMap={disciplineTopics} prefix="disc"/>
 
                 <div style={{display:'flex',gap:12,maxWidth:500,marginTop:8}}>
                   <button onClick={() => { revokePdfBlob(); setView('list'); setActiveSession(null); setActiveSheet(null); setResults(null) }}
