@@ -149,22 +149,17 @@ export default function StudySchedule() {
           <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>Your personalized daily study plan · Assigned by your mentor · Check off tasks as you complete them</div>
         </div>
 
-        {schedule.length === 0 ? (
-          <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, padding: '60px', textAlign: 'center'}}>
-            <div style={{width: 64, height: 64, background: '#f7f4ee', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px'}}>
-              <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M4 6h20M4 12h20M4 18h12" stroke="#c9a84c" strokeWidth="1.5" strokeLinecap="round"/></svg>
-            </div>
-            <div style={{fontSize: 18, fontWeight: 500, color: '#0d2340', marginBottom: 10}}>No study schedule yet</div>
-            <div style={{fontSize: 14, color: '#8a7d6a', maxWidth: 400, margin: '0 auto', lineHeight: 1.7}}>
-              Your mentor will build your personalized daily study plan before May 4th. Each day you'll see exactly what to study, how many questions to do, and what topics to focus on.
-            </div>
-          </div>
-        ) : (
+        {(
           <div style={{display: 'grid', gridTemplateColumns: '280px 1fr', gap: 20}}>
             <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, overflow: 'hidden', height: 'fit-content'}}>
               <div style={{background: '#0d2340', padding: '12px 16px'}}>
                 <div style={{fontSize: 13, fontWeight: 600, color: 'white'}}>Select a day</div>
               </div>
+              {schedule.length === 0 && (
+                <div style={{padding: '16px', fontSize: 12, color: '#a89870', textAlign: 'center', lineHeight: 1.6}}>
+                  No days assigned yet.<br/>Add your own tasks on the right.
+                </div>
+              )}
               {schedule.map((entry) => {
                 const tasks = entry.tasks || []
                 const completed = tasks.filter((t: any) => t.completed).length
