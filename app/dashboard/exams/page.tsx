@@ -27,10 +27,10 @@ const calcStep1Score = (examName: string, wrongCount: number): number | null => 
 }
 
 const BLOCK_PAGES = [
-  { start: 1,   end: 53  },
-  { start: 54,  end: 103 },
-  { start: 104, end: 153 },
-  { start: 154, end: 203 },
+  { start: 1,   end: 50  },
+  { start: 51,  end: 100 },
+  { start: 101, end: 150 },
+  { start: 151, end: 200 },
 ]
 
 const LAB_VALUES = [
@@ -876,7 +876,7 @@ export default function ExamCenter() {
                   ← Prev
                 </button>
                 <span style={{fontSize:13,color:'rgba(255,255,255,0.7)',minWidth:90,textAlign:'center'}}>
-                  Page {pdfPage} of {blockRange.end}
+                  Page {pdfPage - blockRange.start + 1} of 50
                 </span>
                 <button onClick={() => setPdfPage(p => Math.min(blockRange.end, p+1))} disabled={pdfPage>=blockRange.end}
                   style={{padding:'5px 14px',background:pdfPage>=blockRange.end?'rgba(255,255,255,0.08)':'#c9a84c',border:'none',borderRadius:6,color:pdfPage>=blockRange.end?'rgba(255,255,255,0.25)':'#0d2340',fontSize:13,fontWeight:700,cursor:pdfPage>=blockRange.end?'not-allowed':'pointer',fontFamily:'Sora,sans-serif'}}>
