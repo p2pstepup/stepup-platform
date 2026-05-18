@@ -159,7 +159,11 @@ const DISCIPLINE_NATIONAL_AVG: Record<string, number> = {
 }
 
 function NBMEBreakdownTable({ title, data, avgLookup }: { title: string, data: Record<string, {correct:number,total:number}>, avgLookup?: Record<string, number> }) {
-  const rows = Object.entries(data)
+  const rows = Object.entries(data).sort(([,a],[,b]) => {
+    const pctA = a.total > 0 ? a.correct / a.total : 0
+    const pctB = b.total > 0 ? b.correct / b.total : 0
+    return pctB - pctA
+  })
   if (rows.length === 0) return null
   return (
     <div style={{border:'1px solid #ccc8be',borderRadius:8,overflow:'hidden',marginBottom:14}}>
