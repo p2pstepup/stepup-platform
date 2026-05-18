@@ -1220,6 +1220,31 @@ export default function ExamCenter() {
                       <div style={{display:'flex',gap:6,alignItems:'center'}}><div style={{width:14,height:14,background:'#2a8f8a',borderRadius:3}}/> Score comparison vs. national average</div>
                     </div>
                   </div>
+                  {hasBreakdown && (
+                    <div style={{background:'#f5f2eb',border:'1px solid #e0dbd0',borderRadius:8,padding:'12px 16px',marginBottom:18,display:'flex',gap:20,flexWrap:'wrap'}}>
+                      <div style={{flex:1,minWidth:180}}>
+                        <div style={{fontSize:11,fontWeight:700,color:'#0d2340',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.06em'}}>How to read this report</div>
+                        <div style={{fontSize:12,color:'#5a4e3a',lineHeight:1.6}}>
+                          Each row shows your score in that content area compared to the <strong>national average</strong> for Step 1 examinees in that category.
+                        </div>
+                      </div>
+                      <div style={{display:'flex',gap:16,flexWrap:'wrap',alignItems:'flex-start'}}>
+                        {[
+                          {col:'Lower', desc:'More than 5% below the national average — priority study area'},
+                          {col:'Same',  desc:'Within 5% of the national average'},
+                          {col:'Higher',desc:'More than 5% above the national average — strength'},
+                        ].map(({col, desc}) => (
+                          <div key={col} style={{display:'flex',alignItems:'flex-start',gap:8,minWidth:140}}>
+                            <div style={{width:16,height:16,background:'#2a8f8a',borderRadius:3,flexShrink:0,marginTop:1}}/>
+                            <div>
+                              <div style={{fontSize:12,fontWeight:700,color:'#0d2340'}}>{col}</div>
+                              <div style={{fontSize:11,color:'#7a6d5a',lineHeight:1.4}}>{desc}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   {hasSystem && <NBMEBreakdownTable title="Performance by Organ System" data={results.systemBreakdown} avgLookup={SYSTEM_NATIONAL_AVG}/>}
                   {hasDiscipline && <NBMEBreakdownTable title="Performance by Subject / Discipline" data={results.disciplineBreakdown} avgLookup={DISCIPLINE_NATIONAL_AVG}/>}
                   {hasTopic && <NBMEBreakdownTable title="Performance by Topic" data={results.topicBreakdown}/>}
