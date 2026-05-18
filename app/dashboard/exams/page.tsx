@@ -1023,14 +1023,19 @@ export default function ExamCenter() {
           <div style={{width:264,flexShrink:0,background:'white',borderLeft:'0.5px solid #e8dfc8',display:'flex',flexDirection:'column'}}>
             <div style={{padding:'10px 14px',borderBottom:'0.5px solid #f0ece0',flexShrink:0}}>
               <div style={{fontSize:12,fontWeight:600,color:'#0d2340'}}>Section {currentSection} — Answer Sheet</div>
-              <div style={{fontSize:11,color:'#8a7d6a',marginTop:1}}>Q{sectionStart}–Q{sectionEnd} · {answeredCount} answered</div>
+              <div style={{fontSize:11,color:'#8a7d6a',marginTop:1}}>Q1–Q50 · {answeredCount} answered</div>
             </div>
             <div style={{flex:1,overflowY:'auto'}}>
               {Array.from({length:50},(_,i) => {
                 const qNum = sectionStart + i
+                const displayNum = i + 1
                 const sel = curSecAnswers[qNum]
                 const entry = answerKey[String(qNum)]
-                const numOpts = Math.max(7, entry?.options ?? 0, entry?.answer ? entry.answer.charCodeAt(0) - 64 : 0)
+                const numOpts = Math.max(
+                  entry?.options && entry.options > 0 ? entry.options : 0,
+                  entry?.answer ? entry.answer.charCodeAt(0) - 64 : 4,
+                  4
+                )
                 const opts = Array.from({length:numOpts},(_,j) => String.fromCharCode(65+j))
                 const row1 = opts.slice(0,7)
                 const row2 = opts.slice(7)
@@ -1042,7 +1047,7 @@ export default function ExamCenter() {
                 return (
                   <div key={qNum} style={{padding:'4px 10px',borderBottom:'0.5px solid #faf8f4'}}>
                     <div style={{display:'flex',alignItems:'center',gap:3}}>
-                      <div style={{width:26,fontSize:11,color:'#a89870',fontWeight:500,flexShrink:0,textAlign:'right',paddingRight:4}}>{qNum}</div>
+                      <div style={{width:26,fontSize:11,color:'#a89870',fontWeight:500,flexShrink:0,textAlign:'right',paddingRight:4}}>{displayNum}</div>
                       {row1.map(opt => <button key={opt} onClick={() => saveSectionAnswer(qNum, opt)} style={btnStyle(opt)}>{opt}</button>)}
                     </div>
                     {row2.length > 0 && (
