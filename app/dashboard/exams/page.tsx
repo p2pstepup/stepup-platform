@@ -143,6 +143,53 @@ function BreakdownTable({ title, data }: { title: string, data: Record<string, {
   )
 }
 
+function NBMEBreakdownTable({ title, data, overallPct }: { title: string, data: Record<string, {correct:number,total:number}>, overallPct: number }) {
+  const rows = Object.entries(data)
+  if (rows.length === 0) return null
+  return (
+    <div style={{border:'1px solid #ccc8be',borderRadius:8,overflow:'hidden',marginBottom:14}}>
+      <div style={{background:'#d6eeec',padding:'8px 16px'}}>
+        <div style={{fontSize:12,fontWeight:700,color:'#0d2340',letterSpacing:'0.03em'}}>{title}</div>
+      </div>
+      <table style={{width:'100%',borderCollapse:'collapse',background:'white'}}>
+        <thead>
+          <tr style={{borderBottom:'1px solid #e0dbd0',background:'#fafaf8'}}>
+            <th style={{padding:'6px 16px',textAlign:'left',fontSize:11,color:'#6b6050',fontWeight:400,width:'42%'}}></th>
+            <th style={{padding:'6px 10px',textAlign:'center',fontSize:11,color:'#6b6050',fontWeight:500,width:'13%'}}>Your Score</th>
+            <th style={{padding:'6px 10px',textAlign:'center',fontSize:10,color:'#6b6050',fontWeight:500,borderLeft:'1px solid #e8e4dc',width:'10%'}}>Lower</th>
+            <th style={{padding:'6px 10px',textAlign:'center',fontSize:10,color:'#6b6050',fontWeight:500,width:'10%'}}>Same</th>
+            <th style={{padding:'6px 10px',textAlign:'center',fontSize:10,color:'#6b6050',fontWeight:500,width:'10%'}}>Higher</th>
+            <th style={{padding:'6px 10px',textAlign:'right',fontSize:10,color:'#6b6050',fontWeight:400,borderLeft:'1px solid #e8e4dc',width:'15%'}}>Questions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map(([name, s]) => {
+            const pct = s.total > 0 ? Math.round((s.correct / s.total) * 100) : 0
+            const diff = pct - overallPct
+            const col = diff > 7 ? 'higher' : diff < -7 ? 'lower' : 'same'
+            return (
+              <tr key={name} style={{borderBottom:'0.5px solid #f0ece0'}}>
+                <td style={{padding:'9px 16px',fontSize:13,color:'#1a1008'}}>{name}</td>
+                <td style={{padding:'9px 10px',textAlign:'center',fontSize:13,fontWeight:700,color:scoreColor(pct)}}>{pct}%</td>
+                <td style={{padding:'9px 10px',textAlign:'center',borderLeft:'1px solid #f0ece0'}}>
+                  {col === 'lower' && <div style={{width:18,height:18,background:'#2a8f8a',borderRadius:3,margin:'0 auto'}}/>}
+                </td>
+                <td style={{padding:'9px 10px',textAlign:'center'}}>
+                  {col === 'same' && <div style={{width:18,height:18,background:'#2a8f8a',borderRadius:3,margin:'0 auto'}}/>}
+                </td>
+                <td style={{padding:'9px 10px',textAlign:'center'}}>
+                  {col === 'higher' && <div style={{width:18,height:18,background:'#2a8f8a',borderRadius:3,margin:'0 auto'}}/>}
+                </td>
+                <td style={{padding:'9px 10px',textAlign:'right',fontSize:12,color:'#8a7d6a',borderLeft:'1px solid #f0ece0'}}>{s.correct}/{s.total}</td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
 export default function ExamCenter() {
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
@@ -1012,6 +1059,12 @@ export default function ExamCenter() {
     const hasSystem = Object.keys(results.systemBreakdown || {}).length > 0
     const hasTopic = Object.keys(results.topicBreakdown || {}).length > 0
     const hasDiscipline = Object.keys(results.disciplineBreakdown || {}).length > 0
+    const hasBreakdown = hasSystem || hasDiscipline || hasTopic
+
+    const passProb = results.predictedStep1
+      ? results.predictedStep1 >= 245 ? 99 : results.predictedStep1 >= 235 ? 95 : results.predictedStep1 >= 225 ? 85
+        : results.predictedStep1 >= 215 ? 70 : results.predictedStep1 >= 205 ? 55 : results.predictedStep1 >= 196 ? 40 : 20
+      : null
 
     return (
       <main style={{minHeight:'100vh',display:'flex',background:'#f7f4ee',fontFamily:'Sora,sans-serif',fontSize:'17.6px'}}>
@@ -1056,88 +1109,91 @@ export default function ExamCenter() {
         </nav>
 
         {/* Content */}
-        <div style={{flex:1,minWidth:0,overflowY:'auto',padding:'32px 36px'}}>
-          <div style={{marginBottom:24}}>
-            <div style={{fontFamily:'Georgia,serif',fontSize:30,color:'#0d2340',letterSpacing:-0.5}}>Score Report</div>
-            <div style={{fontSize:14,color:'#8a7d6a',marginTop:5}}>{results.examName} · {new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}</div>
+        <div style={{flex:1,minWidth:0,overflowY:'auto',padding:'32px 40px'}}>
+
+          {/* NBME-style report header */}
+          <div style={{background:'#0d2340',borderRadius:'10px 10px 0 0',padding:'14px 24px',display:'flex',justifyContent:'space-between',alignItems:'flex-end'}}>
+            <div>
+              <div style={{fontSize:9,letterSpacing:'0.15em',color:'rgba(201,168,76,0.65)',textTransform:'uppercase',marginBottom:3}}>StepUp P2P Mentoring Program</div>
+              <div style={{fontFamily:'Georgia,serif',fontSize:17,color:'white',fontWeight:700,letterSpacing:0.2}}>Comprehensive Basic Science Self-Assessment</div>
+              <div style={{fontSize:11,color:'rgba(255,255,255,0.45)',marginTop:2}}>Examinee Performance Report</div>
+            </div>
+            <div style={{fontSize:11,color:'rgba(201,168,76,0.55)',textAlign:'right'}}>Windsor School of Medicine</div>
+          </div>
+
+          {/* Name + date bar */}
+          <div style={{background:'white',border:'1px solid #ccc8be',borderTop:'none',padding:'9px 24px',display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:22,borderRadius:'0 0 6px 6px'}}>
+            <div style={{fontSize:13,color:'#1a1008'}}>Name: <strong>{profile?.full_name || user?.email?.split('@')[0]}</strong></div>
+            <div style={{fontSize:13,color:'#1a1008',display:'flex',gap:16}}>
+              <span>Exam: <strong>{results.examName}</strong></span>
+              <span>Test Date: <strong>{new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}</strong></span>
+            </div>
           </div>
 
           {/* Answer key warning */}
           {(!results.questionDetails || results.questionDetails.length === 0) && (
             <div style={{background:'#fff3cd',border:'1px solid #ffc107',borderRadius:10,padding:'12px 18px',marginBottom:16,fontSize:13,color:'#856404'}}>
-              ⚠ Answer key could not be loaded — breakdown and question details are unavailable. Check the browser console (F12 → Console) for details, or contact your admin to verify the answer key file.
+              ⚠ Answer key could not be loaded — breakdown and question details are unavailable. Contact your admin to verify the answer key file.
             </div>
           )}
 
-          {/* Header card */}
-          <div style={{background:'#0d2340',borderRadius:14,padding:'24px 28px',marginBottom:20,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-            <div>
-              <div style={{fontFamily:'Georgia,serif',fontSize:22,color:'white',marginBottom:6}}>{results.examName}</div>
-              <div style={{fontSize:13,color:'rgba(255,255,255,0.45)'}}>
-                {results.timeUp ? '⏰ Time expired · ' : ''}
-                {formatDuration(results.actualMinutes)} · {results.withinLimit ? '✓ Within time limit' : '⚠ Over time limit'}
-              </div>
-            </div>
+          {/* Main score section */}
+          <div style={{background:'white',border:'1px solid #ccc8be',borderRadius:8,padding:'32px 28px',marginBottom:16,textAlign:'center'}}>
+            <div style={{fontSize:13,color:'#6b6050',letterSpacing:'0.04em',marginBottom:6}}>Total Percent Correct</div>
+            <div style={{fontFamily:'Georgia,serif',fontSize:80,fontWeight:700,color:scoreColor(results.percentCorrect),lineHeight:1}}>{results.percentCorrect}%</div>
+            <div style={{fontSize:13,color:'#8a7d6a',marginTop:8}}>Raw score: {results.correct} correct out of {results.totalQ} questions</div>
             {results.predictedStep1 && (
-              <div style={{textAlign:'right'}}>
-                <div style={{fontSize:10,color:'rgba(255,255,255,0.4)',textTransform:'uppercase',letterSpacing:'0.07em',marginBottom:4}}>Predicted Step 1</div>
-                <div style={{fontFamily:'Georgia,serif',fontSize:48,color:step1Color,fontWeight:700,lineHeight:1}}>{results.predictedStep1}</div>
-                <div style={{fontSize:12,color:'rgba(255,255,255,0.35)',marginTop:4}}>
-                  {results.predictedStep1>=240?'Excellent':results.predictedStep1>=220?'Good':results.predictedStep1>=196?'Passing':'Below passing'}
-                </div>
+              <div style={{marginTop:20,paddingTop:20,borderTop:'1px solid #f0ece0',fontSize:14,color:'#1a1008',lineHeight:1.7}}>
+                Based on your performance, your predicted Step 1 score is{' '}
+                <strong style={{fontFamily:'Georgia,serif',fontSize:18,color:step1Color}}>{results.predictedStep1}</strong>
+                {passProb && (
+                  <span style={{color:'#6b6050'}}>
+                    {' '}· estimated probability of passing Step 1:{' '}
+                    <strong style={{color:step1Color}}>{passProb}%</strong>
+                  </span>
+                )}
               </div>
             )}
           </div>
 
-          {/* Score cards */}
-          <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12,marginBottom:20}}>
+          {/* Summary stats row */}
+          <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:10,marginBottom:28}}>
             {[
-              {label:'Raw Score', value:`${results.correct}/${results.totalQ}`, sub:null, color:'#0d2340'},
-              {label:'Percent Correct', value:`${results.percentCorrect}%`, sub:null, color:scoreColor(results.percentCorrect)},
-              {label:'Correct', value:String(results.correct), sub:'questions', color:'#6b7c3a'},
-              {label:'Incorrect', value:String(results.wrongCount), sub:'questions', color:'#c0574a'},
+              {label:'Correct', value:String(results.correct), color:'#6b7c3a'},
+              {label:'Incorrect', value:String(results.wrongCount), color:'#c0574a'},
+              {label:'Time', value:formatDuration(results.actualMinutes), color:'#0d2340'},
+              {label:'Status', value:results.timeUp ? 'Time expired' : results.withinLimit ? 'Within limit' : 'Over limit',
+               color: results.timeUp ? '#c07040' : results.withinLimit ? '#6b7c3a' : '#c07040'},
             ].map(c => (
-              <div key={c.label} style={{background:'white',border:'0.5px solid #e8dfc8',borderRadius:12,padding:'18px',textAlign:'center'}}>
-                <div style={{fontSize:10,textTransform:'uppercase',letterSpacing:'0.07em',color:'#a89870',marginBottom:8}}>{c.label}</div>
-                <div style={{fontFamily:'Georgia,serif',fontSize:32,color:c.color,fontWeight:700}}>{c.value}</div>
-                {c.sub && <div style={{fontSize:11,color:'#8a7d6a',marginTop:3}}>{c.sub}</div>}
+              <div key={c.label} style={{background:'white',border:'1px solid #ccc8be',borderRadius:8,padding:'14px',textAlign:'center'}}>
+                <div style={{fontSize:10,textTransform:'uppercase',letterSpacing:'0.07em',color:'#8a7d6a',marginBottom:6}}>{c.label}</div>
+                <div style={{fontFamily:'Georgia,serif',fontSize:22,fontWeight:700,color:c.color}}>{c.value}</div>
               </div>
             ))}
           </div>
 
-          {/* Tab bar */}
-          <div style={{display:'flex',gap:0,marginBottom:20,borderBottom:'2px solid #e8dfc8'}}>
-            {([
-              {key:'system', label:'By System', has: hasSystem},
-              {key:'subject', label:'By Subject', has: hasDiscipline},
-              {key:'topic', label:'By Topic', has: hasTopic},
-              {key:'questions', label:'Questions', has: true},
-            ] as const).map(t => (
-              <button key={t.key} onClick={() => setResultsTab(t.key)}
-                style={{padding:'10px 22px',border:'none',borderBottom: resultsTab===t.key ? '2px solid #c9a84c' : '2px solid transparent',marginBottom:-2,
-                  background:'transparent',fontSize:13,fontWeight:resultsTab===t.key?700:500,
-                  color:resultsTab===t.key?'#0d2340':'#a89870',cursor:'pointer',fontFamily:'Sora,sans-serif',
-                  opacity: t.has ? 1 : 0.45}}>
-                {t.label}
-              </button>
-            ))}
-          </div>
+          {/* Relative Strengths & Weaknesses */}
+          {hasBreakdown && (
+            <>
+              <div style={{marginBottom:14}}>
+                <div style={{fontFamily:'Georgia,serif',fontSize:20,color:'#0d2340',marginBottom:8}}>Your Relative Strengths and Weaknesses</div>
+                <div style={{fontSize:13,color:'#6b6050',lineHeight:1.65,maxWidth:780}}>
+                  The boxes below indicate areas of relative strength or weakness compared to your overall score of <strong>{results.percentCorrect}%</strong>. A box in the "Higher" column means you performed better in that content area than your overall average; "Lower" means below your overall average. Use this to identify areas of strength and weakness to guide future study.
+                </div>
+                <div style={{display:'flex',gap:18,alignItems:'center',fontSize:12,color:'#6b6050',marginTop:10}}>
+                  <div style={{display:'flex',gap:6,alignItems:'center'}}><div style={{width:14,height:14,background:'#2a8f8a',borderRadius:3}}/> Score comparison indicator</div>
+                </div>
+              </div>
+              {hasSystem && <NBMEBreakdownTable title="Performance by Organ System" data={results.systemBreakdown} overallPct={results.percentCorrect}/>}
+              {hasDiscipline && <NBMEBreakdownTable title="Performance by Subject / Discipline" data={results.disciplineBreakdown} overallPct={results.percentCorrect}/>}
+              {hasTopic && <NBMEBreakdownTable title="Performance by Topic" data={results.topicBreakdown} overallPct={results.percentCorrect}/>}
+            </>
+          )}
 
-          {/* Tab content */}
-          {resultsTab === 'system' && (hasSystem
-            ? <BreakdownTable title="Performance by Organ System" data={results.systemBreakdown}/>
-            : <div style={{padding:'32px',textAlign:'center',color:'#a89870',fontSize:14}}>No system breakdown available</div>
-          )}
-          {resultsTab === 'subject' && (hasDiscipline
-            ? <BreakdownTable title="Performance by Subject" data={results.disciplineBreakdown}/>
-            : <div style={{padding:'32px',textAlign:'center',color:'#a89870',fontSize:14}}>No subject breakdown available</div>
-          )}
-          {resultsTab === 'topic' && (hasTopic
-            ? <BreakdownTable title="Performance by Topic" data={results.topicBreakdown}/>
-            : <div style={{padding:'32px',textAlign:'center',color:'#a89870',fontSize:14}}>No topic breakdown available</div>
-          )}
-          {resultsTab === 'questions' && (
-            <div style={{background:'white',border:'0.5px solid #e8dfc8',borderRadius:12,overflow:'hidden',marginBottom:24}}>
+          {/* Question Review */}
+          <div style={{marginTop:28,marginBottom:24}}>
+            <div style={{fontFamily:'Georgia,serif',fontSize:20,color:'#0d2340',marginBottom:14}}>Question Review</div>
+            <div style={{background:'white',border:'0.5px solid #e8dfc8',borderRadius:12,overflow:'hidden'}}>
               <div style={{background:'#0d2340',padding:'12px 18px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
                 <div style={{fontSize:14,fontWeight:600,color:'white'}}>Question Review</div>
                 <div style={{display:'flex',gap:6}}>
@@ -1183,7 +1239,7 @@ export default function ExamCenter() {
                 </div>
               )}
             </div>
-          )}
+          </div>
 
           {/* Actions */}
           <div style={{display:'flex',gap:12,maxWidth:500}}>
