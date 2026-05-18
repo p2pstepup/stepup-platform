@@ -202,6 +202,19 @@ export default function ExamCenter() {
     return () => window.removeEventListener('resize', check)
   }, [])
 
+  // When browser restores this page from bfcache (back button), reset to list view
+  // so the Resume banner appears instead of a stale exam state
+  useEffect(() => {
+    const handlePageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) {
+        clearInterval(timerRef.current)
+        setView('list')
+      }
+    }
+    window.addEventListener('pageshow', handlePageShow)
+    return () => window.removeEventListener('pageshow', handlePageShow)
+  }, [])
+
   useEffect(() => {
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser()
@@ -320,10 +333,23 @@ export default function ExamCenter() {
     }).select().single()
     if (sErr) { setLaunching(false); setLaunchingExamId(null); alert('Failed to start exam session.'); return }
 
+    // Save resume state — requires SQL migration; fails silently if not yet run
+    supabase.from('exam_sessions').update({
+      current_section: 1, section_started_at: new Date().toISOString(),
+      sections_submitted: [], section_minutes: secMins,
+    }).eq('id', session.id).then(() => {})
+
     const { data: sheet } = await supabase.from('answer_sheets').insert({
       exam_session_id: session.id, student_id: user.id,
       exam_name: exam.name, total_questions: totalQ, answers: {}
     }).select().single()
+
+    // Add new session to pastSessions immediately so Resume banner shows if student presses back
+    setPastSessions(prev => [{
+      ...session, answer_sheets: sheet ? [sheet] : [],
+      current_section: 1, sections_submitted: [], section_minutes: secMins,
+      section_started_at: new Date().toISOString(),
+    }, ...prev])
 
     setActiveSession(session)
     setActiveSheet(sheet)
@@ -454,6 +480,14 @@ export default function ExamCenter() {
     setSectionSubmitted(newSubmitted)
     if (currentSection < 4) {
       const next = currentSection + 1
+      const submittedNums = newSubmitted.map((v, i) => v ? i + 1 : null).filter(Boolean) as number[]
+      if (activeSession) {
+        await supabase.from('exam_sessions').update({
+          current_section: next,
+          section_started_at: new Date().toISOString(),
+          sections_submitted: submittedNums,
+        }).eq('id', activeSession.id)
+      }
       setCurrentSection(next)
       setSectionTimeLeft(sectionMinutes * 60)
       setPdfPage(BLOCK_PAGES[next - 1].start)
@@ -462,6 +496,70 @@ export default function ExamCenter() {
     }
   }
   useEffect(() => { submitSectionRef.current = () => submitSection(true) })
+
+  const resumeExam = async (session: any) => {
+    setLaunching(true)
+    setLaunchingExamId(session.exam_id)
+
+    const { data: examData } = await supabase.from('exams').select('*').eq('id', session.exam_id).single()
+    if (!examData) { setLaunching(false); setLaunchingExamId(null); alert('Could not load exam. Contact your admin.'); return }
+
+    const pdf = await getSignedUrl('exam-pdfs', examData.pdf_url || '')
+    let key: Record<string, AKEntry> = {}
+    if (examData.answer_key_url) {
+      const keyUrl = await getSignedUrl('exam-keys', examData.answer_key_url)
+      if (keyUrl) {
+        try {
+          const resp = await fetch(keyUrl, { cache: 'no-store' })
+          key = parseAnswerKey(await resp.json())
+        } catch (e) { console.error('[resumeExam] answer key load failed', e) }
+      }
+    }
+
+    const sheet = session.answer_sheets?.[0]
+    const savedAnswers: Record<number, Record<number, string>> = {1:{},2:{},3:{},4:{}}
+
+    // Use answers from the already-joined init() data; fall back to a fresh fetch
+    let rawAnswers: Record<string, string> | null = sheet?.answers ?? null
+    if (!rawAnswers && sheet?.id) {
+      const { data: sheetData } = await supabase.from('answer_sheets').select('answers').eq('id', sheet.id).single()
+      rawAnswers = sheetData?.answers ?? null
+    }
+    if (rawAnswers) {
+      for (let sec = 1; sec <= 4; sec++) {
+        const start = (sec - 1) * 50 + 1
+        for (let q = start; q < start + 50; q++) {
+          const a = rawAnswers[String(q)] ?? rawAnswers[q as unknown as string]
+          if (a) savedAnswers[sec][q] = a
+        }
+      }
+    }
+
+    const currentSec = session.current_section || 1
+    const secMins = session.section_minutes || Math.round((session.time_limit_minutes || 240) / 4)
+    let timeLeft = secMins * 60
+    if (session.section_started_at) {
+      const elapsed = Math.floor((new Date().getTime() - new Date(session.section_started_at).getTime()) / 1000)
+      timeLeft = Math.max(0, timeLeft - elapsed)
+    }
+
+    const submittedNums: number[] = session.sections_submitted || []
+    const restoredSubmitted = [1,2,3,4].map(n => submittedNums.includes(n))
+
+    setActiveSession(session)
+    setActiveSheet(sheet || null)
+    setPdfUrl(pdf)
+    setAnswerKey(key)
+    setCurrentSection(currentSec)
+    setSectionAnswers(savedAnswers)
+    setSectionMinutes(secMins)
+    setSectionTimeLeft(timeLeft)
+    setSectionSubmitted(restoredSubmitted)
+    setPdfPage(BLOCK_PAGES[currentSec - 1].start)
+    setLaunching(false)
+    setLaunchingExamId(null)
+    setView('exam')
+  }
 
   const viewSessionReport = async (session: any) => {
     setSubmitting(true)
@@ -1120,6 +1218,24 @@ export default function ExamCenter() {
           <div style={{fontSize:14,color:'#8a7d6a',marginTop:5}}>Take timed exams · Get scored instantly · Track your Step 1 prediction</div>
         </div>
 
+        {/* In-progress banner */}
+        {pastSessions.some(s => s.status === 'in_progress') && (
+          <div style={{background:'#fffbeb',border:'1.5px solid #c9a84c',borderRadius:12,padding:'14px 20px',marginBottom:24,display:'flex',flexWrap:'wrap' as const,gap:12,alignItems:'center',justifyContent:'space-between'}}>
+            <div>
+              <div style={{fontSize:14,fontWeight:700,color:'#0d2340'}}>⏸ Exam paused — your progress is saved</div>
+              <div style={{fontSize:12,color:'#8a7d6a',marginTop:2}}>Your answers and section position were saved. Resume where you left off.</div>
+            </div>
+            <div style={{display:'flex',flexWrap:'wrap' as const,gap:8}}>
+              {pastSessions.filter(s => s.status === 'in_progress').map(session => (
+                <button key={session.id} onClick={() => resumeExam(session)} disabled={launching}
+                  style={{padding:'9px 20px',background: launchingExamId === session.exam_id ? '#4a5568' : '#0d2340',border:'none',borderRadius:8,fontSize:13,color:'#c9a84c',fontWeight:700,cursor:launching?'not-allowed':'pointer',whiteSpace:'nowrap' as const}}>
+                  {launchingExamId === session.exam_id ? 'Loading...' : `Resume ${session.exam_name} →`}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div style={{background:'white',border:'0.5px solid #e8dfc8',borderRadius:12,overflow:'hidden',marginBottom:24}}>
           <div style={{background:'#0d2340',padding:'14px 20px'}}>
             <div style={{fontSize:14,fontWeight:600,color:'white'}}>Available exams</div>
@@ -1133,6 +1249,7 @@ export default function ExamCenter() {
                 const bestScore = attempted.length > 0 ? Math.max(...attempted.map((s:any) => s.predicted_step1 || s.percent_correct || 0)) : null
                 const bestSession = attempted.find((s:any) => (s.predicted_step1||s.percent_correct||0) === bestScore)
                 const timeLabel = (() => { if (!exam.time_per_section_minutes) return exam.time_limit; const t = exam.time_per_section_minutes * (exam.section_count || 4) / 60; return (Number.isInteger(t) ? t : +t.toFixed(1)) + ' hrs' })()
+                const inProgress = pastSessions.find(s => s.exam_id === exam.id && s.status === 'in_progress')
                 return (
                   <div key={exam.id} style={{padding:'16px',borderBottom:i<exams.length-1?'0.5px solid #f5f0e8':'none'}}>
                     <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:10}}>
@@ -1150,10 +1267,23 @@ export default function ExamCenter() {
                       <span style={{fontSize:12,color:'#8a7d6a'}}>·</span>
                       <span style={{fontSize:12,padding:'2px 8px',borderRadius:8,background:`${diffColor(exam.difficulty)}18`,color:diffColor(exam.difficulty),fontWeight:500}}>{exam.difficulty}</span>
                     </div>
-                    <button onClick={() => startExam(exam)} disabled={launching}
-                      style={{width:'100%',height:44,background: launchingExamId === exam.id ? '#4a5568' : '#0d2340',border:'none',borderRadius:9,fontSize:15,color:'#c9a84c',fontWeight:700,cursor:launching?'not-allowed':'pointer'}}>
-                      {launchingExamId === exam.id ? 'Loading exam...' : attempted.length > 0 ? 'Retake →' : 'Start →'}
-                    </button>
+                    {inProgress ? (
+                      <div style={{display:'flex',flexDirection:'column',gap:8}}>
+                        <button onClick={() => resumeExam(inProgress)} disabled={launching}
+                          style={{width:'100%',height:44,background: launchingExamId === inProgress.exam_id ? '#4a5568' : '#c9a84c',border:'none',borderRadius:9,fontSize:15,color:'#0d2340',fontWeight:700,cursor:launching?'not-allowed':'pointer'}}>
+                          {launchingExamId === inProgress.exam_id ? 'Loading...' : 'Resume →'}
+                        </button>
+                        <button onClick={() => startExam(exam)} disabled={launching}
+                          style={{width:'100%',height:38,background:'transparent',border:'1px solid #d8cfc0',borderRadius:8,fontSize:13,color:'#8a7d6a',cursor:launching?'not-allowed':'pointer'}}>
+                          Start new
+                        </button>
+                      </div>
+                    ) : (
+                      <button onClick={() => startExam(exam)} disabled={launching}
+                        style={{width:'100%',height:44,background: launchingExamId === exam.id ? '#4a5568' : '#0d2340',border:'none',borderRadius:9,fontSize:15,color:'#c9a84c',fontWeight:700,cursor:launching?'not-allowed':'pointer'}}>
+                        {launchingExamId === exam.id ? 'Loading exam...' : attempted.length > 0 ? 'Retake →' : 'Start →'}
+                      </button>
+                    )}
                   </div>
                 )
               })}
@@ -1172,6 +1302,7 @@ export default function ExamCenter() {
                 const attempted = pastSessions.filter(s => s.exam_id === exam.id && s.status === 'submitted')
                 const bestScore = attempted.length > 0 ? Math.max(...attempted.map((s:any) => s.predicted_step1 || s.percent_correct || 0)) : null
                 const bestSession = attempted.find((s:any) => (s.predicted_step1||s.percent_correct||0) === bestScore)
+                const inProgress = pastSessions.find(s => s.exam_id === exam.id && s.status === 'in_progress')
                 return (
                   <tr key={exam.id} style={{borderBottom:i<exams.length-1?'0.5px solid #f5f0e8':'none'}}>
                     <td style={{padding:'14px 16px'}}>
@@ -1194,10 +1325,23 @@ export default function ExamCenter() {
                       ) : <span style={{fontSize:12,color:'#a89870'}}>—</span>}
                     </td>
                     <td style={{padding:'14px 16px'}}>
-                      <button onClick={() => startExam(exam)} disabled={launching}
-                        style={{padding:'8px 16px',background: launchingExamId === exam.id ? '#4a5568' : '#0d2340',border:'none',borderRadius:8,fontSize:13,color:'#c9a84c',fontWeight:600,cursor:launching?'not-allowed':'pointer'}}>
-                        {launchingExamId === exam.id ? 'Loading...' : attempted.length > 0 ? 'Retake →' : 'Start →'}
-                      </button>
+                      {inProgress ? (
+                        <div style={{display:'flex',flexDirection:'column',gap:5}}>
+                          <button onClick={() => resumeExam(inProgress)} disabled={launching}
+                            style={{padding:'7px 14px',background: launchingExamId === inProgress.exam_id ? '#4a5568' : '#c9a84c',border:'none',borderRadius:8,fontSize:13,color:'#0d2340',fontWeight:700,cursor:launching?'not-allowed':'pointer',whiteSpace:'nowrap' as const}}>
+                            {launchingExamId === inProgress.exam_id ? 'Loading...' : 'Resume →'}
+                          </button>
+                          <button onClick={() => startExam(exam)} disabled={launching}
+                            style={{padding:'4px 10px',background:'transparent',border:'1px solid #d8cfc0',borderRadius:6,fontSize:11,color:'#8a7d6a',cursor:launching?'not-allowed':'pointer',whiteSpace:'nowrap' as const}}>
+                            Start new
+                          </button>
+                        </div>
+                      ) : (
+                        <button onClick={() => startExam(exam)} disabled={launching}
+                          style={{padding:'8px 16px',background: launchingExamId === exam.id ? '#4a5568' : '#0d2340',border:'none',borderRadius:8,fontSize:13,color:'#c9a84c',fontWeight:600,cursor:launching?'not-allowed':'pointer'}}>
+                          {launchingExamId === exam.id ? 'Loading...' : attempted.length > 0 ? 'Retake →' : 'Start →'}
+                        </button>
+                      )}
                     </td>
                   </tr>
                 )
