@@ -1020,7 +1020,7 @@ export default function ExamCenter() {
           </div>
 
           {/* Answer sheet */}
-          <div style={{width:264,flexShrink:0,background:'white',borderLeft:'0.5px solid #e8dfc8',display:'flex',flexDirection:'column'}}>
+          <div style={{width:320,flexShrink:0,background:'white',borderLeft:'0.5px solid #e8dfc8',display:'flex',flexDirection:'column'}}>
             <div style={{padding:'10px 14px',borderBottom:'0.5px solid #f0ece0',flexShrink:0}}>
               <div style={{fontSize:12,fontWeight:600,color:'#0d2340'}}>Section {currentSection} — Answer Sheet</div>
               <div style={{fontSize:11,color:'#8a7d6a',marginTop:1}}>Q1–Q50 · {answeredCount} answered</div>
