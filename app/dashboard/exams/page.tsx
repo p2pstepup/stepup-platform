@@ -1221,27 +1221,44 @@ export default function ExamCenter() {
                     </div>
                   </div>
                   {hasBreakdown && (
-                    <div style={{background:'#f5f2eb',border:'1px solid #e0dbd0',borderRadius:8,padding:'12px 16px',marginBottom:18,display:'flex',gap:20,flexWrap:'wrap'}}>
-                      <div style={{flex:1,minWidth:180}}>
-                        <div style={{fontSize:11,fontWeight:700,color:'#0d2340',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.06em'}}>How to read this report</div>
-                        <div style={{fontSize:12,color:'#5a4e3a',lineHeight:1.6}}>
-                          Each row shows your score in that content area compared to the <strong>national average</strong> for Step 1 examinees in that category.
-                        </div>
-                      </div>
-                      <div style={{display:'flex',gap:16,flexWrap:'wrap',alignItems:'flex-start'}}>
-                        {[
-                          {col:'Lower', desc:'More than 5% below the national average — priority study area'},
-                          {col:'Same',  desc:'Within 5% of the national average'},
-                          {col:'Higher',desc:'More than 5% above the national average — strength'},
-                        ].map(({col, desc}) => (
-                          <div key={col} style={{display:'flex',alignItems:'flex-start',gap:8,minWidth:140}}>
-                            <div style={{width:16,height:16,background:'#2a8f8a',borderRadius:3,flexShrink:0,marginTop:1}}/>
-                            <div>
-                              <div style={{fontSize:12,fontWeight:700,color:'#0d2340'}}>{col}</div>
-                              <div style={{fontSize:11,color:'#7a6d5a',lineHeight:1.4}}>{desc}</div>
-                            </div>
+                    <div style={{background:'#f5f2eb',border:'1px solid #e0dbd0',borderRadius:8,padding:'12px 16px',marginBottom:18}}>
+                      <div style={{fontSize:11,fontWeight:700,color:'#0d2340',marginBottom:10,textTransform:'uppercase',letterSpacing:'0.06em'}}>How to read this report</div>
+                      <div style={{display:'flex',gap:24,flexWrap:'wrap'}}>
+                        {/* Score color legend */}
+                        <div style={{flex:1,minWidth:200}}>
+                          <div style={{fontSize:11,color:'#7a6d5a',marginBottom:6}}>Your score color</div>
+                          <div style={{display:'flex',gap:14,flexWrap:'wrap'}}>
+                            {[
+                              {color:'#c0574a', label:'Priority', range:'<55%'},
+                              {color:'#c07040', label:'Needs work', range:'55–64%'},
+                              {color:'#c9a84c', label:'Developing', range:'65–74%'},
+                              {color:'#6b7c3a', label:'Strong', range:'75%+'},
+                            ].map(({color, label, range}) => (
+                              <div key={label} style={{display:'flex',alignItems:'center',gap:6}}>
+                                <div style={{width:10,height:10,borderRadius:'50%',background:color,flexShrink:0}}/>
+                                <span style={{fontSize:12,color:'#3a3020',fontWeight:500}}>{label}</span>
+                                <span style={{fontSize:11,color:'#8a7d6a'}}>{range}</span>
+                              </div>
+                            ))}
                           </div>
-                        ))}
+                        </div>
+                        {/* Lower/Same/Higher legend */}
+                        <div style={{flex:1,minWidth:220}}>
+                          <div style={{fontSize:11,color:'#7a6d5a',marginBottom:6}}>Compared to national average for each category</div>
+                          <div style={{display:'flex',gap:12,flexWrap:'wrap'}}>
+                            {[
+                              {col:'Lower', desc:'5%+ below'},
+                              {col:'Same',  desc:'Within 5%'},
+                              {col:'Higher',desc:'5%+ above'},
+                            ].map(({col, desc}) => (
+                              <div key={col} style={{display:'flex',alignItems:'center',gap:6}}>
+                                <div style={{width:13,height:13,background:'#2a8f8a',borderRadius:3,flexShrink:0}}/>
+                                <span style={{fontSize:12,color:'#3a3020',fontWeight:500}}>{col}</span>
+                                <span style={{fontSize:11,color:'#8a7d6a'}}>{desc}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   )}
