@@ -1218,24 +1218,6 @@ export default function ExamCenter() {
           <div style={{fontSize:14,color:'#8a7d6a',marginTop:5}}>Take timed exams · Get scored instantly · Track your Step 1 prediction</div>
         </div>
 
-        {/* In-progress banner */}
-        {pastSessions.some(s => s.status === 'in_progress') && (
-          <div style={{background:'#fffbeb',border:'1.5px solid #c9a84c',borderRadius:12,padding:'14px 20px',marginBottom:24,display:'flex',flexWrap:'wrap' as const,gap:12,alignItems:'center',justifyContent:'space-between'}}>
-            <div>
-              <div style={{fontSize:14,fontWeight:700,color:'#0d2340'}}>⏸ Exam paused — your progress is saved</div>
-              <div style={{fontSize:12,color:'#8a7d6a',marginTop:2}}>Your answers and section position were saved. Resume where you left off.</div>
-            </div>
-            <div style={{display:'flex',flexWrap:'wrap' as const,gap:8}}>
-              {pastSessions.filter(s => s.status === 'in_progress').map(session => (
-                <button key={session.id} onClick={() => resumeExam(session)} disabled={launching}
-                  style={{padding:'9px 20px',background: launchingExamId === session.exam_id ? '#4a5568' : '#0d2340',border:'none',borderRadius:8,fontSize:13,color:'#c9a84c',fontWeight:700,cursor:launching?'not-allowed':'pointer',whiteSpace:'nowrap' as const}}>
-                  {launchingExamId === session.exam_id ? 'Loading...' : `Resume ${session.exam_name} →`}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
         <div style={{background:'white',border:'0.5px solid #e8dfc8',borderRadius:12,overflow:'hidden',marginBottom:24}}>
           <div style={{background:'#0d2340',padding:'14px 20px'}}>
             <div style={{fontSize:14,fontWeight:600,color:'white'}}>Available exams</div>
