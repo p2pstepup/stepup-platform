@@ -186,6 +186,8 @@ export default function ExamCenter() {
   const [showPasscode, setShowPasscode] = useState(false)
   const [passcodeInput, setPasscodeInput] = useState('')
   const [pendingExam, setPendingExam] = useState<any>(null)
+  const [launching, setLaunching] = useState(false)
+  const [launchingExamId, setLaunchingExamId] = useState<string|null>(null)
 
   const [isMobile, setIsMobile] = useState(false)
   const timerRef = useRef<any>(null)
@@ -284,6 +286,8 @@ export default function ExamCenter() {
 
   const launchExam = async (exam: any, timeMult = 1) => {
     setShowPasscode(false)
+    setLaunching(true)
+    setLaunchingExamId(exam.id)
 
     const pdf = await getSignedUrl('exam-pdfs', exam.pdf_url || '')
 
@@ -314,7 +318,7 @@ export default function ExamCenter() {
       started_at: new Date().toISOString(),
       time_limit_minutes: totalMinutes, total_questions: totalQ, status: 'in_progress'
     }).select().single()
-    if (sErr) { alert('Failed to start exam session.'); return }
+    if (sErr) { setLaunching(false); setLaunchingExamId(null); alert('Failed to start exam session.'); return }
 
     const { data: sheet } = await supabase.from('answer_sheets').insert({
       exam_session_id: session.id, student_id: user.id,
@@ -331,6 +335,8 @@ export default function ExamCenter() {
     setSectionTimeLeft(secMins * 60)
     setSectionSubmitted([false,false,false,false])
     setPdfPage(1)
+    setLaunching(false)
+    setLaunchingExamId(null)
     setView('exam')
   }
 
@@ -1128,9 +1134,9 @@ export default function ExamCenter() {
                       <span style={{fontSize:12,color:'#8a7d6a'}}>·</span>
                       <span style={{fontSize:12,padding:'2px 8px',borderRadius:8,background:`${diffColor(exam.difficulty)}18`,color:diffColor(exam.difficulty),fontWeight:500}}>{exam.difficulty}</span>
                     </div>
-                    <button onClick={() => startExam(exam)}
-                      style={{width:'100%',height:44,background:'#0d2340',border:'none',borderRadius:9,fontSize:15,color:'#c9a84c',fontWeight:700,cursor:'pointer'}}>
-                      {attempted.length > 0 ? 'Retake →' : 'Start →'}
+                    <button onClick={() => startExam(exam)} disabled={launching}
+                      style={{width:'100%',height:44,background: launchingExamId === exam.id ? '#4a5568' : '#0d2340',border:'none',borderRadius:9,fontSize:15,color:'#c9a84c',fontWeight:700,cursor:launching?'not-allowed':'pointer'}}>
+                      {launchingExamId === exam.id ? 'Loading exam...' : attempted.length > 0 ? 'Retake →' : 'Start →'}
                     </button>
                   </div>
                 )
@@ -1172,9 +1178,9 @@ export default function ExamCenter() {
                       ) : <span style={{fontSize:12,color:'#a89870'}}>—</span>}
                     </td>
                     <td style={{padding:'14px 16px'}}>
-                      <button onClick={() => startExam(exam)}
-                        style={{padding:'8px 16px',background:'#0d2340',border:'none',borderRadius:8,fontSize:13,color:'#c9a84c',fontWeight:600,cursor:'pointer'}}>
-                        {attempted.length > 0 ? 'Retake →' : 'Start →'}
+                      <button onClick={() => startExam(exam)} disabled={launching}
+                        style={{padding:'8px 16px',background: launchingExamId === exam.id ? '#4a5568' : '#0d2340',border:'none',borderRadius:8,fontSize:13,color:'#c9a84c',fontWeight:600,cursor:launching?'not-allowed':'pointer'}}>
+                        {launchingExamId === exam.id ? 'Loading...' : attempted.length > 0 ? 'Retake →' : 'Start →'}
                       </button>
                     </td>
                   </tr>
