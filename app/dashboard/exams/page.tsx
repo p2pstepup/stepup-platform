@@ -190,8 +190,10 @@ export default function ExamCenter() {
   const [launchingExamId, setLaunchingExamId] = useState<string|null>(null)
 
   const [isMobile, setIsMobile] = useState(false)
+  const [launchProgress, setLaunchProgress] = useState(0)
   const timerRef = useRef<any>(null)
   const submitSectionRef = useRef<() => void>(() => {})
+  const pdfBlobUrlRef = useRef<string|null>(null)
   const router = useRouter()
   const supabase = createClient()
 
@@ -261,6 +263,41 @@ export default function ExamCenter() {
     return 240
   }
 
+  const revokePdfBlob = () => {
+    if (pdfBlobUrlRef.current) { URL.revokeObjectURL(pdfBlobUrlRef.current); pdfBlobUrlRef.current = null }
+  }
+
+  const fetchPdfAsBlob = async (signedUrl: string | null, onProgress: (pct: number) => void): Promise<string | null> => {
+    if (!signedUrl) return null
+    try {
+      const resp = await fetch(signedUrl)
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
+      const total = parseInt(resp.headers.get('content-length') || '0', 10)
+      if (resp.body && total > 0) {
+        const reader = resp.body.getReader()
+        const chunks: Uint8Array[] = []
+        let loaded = 0
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+          if (value) { chunks.push(value); loaded += value.length }
+          onProgress(Math.round((loaded / total) * 100))
+        }
+        const blob = new Blob(chunks as BlobPart[], { type: 'application/pdf' })
+        const url = URL.createObjectURL(blob)
+        pdfBlobUrlRef.current = url
+        return url
+      }
+      const blob = await resp.blob()
+      const url = URL.createObjectURL(blob)
+      pdfBlobUrlRef.current = url
+      return url
+    } catch (e) {
+      console.error('[fetchPdfAsBlob] failed, using direct URL', e)
+      return signedUrl
+    }
+  }
+
   const getSignedUrl = async (bucket: string, pathOrUrl: string) => {
     if (!pathOrUrl) return null
     if (pathOrUrl.startsWith('http')) return pathOrUrl
@@ -302,7 +339,9 @@ export default function ExamCenter() {
     setLaunching(true)
     setLaunchingExamId(exam.id)
 
-    const pdf = await getSignedUrl('exam-pdfs', exam.pdf_url || '')
+    setLaunchProgress(0)
+    const signedPdf = await getSignedUrl('exam-pdfs', exam.pdf_url || '')
+    const pdf = await fetchPdfAsBlob(signedPdf, pct => setLaunchProgress(pct))
 
     let key: Record<string, AKEntry> = {}
     if (exam.answer_key_url) {
@@ -399,6 +438,7 @@ export default function ExamCenter() {
   const submitExam = async (timeUp = false) => {
     setSubmitting(true)
     clearInterval(timerRef.current)
+    revokePdfBlob()
 
     try {
       const sheetId = activeSheet?.id
@@ -504,7 +544,9 @@ export default function ExamCenter() {
     const { data: examData } = await supabase.from('exams').select('*').eq('id', session.exam_id).single()
     if (!examData) { setLaunching(false); setLaunchingExamId(null); alert('Could not load exam. Contact your admin.'); return }
 
-    const pdf = await getSignedUrl('exam-pdfs', examData.pdf_url || '')
+    setLaunchProgress(0)
+    const signedPdf = await getSignedUrl('exam-pdfs', examData.pdf_url || '')
+    const pdf = await fetchPdfAsBlob(signedPdf, pct => setLaunchProgress(pct))
     let key: Record<string, AKEntry> = {}
     if (examData.answer_key_url) {
       const keyUrl = await getSignedUrl('exam-keys', examData.answer_key_url)
@@ -1263,7 +1305,7 @@ export default function ExamCenter() {
                     ) : (
                       <button onClick={() => startExam(exam)} disabled={launching}
                         style={{width:'100%',height:44,background: launchingExamId === exam.id ? '#4a5568' : '#0d2340',border:'none',borderRadius:9,fontSize:15,color:'#c9a84c',fontWeight:700,cursor:launching?'not-allowed':'pointer'}}>
-                        {launchingExamId === exam.id ? 'Loading exam...' : attempted.length > 0 ? 'Retake →' : 'Start →'}
+                        {launchingExamId === exam.id ? (launchProgress > 0 && launchProgress < 100 ? `Downloading ${launchProgress}%…` : 'Loading…') : attempted.length > 0 ? 'Retake →' : 'Start →'}
                       </button>
                     )}
                   </div>
@@ -1321,7 +1363,7 @@ export default function ExamCenter() {
                       ) : (
                         <button onClick={() => startExam(exam)} disabled={launching}
                           style={{padding:'8px 16px',background: launchingExamId === exam.id ? '#4a5568' : '#0d2340',border:'none',borderRadius:8,fontSize:13,color:'#c9a84c',fontWeight:600,cursor:launching?'not-allowed':'pointer'}}>
-                          {launchingExamId === exam.id ? 'Loading...' : attempted.length > 0 ? 'Retake →' : 'Start →'}
+                          {launchingExamId === exam.id ? (launchProgress > 0 && launchProgress < 100 ? `Downloading ${launchProgress}%…` : 'Loading…') : attempted.length > 0 ? 'Retake →' : 'Start →'}
                         </button>
                       )}
                     </td>
