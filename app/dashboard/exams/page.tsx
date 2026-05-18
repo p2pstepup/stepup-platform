@@ -194,6 +194,7 @@ export default function ExamCenter() {
   const timerRef = useRef<any>(null)
   const submitSectionRef = useRef<() => void>(() => {})
   const pdfBlobUrlRef = useRef<string|null>(null)
+  const sectionSubmittingRef = useRef(false)
   const router = useRouter()
   const supabase = createClient()
 
@@ -210,6 +211,8 @@ export default function ExamCenter() {
     const handlePageShow = (e: PageTransitionEvent) => {
       if (e.persisted) {
         clearInterval(timerRef.current)
+        if (pdfBlobUrlRef.current) { URL.revokeObjectURL(pdfBlobUrlRef.current); pdfBlobUrlRef.current = null }
+        sectionSubmittingRef.current = false
         setView('list')
       }
     }
@@ -219,18 +222,23 @@ export default function ExamCenter() {
 
   useEffect(() => {
     const init = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push('/'); return }
-      setUser(user)
-      const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single()
-      setProfile(profileData)
-      const [{ data: examData }, { data: sessionData }] = await Promise.all([
-        supabase.from('exams').select('*').eq('is_live', true).order('sort_order'),
-        supabase.from('exam_sessions').select('*, answer_sheets(*)').eq('student_id', user.id).order('created_at', {ascending: false})
-      ])
-      setExams(examData || [])
-      setPastSessions(sessionData || [])
-      setLoading(false)
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) { router.push('/'); return }
+        setUser(user)
+        const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+        setProfile(profileData)
+        const [{ data: examData }, { data: sessionData }] = await Promise.all([
+          supabase.from('exams').select('*').eq('is_live', true).order('sort_order'),
+          supabase.from('exam_sessions').select('*, answer_sheets(*)').eq('student_id', user.id).order('created_at', {ascending: false})
+        ])
+        setExams(examData || [])
+        setPastSessions(sessionData || [])
+      } catch (e) {
+        console.error('init error:', e)
+      } finally {
+        setLoading(false)
+      }
     }
     init()
   }, [])
@@ -269,8 +277,10 @@ export default function ExamCenter() {
 
   const fetchPdfAsBlob = async (signedUrl: string | null, onProgress: (pct: number) => void): Promise<string | null> => {
     if (!signedUrl) return null
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 60000)
     try {
-      const resp = await fetch(signedUrl)
+      const resp = await fetch(signedUrl, { signal: controller.signal })
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
       const total = parseInt(resp.headers.get('content-length') || '0', 10)
       if (resp.body && total > 0) {
@@ -295,6 +305,8 @@ export default function ExamCenter() {
     } catch (e) {
       console.error('[fetchPdfAsBlob] failed, using direct URL', e)
       return signedUrl
+    } finally {
+      clearTimeout(timeout)
     }
   }
 
@@ -426,16 +438,20 @@ export default function ExamCenter() {
   }
 
   const saveSectionAnswer = async (qNum: number, answer: string) => {
+    if (!activeSheet?.id) return
     const updated = {
       ...sectionAnswers,
       [currentSection]: {...(sectionAnswers[currentSection] || {}), [qNum]: answer}
     }
     setSectionAnswers(updated)
     const allAnswers = Object.values(updated).reduce((acc, sec) => ({...acc, ...sec}), {})
-    await supabase.from('answer_sheets').update({answers: allAnswers}).eq('id', activeSheet.id)
+    try {
+      await supabase.from('answer_sheets').update({answers: allAnswers}).eq('id', activeSheet.id)
+    } catch (e) { console.error('saveSectionAnswer failed:', e) }
   }
 
   const submitExam = async (timeUp = false) => {
+    if (!activeSession) return
     setSubmitting(true)
     clearInterval(timerRef.current)
     revokePdfBlob()
@@ -514,6 +530,8 @@ export default function ExamCenter() {
   }
 
   const submitSection = async (timeUp = false) => {
+    if (sectionSubmittingRef.current || sectionSubmitted[currentSection - 1]) return
+    sectionSubmittingRef.current = true
     clearInterval(timerRef.current)
     const newSubmitted = [...sectionSubmitted]
     newSubmitted[currentSection - 1] = true
@@ -531,8 +549,10 @@ export default function ExamCenter() {
       setCurrentSection(next)
       setSectionTimeLeft(sectionMinutes * 60)
       setPdfPage(BLOCK_PAGES[next - 1].start)
+      sectionSubmittingRef.current = false
     } else {
       await submitExam(timeUp)
+      sectionSubmittingRef.current = false
     }
   }
   useEffect(() => { submitSectionRef.current = () => submitSection(true) })
@@ -1167,7 +1187,7 @@ export default function ExamCenter() {
 
           {/* Actions */}
           <div style={{display:'flex',gap:12,maxWidth:500}}>
-            <button onClick={() => { setView('list'); setActiveSession(null); setActiveSheet(null); setResults(null) }}
+            <button onClick={() => { revokePdfBlob(); setView('list'); setActiveSession(null); setActiveSheet(null); setResults(null) }}
               style={{flex:1,height:46,background:'white',border:'1px solid #e8dfc8',borderRadius:10,color:'#0d2340',fontFamily:'Sora,sans-serif',fontSize:14,fontWeight:600,cursor:'pointer'}}>
               ← Back to exams
             </button>
