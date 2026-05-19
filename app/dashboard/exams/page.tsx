@@ -181,6 +181,14 @@ const DISCIPLINE_NATIONAL_AVG: Record<string, number> = {
   'Physiology': 73, 'Anatomy': 68, 'Behavioral Science': 83, 'Genetics': 72,
   'Biostatistics': 76,
 }
+// Approximate midpoint of USMLE Step 1 content blueprint ranges
+const STEP1_CONTENT_PCT: Record<string, number> = {
+  'Neurology': 11, 'Cardiology': 11, 'Biochemistry': 19, 'Psychiatry': 12,
+  'Behavioral Science': 12, 'Hematology': 9, 'Immunology': 8, 'Reproductive': 8,
+  'Endocrinology': 8, 'Pulmonology': 8, 'Nephrology': 8, 'Gastroenterology': 8,
+  'Musculoskeletal': 8, 'Epidemiology': 8, 'Genetics': 7, 'Infectious Disease': 8,
+  'Pharmacology': 10, 'Pathology': 10, 'Microbiology': 10, 'Physiology': 10, 'Biostatistics': 8,
+}
 
 function NBMEBreakdownTable({ title, data, avgLookup }: { title: string, data: Record<string, {correct:number,total:number}>, avgLookup?: Record<string, number> }) {
   const rows = Object.entries(data).sort(([,a],[,b]) => {
@@ -255,6 +263,11 @@ export default function ExamCenter() {
   const [resultsTab, setResultsTab] = useState<'report'|'weakness'|'questions'|'progress'>('report')
   const [expandedWeaknessRows, setExpandedWeaknessRows] = useState<Set<string>>(new Set())
   const [qReviewGrouped, setQReviewGrouped] = useState(true)
+  const [focusLinks, setFocusLinks] = useState<Record<string,string>>(() => {
+    try { const s = localStorage.getItem('stepup_focus_links'); return s ? JSON.parse(s) : {} } catch { return {} }
+  })
+  const [editingLink, setEditingLink] = useState<string|null>(null)
+  const [editLinkVal, setEditLinkVal] = useState('')
   const [currentSection, setCurrentSection] = useState(1)
   const [sectionAnswers, setSectionAnswers] = useState<Record<number, Record<number, string>>>({1:{},2:{},3:{},4:{}})
   const [sectionTimeLeft, setSectionTimeLeft] = useState(0)
@@ -1230,29 +1243,94 @@ export default function ExamCenter() {
                 ))}
               </div>
 
+              {/* ── Timing Insight ── */}
+              {results.actualMinutes > 0 && (() => {
+                const totalSec = results.actualMinutes * 60
+                const secsPerQ = results.totalQ > 0 ? totalSec / results.totalQ : 0
+                const minsPerQ = Math.floor(secsPerQ / 60)
+                const secsRem = Math.round(secsPerQ % 60)
+                const blocks = Math.round(results.totalQ / 50) || 1
+                const minsPerBlock = Math.round(results.actualMinutes / blocks)
+                const blockLimit = 60
+                const overBlock = minsPerBlock > blockLimit
+                return (
+                  <div style={{background:'white',border:'1px solid #ccc8be',borderRadius:8,padding:'12px 18px',marginBottom:16,display:'flex',gap:24,flexWrap:'wrap' as const,alignItems:'center'}}>
+                    <div style={{fontSize:11,fontWeight:700,color:'#8a7d6a',textTransform:'uppercase' as const,letterSpacing:'0.07em',whiteSpace:'nowrap' as const}}>⏱ Timing</div>
+                    <div style={{display:'flex',gap:20,flexWrap:'wrap' as const}}>
+                      <div>
+                        <div style={{fontSize:10,color:'#a89870'}}>Avg per question</div>
+                        <div style={{fontSize:15,fontWeight:700,color:'#0d2340',fontFamily:'Georgia,serif'}}>{minsPerQ}:{String(secsRem).padStart(2,'0')}</div>
+                      </div>
+                      <div>
+                        <div style={{fontSize:10,color:'#a89870'}}>Approx. per block ({results.totalQ > 0 ? Math.round(results.totalQ/blocks) : 50}Q)</div>
+                        <div style={{fontSize:15,fontWeight:700,color:overBlock?'#c0574a':'#6b7c3a',fontFamily:'Georgia,serif'}}>{minsPerBlock} min</div>
+                      </div>
+                      <div style={{display:'flex',alignItems:'center',gap:6}}>
+                        <span style={{fontSize:13,color:results.withinLimit?'#6b7c3a':'#c0574a'}}>{results.withinLimit?'✓':'⚠'}</span>
+                        <span style={{fontSize:12,color:'#6b6050'}}>{results.withinLimit?'Finished within time limit':'Exceeded total time limit'}</span>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })()}
+
               {/* ── Focus Plan + Study Recommendations ── */}
               {hasBreakdown && (() => {
-                // Build topic-level miss counts
-                const topicStats: Record<string, {missed:number,total:number,system?:string,discipline?:string}> = {}
+                // Aggregate misses by system and by discipline
+                const sysStats: Record<string,{missed:number,total:number}> = {}
+                const discStats: Record<string,{missed:number,total:number}> = {}
                 for (const q of (results.questionDetails || [])) {
-                  if (!q.topic) continue
-                  if (!topicStats[q.topic]) topicStats[q.topic] = {missed:0, total:0, system:q.system, discipline:q.discipline}
-                  topicStats[q.topic].total++
-                  if (!q.correct) topicStats[q.topic].missed++
+                  if (q.system) {
+                    if (!sysStats[q.system]) sysStats[q.system] = {missed:0,total:0}
+                    sysStats[q.system].total++
+                    if (!q.correct) sysStats[q.system].missed++
+                  }
+                  if (q.discipline) {
+                    if (!discStats[q.discipline]) discStats[q.discipline] = {missed:0,total:0}
+                    discStats[q.discipline].total++
+                    if (!q.correct) discStats[q.discipline].missed++
+                  }
                 }
-                const sorted = Object.entries(topicStats).sort((a,b) =>
-                  b[1].missed !== a[1].missed ? b[1].missed - a[1].missed : (b[1].missed/b[1].total) - (a[1].missed/a[1].total)
-                )
-                const priorityTopics = sorted.filter(([,v]) => v.missed > 0).slice(0, 5)
-                const strongTopics = sorted.filter(([,v]) => v.missed === 0 && v.total >= 2).slice(0, 3)
-                if (priorityTopics.length === 0) return null
 
-                // Same-exam history for comparison
+                type FocusItem = {name:string,missed:number,total:number,pct:number,kind:'System'|'Subject',step1Pct:number}
+                const toItems = (map: Record<string,{missed:number,total:number}>, kind: 'System'|'Subject'): FocusItem[] =>
+                  Object.entries(map).map(([name,v]) => ({
+                    name, missed: v.missed, total: v.total,
+                    pct: v.total > 0 ? Math.round(((v.total-v.missed)/v.total)*100) : 0,
+                    kind,
+                    step1Pct: STEP1_CONTENT_PCT[name] ?? 0,
+                  }))
+
+                // Deduplicate by name (some names appear as both system and discipline)
+                const seen = new Set<string>()
+                const combined = [...toItems(sysStats,'System'), ...toItems(discStats,'Subject')]
+                  .filter(e => e.missed > 0)
+                  .sort((a,b) => b.missed !== a.missed ? b.missed - a.missed : a.pct - b.pct)
+                  .filter(e => { if (seen.has(e.name)) return false; seen.add(e.name); return true })
+                const priorityItems = combined.slice(0, 5)
+
+                // Keep It Up: best-performing systems with ≥3 questions
+                const strongItems = toItems(sysStats,'System')
+                  .filter(e => e.total >= 3 && e.pct >= 70)
+                  .sort((a,b) => b.pct !== a.pct ? b.pct - a.pct : b.total - a.total)
+                  .slice(0, 3)
+
+                if (priorityItems.length === 0) return null
+
+                // Same-exam history for progress delta
                 const sameExamSessions = pastSessions
-                  .filter(s => s.exam_id === results.examId && s.status === 'submitted' && s.percent_correct != null)
-                  .sort((a,b) => new Date(a.submitted_at as string).getTime() - new Date(b.submitted_at as string).getTime())
+                  .filter((s: {exam_id:string,status:string,percent_correct:number,submitted_at:string}) => s.exam_id === results.examId && s.status === 'submitted' && s.percent_correct != null)
+                  .sort((a: {submitted_at:string},b: {submitted_at:string}) => new Date(a.submitted_at).getTime() - new Date(b.submitted_at).getTime())
                 const prevSession = sameExamSessions.length >= 2 ? sameExamSessions[sameExamSessions.length - 2] : null
                 const delta = prevSession ? results.percentCorrect - prevSession.percent_correct : null
+
+                const saveFocusLink = (name: string, url: string) => {
+                  const updated = {...focusLinks, [name]: url}
+                  setFocusLinks(updated)
+                  try { localStorage.setItem('stepup_focus_links', JSON.stringify(updated)) } catch {}
+                  setEditingLink(null)
+                }
+                const isAdmin = profile?.role === 'admin' || profile?.role === 'tutor'
 
                 return (
                   <div style={{marginBottom:28}}>
@@ -1268,9 +1346,8 @@ export default function ExamCenter() {
                       </div>
                     )}
 
-                    {/* Focus Plan */}
                     <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16,marginBottom:0}}>
-                      {/* Left: priorities */}
+                      {/* Left: Focus Plan */}
                       <div style={{background:'white',border:'1px solid #e8dfc8',borderRadius:10,overflow:'hidden'}}>
                         <div style={{background:'#0d2340',padding:'10px 16px',display:'flex',alignItems:'center',gap:8}}>
                           <span style={{fontSize:16}}>🎯</span>
@@ -1278,66 +1355,97 @@ export default function ExamCenter() {
                           <div style={{fontSize:11,color:'rgba(201,168,76,0.7)',marginLeft:'auto'}}>Study these first</div>
                         </div>
                         <div style={{padding:'12px 14px',display:'flex',flexDirection:'column',gap:8}}>
-                          {priorityTopics.map(([topic, v], idx) => {
-                            const pct = Math.round(((v.total - v.missed) / v.total) * 100)
-                            const color = v.missed >= 5 ? '#c0574a' : v.missed >= 3 ? '#c07040' : '#c9a84c'
+                          {priorityItems.map((item, idx) => {
+                            const color = item.missed > 10 ? '#c0574a' : item.missed > 4 ? '#c07040' : '#c9a84c'
+                            const link = focusLinks[item.name] || '/dashboard/qbank'
+                            const isHighYield = item.step1Pct >= 10
                             return (
-                              <div key={topic} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 10px',borderRadius:7,background:idx===0?'#fdf5f4':'#fdf9f2',border:`1px solid ${color}22`}}>
+                              <div key={item.name} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 10px',borderRadius:7,background:idx===0?'#fdf5f4':'#fdf9f2',border:`1px solid ${color}22`}}>
                                 <div style={{width:22,height:22,borderRadius:'50%',background:color,color:'white',fontSize:11,fontWeight:800,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>{idx+1}</div>
                                 <div style={{flex:1,minWidth:0}}>
-                                  <div style={{fontSize:12,fontWeight:600,color:'#0d2340',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{topic}</div>
-                                  <div style={{fontSize:10,color:'#8a7d6a'}}>{v.system} · {v.missed}/{v.total} missed ({pct}% correct)</div>
+                                  <div style={{display:'flex',alignItems:'center',gap:6,flexWrap:'wrap' as const}}>
+                                    <span style={{fontSize:12,fontWeight:600,color:'#0d2340'}}>{item.name}</span>
+                                    <span style={{fontSize:9,color:'#8a7d6a',background:'#f0ece0',padding:'1px 5px',borderRadius:3}}>{item.kind}</span>
+                                    {isHighYield && (
+                                      <span style={{fontSize:9,fontWeight:700,color:'#c07040',background:'#fff3e0',padding:'1px 5px',borderRadius:3,border:'1px solid #f0c060'}}>
+                                        ⚡ ~{item.step1Pct}% of Step 1
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div style={{fontSize:10,color:'#8a7d6a'}}>{item.missed}/{item.total} missed · {item.pct}% correct</div>
                                 </div>
-                                <button onClick={() => router.push('/dashboard/qbank')}
-                                  style={{flexShrink:0,padding:'4px 10px',borderRadius:6,border:'1px solid #d8cfc0',background:'white',fontSize:11,fontWeight:600,color:'#0d2340',cursor:'pointer',whiteSpace:'nowrap'}}>
-                                  Practice →
-                                </button>
+                                {isAdmin && editingLink === item.name ? (
+                                  <div style={{display:'flex',gap:3,alignItems:'center',flexShrink:0}}>
+                                    <input value={editLinkVal} onChange={e => setEditLinkVal(e.target.value)}
+                                      style={{width:110,fontSize:10,padding:'3px 6px',borderRadius:4,border:'1px solid #c9a84c',outline:'none',fontFamily:'Sora,sans-serif'}}
+                                      placeholder="/path or URL" autoFocus
+                                      onKeyDown={e => { if(e.key==='Enter') saveFocusLink(item.name,editLinkVal); if(e.key==='Escape') setEditingLink(null) }}/>
+                                    <button onClick={() => saveFocusLink(item.name, editLinkVal)}
+                                      style={{padding:'3px 6px',borderRadius:4,border:'none',background:'#6b7c3a',color:'white',fontSize:11,cursor:'pointer',fontWeight:700}}>✓</button>
+                                    <button onClick={() => setEditingLink(null)}
+                                      style={{padding:'3px 6px',borderRadius:4,border:'none',background:'#e8e0d0',color:'#6b6050',fontSize:11,cursor:'pointer'}}>✕</button>
+                                  </div>
+                                ) : (
+                                  <div style={{display:'flex',gap:3,alignItems:'center',flexShrink:0}}>
+                                    <button onClick={() => router.push(link)}
+                                      style={{padding:'4px 10px',borderRadius:6,border:'1px solid #d8cfc0',background:'white',fontSize:11,fontWeight:600,color:'#0d2340',cursor:'pointer',whiteSpace:'nowrap' as const}}>
+                                      Practice →
+                                    </button>
+                                    {isAdmin && (
+                                      <button onClick={() => { setEditingLink(item.name); setEditLinkVal(focusLinks[item.name]||'') }}
+                                        title="Edit practice link"
+                                        style={{padding:'4px 6px',borderRadius:6,border:'1px solid #e8dfc8',background:'#f7f4ee',fontSize:11,color:'#8a7d6a',cursor:'pointer'}}>✏</button>
+                                    )}
+                                  </div>
+                                )}
                               </div>
                             )
                           })}
                         </div>
                       </div>
 
-                      {/* Right: strengths + study rec */}
+                      {/* Right: Keep It Up + Study Recommendations */}
                       <div style={{display:'flex',flexDirection:'column',gap:16}}>
-                        {/* Keep it up */}
-                        {strongTopics.length > 0 && (
-                          <div style={{background:'white',border:'1px solid #e8dfc8',borderRadius:10,overflow:'hidden',flex:strongTopics.length > 0 ? 'none' : 1}}>
-                            <div style={{background:'#3a5a2a',padding:'10px 16px',display:'flex',alignItems:'center',gap:8}}>
-                              <span style={{fontSize:16}}>✓</span>
-                              <div style={{fontSize:13,fontWeight:700,color:'white'}}>Keep It Up</div>
-                              <div style={{fontSize:11,color:'rgba(255,255,255,0.55)',marginLeft:'auto'}}>No review needed</div>
-                            </div>
-                            <div style={{padding:'12px 14px',display:'flex',flexDirection:'column',gap:6}}>
-                              {strongTopics.map(([topic, v]) => (
-                                <div key={topic} style={{display:'flex',alignItems:'center',gap:8,padding:'6px 10px',borderRadius:7,background:'#f3f8ef',border:'1px solid #c8dcc0'}}>
-                                  <span style={{fontSize:14,color:'#6b7c3a'}}>✓</span>
-                                  <div style={{flex:1,minWidth:0}}>
-                                    <div style={{fontSize:12,fontWeight:600,color:'#2a4a1a',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{topic}</div>
-                                    <div style={{fontSize:10,color:'#6b7c3a'}}>{v.total}/{v.total} correct · {v.system}</div>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
+                        {/* Keep It Up */}
+                        <div style={{background:'white',border:'1px solid #e8dfc8',borderRadius:10,overflow:'hidden'}}>
+                          <div style={{background:'#3a5a2a',padding:'10px 16px',display:'flex',alignItems:'center',gap:8}}>
+                            <span style={{fontSize:16}}>✓</span>
+                            <div style={{fontSize:13,fontWeight:700,color:'white'}}>Keep It Up</div>
+                            <div style={{fontSize:11,color:'rgba(255,255,255,0.55)',marginLeft:'auto'}}>You've got these</div>
                           </div>
-                        )}
+                          <div style={{padding:'12px 14px',display:'flex',flexDirection:'column',gap:6}}>
+                            {strongItems.length > 0 ? strongItems.map(item => (
+                              <div key={item.name} style={{display:'flex',alignItems:'center',gap:8,padding:'6px 10px',borderRadius:7,background:'#f3f8ef',border:'1px solid #c8dcc0'}}>
+                                <span style={{fontSize:14,color:'#6b7c3a'}}>✓</span>
+                                <div style={{flex:1,minWidth:0}}>
+                                  <div style={{fontSize:12,fontWeight:600,color:'#2a4a1a',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' as const}}>{item.name}</div>
+                                  <div style={{fontSize:10,color:'#6b7c3a'}}>{item.pct}% correct · {item.total - item.missed}/{item.total} right</div>
+                                </div>
+                              </div>
+                            )) : (
+                              <div style={{fontSize:12,color:'#8a7d6a',padding:'6px 10px',lineHeight:1.5}}>
+                                Keep practicing — your strengths will show here as your scores build.
+                              </div>
+                            )}
+                          </div>
+                        </div>
 
-                        {/* Study recommendations */}
+                        {/* Study Recommendations */}
                         <div style={{background:'white',border:'1px solid #e8dfc8',borderRadius:10,overflow:'hidden',flex:1}}>
                           <div style={{background:'#1a3a5a',padding:'10px 16px',display:'flex',alignItems:'center',gap:8}}>
                             <span style={{fontSize:16}}>📖</span>
                             <div style={{fontSize:13,fontWeight:700,color:'white'}}>Study Recommendations</div>
                           </div>
                           <div style={{padding:'12px 14px',display:'flex',flexDirection:'column',gap:6}}>
-                            {priorityTopics.slice(0,3).map(([topic, v]) => (
-                              <div key={topic} style={{display:'flex',alignItems:'center',gap:8,padding:'6px 10px',borderRadius:7,background:'#f5f8fc',border:'1px solid #d0dcea'}}>
+                            {priorityItems.slice(0,3).map(item => (
+                              <div key={item.name} style={{display:'flex',alignItems:'center',gap:8,padding:'6px 10px',borderRadius:7,background:'#f5f8fc',border:'1px solid #d0dcea'}}>
                                 <div style={{width:6,height:6,borderRadius:'50%',background:'#2a6cb0',flexShrink:0}}/>
-                                <div style={{flex:1,fontSize:12,color:'#1a3a5a',fontWeight:500,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{topic}</div>
-                                <span style={{fontSize:10,color:'#8a7d6a',whiteSpace:'nowrap'}}>{v.discipline}</span>
+                                <div style={{flex:1,fontSize:12,color:'#1a3a5a',fontWeight:600,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' as const}}>{item.name}</div>
+                                <span style={{fontSize:10,color:'#8a7d6a',whiteSpace:'nowrap' as const}}>{item.kind} · {item.missed} missed</span>
                               </div>
                             ))}
                             <div style={{fontSize:11,color:'#a89870',marginTop:4,lineHeight:1.5}}>
-                              Review these topics in First Aid, Sketchy, or your preferred resource, then practice Q-Bank questions.
+                              Review these areas in First Aid, Sketchy, or your preferred resource, then drill Q-Bank questions for each.
                             </div>
                           </div>
                         </div>
@@ -1368,7 +1476,7 @@ export default function ExamCenter() {
                           <div style={{fontSize:11,color:'#7a6d5a',marginBottom:6}}>Your score color</div>
                           <div style={{display:'flex',gap:14,flexWrap:'wrap'}}>
                             {[
-                              {color:'#c0574a', label:'Priority', range:'<55%'},
+                              {color:'#c0574a', label:'Focus First', range:'<55%'},
                               {color:'#c07040', label:'Needs work', range:'55–64%'},
                               {color:'#c9a84c', label:'Developing', range:'65–74%'},
                               {color:'#6b7c3a', label:'Strong', range:'75%+'},
@@ -1552,9 +1660,9 @@ export default function ExamCenter() {
                     <div style={{fontSize:10,color:'#5a7a78'}}>Click + to expand topics</div>
                   </div>
                   <div style={{padding:'16px 18px'}}>
-                    <RowGroup label="Priority Focus — Below National Average" color={urgencyColor('red')} bg={urgencyBg('red')} items={redRows}/>
-                    <RowGroup label="Near National Average" color={urgencyColor('amber')} bg={urgencyBg('amber')} items={amberRows}/>
-                    <RowGroup label="Strength — Above National Average" color={urgencyColor('green')} bg={urgencyBg('green')} items={greenRows}/>
+                    <RowGroup label="Focus Here First" color={urgencyColor('red')} bg={urgencyBg('red')} items={redRows}/>
+                    <RowGroup label="Keep Building — Almost There" color={urgencyColor('amber')} bg={urgencyBg('amber')} items={amberRows}/>
+                    <RowGroup label="You've Got This — Solid Foundation" color={urgencyColor('green')} bg={urgencyBg('green')} items={greenRows}/>
                   </div>
                 </div>
               )
@@ -1770,7 +1878,8 @@ export default function ExamCenter() {
                   ? (new Date(examSessions[n-1].submitted_at).getTime() - new Date(examSessions[0].submitted_at).getTime()) / (n - 1)
                   : 14 * 86400000
                 const msUntilReady = (stepsNeeded - (n - 1)) * msPerStep
-                const readyDate = new Date(Date.now() + Math.max(0, msUntilReady))
+                const lastSubmittedAt = new Date(examSessions[n-1].submitted_at).getTime()
+                const readyDate = new Date(lastSubmittedAt + Math.max(0, msUntilReady))
                 projectedDate = readyDate.toLocaleDateString('en-US', {month:'long',day:'numeric',year:'numeric'})
               }
             }
