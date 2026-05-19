@@ -1656,7 +1656,7 @@ export default function ExamCenter() {
                 const bestScore = attempted.length > 0 ? Math.max(...attempted.map((s:any) => s.predicted_step1 || s.percent_correct || 0)) : null
                 const bestSession = attempted.find((s:any) => (s.predicted_step1||s.percent_correct||0) === bestScore)
                 const timeLabel = (() => { if (!exam.time_per_section_minutes) return exam.time_limit; const t = exam.time_per_section_minutes * (exam.section_count || 4) / 60; return (Number.isInteger(t) ? t : +t.toFixed(1)) + ' hrs' })()
-                const inProgress = pastSessions.find(s => s.exam_id === exam.id && s.status === 'in_progress')
+                const inProgress = pastSessions.find(s => s.exam_id === exam.id && s.status === 'in_progress' && !s.submitted_at)
                 return (
                   <div key={exam.id} style={{padding:'16px',borderBottom:i<exams.length-1?'0.5px solid #f5f0e8':'none'}}>
                     <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:10}}>
@@ -1709,7 +1709,7 @@ export default function ExamCenter() {
                 const attempted = pastSessions.filter(s => s.exam_id === exam.id && s.status === 'submitted')
                 const bestScore = attempted.length > 0 ? Math.max(...attempted.map((s:any) => s.predicted_step1 || s.percent_correct || 0)) : null
                 const bestSession = attempted.find((s:any) => (s.predicted_step1||s.percent_correct||0) === bestScore)
-                const inProgress = pastSessions.find(s => s.exam_id === exam.id && s.status === 'in_progress')
+                const inProgress = pastSessions.find(s => s.exam_id === exam.id && s.status === 'in_progress' && !s.submitted_at)
                 return (
                   <tr key={exam.id} style={{borderBottom:i<exams.length-1?'0.5px solid #f5f0e8':'none'}}>
                     <td style={{padding:'14px 16px'}}>
