@@ -409,6 +409,11 @@ export default function ExamCenter() {
     if (pdfBlobUrlRef.current) { URL.revokeObjectURL(pdfBlobUrlRef.current); pdfBlobUrlRef.current = null }
   }
 
+  const handleBackFromResults = () => {
+    revokePdfBlob()
+    if (isAdminView) { router.back() } else { setView('list'); setActiveSession(null); setActiveSheet(null); setResults(null) }
+  }
+
   const fetchPdfAsBlob = async (signedUrl: string | null, onProgress: (pct: number) => void): Promise<string | null> => {
     if (!signedUrl) return null
     const controller = new AbortController()
@@ -827,6 +832,11 @@ export default function ExamCenter() {
         score: correct, wrong_count: wrongCount,
         percent_correct: percentCorrect, predicted_step1: predictedStep1,
       }).eq('id', session.id)
+
+      const studentId = (session.student_id as string) || user?.id
+      const { data: freshSessions } = await supabase.from('exam_sessions')
+        .select('*').eq('student_id', studentId).order('created_at', {ascending: false})
+      if (freshSessions) setPastSessions(freshSessions)
 
       const logRows = questionDetails
         .filter(q => q.system || q.topic || q.discipline)
@@ -1547,7 +1557,7 @@ export default function ExamCenter() {
 
               {/* Actions */}
               <div style={{display:'flex',gap:12,maxWidth:500,marginTop:28}}>
-                <button onClick={() => { revokePdfBlob(); if (isAdminView) { router.back() } else { setView('list'); setActiveSession(null); setActiveSheet(null); setResults(null) } }}
+                <button onClick={handleBackFromResults}
                   style={{flex:1,height:46,background:'white',border:'1px solid #e8dfc8',borderRadius:10,color:'#0d2340',fontFamily:'Sora,sans-serif',fontSize:14,fontWeight:600,cursor:'pointer'}}>
                   {isAdminView ? '← Back' : '← Back to exams'}
                 </button>
@@ -1743,7 +1753,7 @@ export default function ExamCenter() {
                 <WeaknessSection title="Subjects / Disciplines — Weakest to Strongest" rows={disciplineRows} subtopicMap={disciplineTopics} prefix="disc"/>
 
                 <div style={{display:'flex',gap:12,maxWidth:500,marginTop:8}}>
-                  <button onClick={() => { revokePdfBlob(); if (isAdminView) { router.back() } else { setView('list'); setActiveSession(null); setActiveSheet(null); setResults(null) } }}
+                  <button onClick={handleBackFromResults}
                     style={{flex:1,height:46,background:'white',border:'1px solid #e8dfc8',borderRadius:10,color:'#0d2340',fontFamily:'Sora,sans-serif',fontSize:14,fontWeight:600,cursor:'pointer'}}>
                     {isAdminView ? '← Back' : '← Back to exams'}
                   </button>
@@ -1864,7 +1874,7 @@ export default function ExamCenter() {
                 )}
               </div>
               <div style={{display:'flex',gap:12,maxWidth:500}}>
-                <button onClick={() => { revokePdfBlob(); if (isAdminView) { router.back() } else { setView('list'); setActiveSession(null); setActiveSheet(null); setResults(null) } }}
+                <button onClick={handleBackFromResults}
                   style={{flex:1,height:46,background:'white',border:'1px solid #e8dfc8',borderRadius:10,color:'#0d2340',fontFamily:'Sora,sans-serif',fontSize:14,fontWeight:600,cursor:'pointer'}}>
                   {isAdminView ? '← Back' : '← Back to exams'}
                 </button>
@@ -2009,7 +2019,7 @@ export default function ExamCenter() {
                   )}
                 </div>
                 <div style={{display:'flex',gap:12,maxWidth:500}}>
-                  <button onClick={() => { revokePdfBlob(); if (isAdminView) { router.back() } else { setView('list'); setActiveSession(null); setActiveSheet(null); setResults(null) } }}
+                  <button onClick={handleBackFromResults}
                     style={{flex:1,height:46,background:'white',border:'1px solid #e8dfc8',borderRadius:10,color:'#0d2340',fontFamily:'Sora,sans-serif',fontSize:14,fontWeight:600,cursor:'pointer'}}>
                     {isAdminView ? '← Back' : '← Back to exams'}
                   </button>

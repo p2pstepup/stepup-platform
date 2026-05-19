@@ -24,6 +24,16 @@ export default function AdminDashboard() {
   const supabase = createClient()
 
   useEffect(() => {
+    const saved = sessionStorage.getItem('admin_activeTab')
+    if (saved) setActiveTab(saved)
+  }, [])
+
+  const navTo = (tab: string) => {
+    setActiveTab(tab)
+    sessionStorage.setItem('admin_activeTab', tab)
+  }
+
+  useEffect(() => {
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/'); return }
@@ -108,7 +118,7 @@ export default function AdminDashboard() {
             <div key={group.section}>
               <div style={{fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'rgba(255,255,255,0.28)', padding: '0 8px', margin: '12px 0 4px'}}>{group.section}</div>
               {group.items.map(item => (
-                <div key={item.tab} onClick={() => setActiveTab(item.tab)}
+                <div key={item.tab} onClick={() => navTo(item.tab)}
                   style={{display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px', borderRadius: 7, color: activeTab === item.tab ? '#c9a84c' : 'rgba(255,255,255,0.55)', fontSize: 12.5, marginBottom: 2, background: activeTab === item.tab ? 'rgba(255,255,255,0.09)' : 'transparent', cursor: 'pointer'}}>
                   <div style={{width: 5, height: 5, borderRadius: '50%', background: 'currentColor', flexShrink: 0}}/>{item.name}
                 </div>
@@ -135,7 +145,7 @@ export default function AdminDashboard() {
           <div style={{background: '#f0f7f2', border: '1px solid #6b7c3a', borderRadius: 10, padding: '14px 18px', marginBottom: 20, fontSize: 14, color: '#2d6a4f', fontWeight: 500}}>✓ {success}</div>
         )}
 
-        {activeTab === 'overview' && <AdminOverview supabase={supabase} students={students} tutors={tutors} onNavigate={setActiveTab} />}
+        {activeTab === 'overview' && <AdminOverview supabase={supabase} students={students} tutors={tutors} onNavigate={navTo} />}
 
         {activeTab === 'roster' && (
           <div>
