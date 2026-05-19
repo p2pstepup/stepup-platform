@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
 export function StudentProfiles({ supabase, students, onSuccess }: any) {
@@ -1409,79 +1409,80 @@ export function ExamReports({ supabase, students }: any) {
               {filtered.map((session, i) => {
                 const sheet = session.answer_sheets?.[0]
                 const answered = sheet ? Object.keys(sheet.answers || {}).length : 0
+                const isSelected = selectedSession?.id === session.id
                 return (
-                  <tr key={session.id} style={{borderBottom: i < filtered.length-1 ? '0.5px solid #f5f0e8' : 'none'}}>
-                    <td style={{padding: '12px 14px', fontSize: 13, color: '#0d2340', fontWeight: 500}}>{session.profiles?.full_name || session.profiles?.email?.split('@')[0] || 'Student'}</td>
-                    <td style={{padding: '12px 14px', fontSize: 13, color: '#0d2340'}}>{session.exam_name}</td>
-                    <td style={{padding: '12px 14px', fontSize: 12, color: '#8a7d6a'}}>{new Date(session.started_at).toLocaleDateString('en-US', {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'})}</td>
-                    <td style={{padding: '12px 14px', fontSize: 13, color: '#3d3020'}}>{session.actual_minutes ? formatDuration(session.actual_minutes) : '—'}</td>
-                    <td style={{padding: '12px 14px', fontSize: 13, color: '#3d3020'}}>{answered}Q</td>
-                    <td style={{padding: '12px 14px'}}>
-                      {session.within_limit === null ? <span style={{fontSize: 12, color: '#a89870'}}>—</span>
-                        : session.within_limit ? <span style={{fontSize: 12, color: '#6b7c3a', fontWeight: 500}}>✅ Yes</span>
-                        : <span style={{fontSize: 12, color: '#c0574a', fontWeight: 500}}>⚠️ Over</span>}
-                    </td>
-                    <td style={{padding: '12px 14px'}}>
-                      <span style={{fontSize: 11, padding: '2px 8px', borderRadius: 8, background: session.status === 'submitted' ? '#f0f7f2' : '#fff8e8', color: session.status === 'submitted' ? '#2d6a4f' : '#c07040', fontWeight: 500}}>
-                        {session.status === 'submitted' ? 'Submitted' : 'In progress'}
-                      </span>
-                    </td>
-                    <td style={{padding: '12px 14px'}}>
-                      <div style={{display: 'flex', gap: 6}}>
-                        {sheet && answered > 0 && (
-                          <button onClick={() => setSelectedSession(selectedSession?.id === session.id ? null : session)}
-                            style={{padding: '4px 10px', background: '#0d2340', border: 'none', borderRadius: 6, fontSize: 11, color: '#c9a84c', cursor: 'pointer', fontFamily: 'Sora, sans-serif'}}>
-                            {selectedSession?.id === session.id ? 'Hide' : 'View'}
-                          </button>
-                        )}
-                        {session.status === 'submitted' && (
-                          <button onClick={() => router.push(`/dashboard/exams?session=${session.id}`)}
-                            style={{padding: '4px 10px', background: '#6b7c3a', border: 'none', borderRadius: 6, fontSize: 11, color: 'white', cursor: 'pointer', fontFamily: 'Sora, sans-serif'}}>
-                            Score Report
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
+                  <React.Fragment key={session.id}>
+                    <tr style={{borderBottom: i < filtered.length-1 && !isSelected ? '0.5px solid #f5f0e8' : 'none'}}>
+                      <td style={{padding: '12px 14px', fontSize: 13, color: '#0d2340', fontWeight: 500}}>{session.profiles?.full_name || session.profiles?.email?.split('@')[0] || 'Student'}</td>
+                      <td style={{padding: '12px 14px', fontSize: 13, color: '#0d2340'}}>{session.exam_name}</td>
+                      <td style={{padding: '12px 14px', fontSize: 12, color: '#8a7d6a'}}>{new Date(session.started_at).toLocaleDateString('en-US', {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'})}</td>
+                      <td style={{padding: '12px 14px', fontSize: 13, color: '#3d3020'}}>{session.actual_minutes ? formatDuration(session.actual_minutes) : '—'}</td>
+                      <td style={{padding: '12px 14px', fontSize: 13, color: '#3d3020'}}>{answered}Q</td>
+                      <td style={{padding: '12px 14px'}}>
+                        {session.within_limit === null ? <span style={{fontSize: 12, color: '#a89870'}}>—</span>
+                          : session.within_limit ? <span style={{fontSize: 12, color: '#6b7c3a', fontWeight: 500}}>✅ Yes</span>
+                          : <span style={{fontSize: 12, color: '#c0574a', fontWeight: 500}}>⚠️ Over</span>}
+                      </td>
+                      <td style={{padding: '12px 14px'}}>
+                        <span style={{fontSize: 11, padding: '2px 8px', borderRadius: 8, background: session.status === 'submitted' ? '#f0f7f2' : '#fff8e8', color: session.status === 'submitted' ? '#2d6a4f' : '#c07040', fontWeight: 500}}>
+                          {session.status === 'submitted' ? 'Submitted' : 'In progress'}
+                        </span>
+                      </td>
+                      <td style={{padding: '12px 14px'}}>
+                        <div style={{display: 'flex', gap: 6}}>
+                          {sheet && answered > 0 && (
+                            <button onClick={() => setSelectedSession(isSelected ? null : session)}
+                              style={{padding: '4px 10px', background: '#0d2340', border: 'none', borderRadius: 6, fontSize: 11, color: '#c9a84c', cursor: 'pointer', fontFamily: 'Sora, sans-serif'}}>
+                              {isSelected ? 'Hide' : 'View'}
+                            </button>
+                          )}
+                          {session.status === 'submitted' && (
+                            <button onClick={() => router.push(`/dashboard/exams?session=${session.id}`)}
+                              style={{padding: '4px 10px', background: '#6b7c3a', border: 'none', borderRadius: 6, fontSize: 11, color: 'white', cursor: 'pointer', fontFamily: 'Sora, sans-serif'}}>
+                              Score Report
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                    {isSelected && (() => {
+                      const answers = sheet?.answers || {}
+                      const totalQ = session.time_limit_minutes ? Math.round(session.time_limit_minutes / 1.2) : 200
+                      return (
+                        <tr key={`sheet-${session.id}`}>
+                          <td colSpan={8} style={{padding: 0, borderBottom: i < filtered.length-1 ? '0.5px solid #f5f0e8' : 'none'}}>
+                            <div style={{background: '#f7f4ee', borderTop: '0.5px solid #e8dfc8', padding: '16px 20px'}}>
+                              <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12}}>
+                                <div style={{fontSize: 12, fontWeight: 600, color: '#0d2340'}}>
+                                  Answer Sheet · {session.profiles?.full_name || session.profiles?.email?.split('@')[0]} · {session.exam_name}
+                                  {session.actual_minutes && <span style={{fontWeight: 400, color: '#8a7d6a', marginLeft: 8}}>{formatDuration(session.actual_minutes)}</span>}
+                                </div>
+                                <button onClick={() => setSelectedSession(null)} style={{padding: '3px 10px', background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 6, fontSize: 11, color: '#8a7d6a', cursor: 'pointer', fontFamily: 'Sora, sans-serif'}}>Close</button>
+                              </div>
+                              <div style={{display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: '2px 8px'}}>
+                                {Array.from({length: totalQ}).map((_, idx) => {
+                                  const qNum = idx + 1
+                                  const ans = answers[qNum] || answers[String(qNum)]
+                                  return (
+                                    <div key={qNum} style={{display: 'flex', alignItems: 'center', gap: 4, padding: '3px 0', borderBottom: '0.5px solid #ede8dc'}}>
+                                      <span style={{fontSize: 10, color: '#a89870', width: 18, textAlign: 'right', flexShrink: 0}}>{qNum}.</span>
+                                      <span style={{fontSize: 11, fontWeight: 700, color: ans ? '#0d2340' : '#d0c8b0'}}>{ans || '—'}</span>
+                                    </div>
+                                  )
+                                })}
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })()}
+                  </React.Fragment>
                 )
               })}
             </tbody>
           </table>
         )}
       </div>
-      {selectedSession && (
-        <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, overflow: 'hidden'}}>
-          <div style={{background: '#0d2340', padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
-            <div>
-              <div style={{fontSize: 14, fontWeight: 600, color: 'white'}}>Answer Sheet — {selectedSession.profiles?.full_name || selectedSession.profiles?.email?.split('@')[0]} · {selectedSession.exam_name}</div>
-              <div style={{fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: 2}}>{new Date(selectedSession.started_at).toLocaleDateString('en-US', {weekday: 'long', month: 'long', day: 'numeric'})}{selectedSession.actual_minutes && ` · ${formatDuration(selectedSession.actual_minutes)}`}</div>
-            </div>
-            <button onClick={() => setSelectedSession(null)}
-              style={{padding: '6px 12px', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: 6, color: 'white', fontSize: 12, cursor: 'pointer', fontFamily: 'Sora, sans-serif'}}>Close</button>
-          </div>
-          <div style={{padding: '20px'}}>
-            {(() => {
-              const sheet = selectedSession.answer_sheets?.[0]
-              const answers = sheet?.answers || {}
-              const totalQ = selectedSession.time_limit_minutes ? Math.round(selectedSession.time_limit_minutes / 1.2) : 200
-              return (
-                <div style={{display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '4px 16px'}}>
-                  {Array.from({length: totalQ}).map((_, idx) => {
-                    const qNum = idx + 1
-                    const ans = answers[qNum]
-                    return (
-                      <div key={qNum} style={{display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', borderBottom: '0.5px solid #f5f0e8'}}>
-                        <span style={{fontSize: 11, color: '#a89870', width: 24, textAlign: 'right', flexShrink: 0}}>{qNum}.</span>
-                        <span style={{fontSize: 13, fontWeight: 700, color: ans ? '#0d2340' : '#e8dfc8', width: 20, textAlign: 'center'}}>{ans || '—'}</span>
-                      </div>
-                    )
-                  })}
-                </div>
-              )
-            })()}
-          </div>
-        </div>
-      )}
     </div>
   )
 }

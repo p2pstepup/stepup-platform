@@ -1547,9 +1547,9 @@ export default function ExamCenter() {
 
               {/* Actions */}
               <div style={{display:'flex',gap:12,maxWidth:500,marginTop:28}}>
-                <button onClick={() => { revokePdfBlob(); if (isAdminView) { router.push('/admin') } else { setView('list'); setActiveSession(null); setActiveSheet(null); setResults(null) } }}
+                <button onClick={() => { revokePdfBlob(); if (isAdminView) { router.back() } else { setView('list'); setActiveSession(null); setActiveSheet(null); setResults(null) } }}
                   style={{flex:1,height:46,background:'white',border:'1px solid #e8dfc8',borderRadius:10,color:'#0d2340',fontFamily:'Sora,sans-serif',fontSize:14,fontWeight:600,cursor:'pointer'}}>
-                  {isAdminView ? '← Back to admin' : '← Back to exams'}
+                  {isAdminView ? '← Back' : '← Back to exams'}
                 </button>
                 <button onClick={() => router.push('/dashboard/nbme')}
                   style={{flex:1,height:46,background:'#0d2340',border:'none',borderRadius:10,color:'#c9a84c',fontFamily:'Sora,sans-serif',fontSize:14,fontWeight:600,cursor:'pointer'}}>
@@ -1743,9 +1743,9 @@ export default function ExamCenter() {
                 <WeaknessSection title="Subjects / Disciplines — Weakest to Strongest" rows={disciplineRows} subtopicMap={disciplineTopics} prefix="disc"/>
 
                 <div style={{display:'flex',gap:12,maxWidth:500,marginTop:8}}>
-                  <button onClick={() => { revokePdfBlob(); if (isAdminView) { router.push('/admin') } else { setView('list'); setActiveSession(null); setActiveSheet(null); setResults(null) } }}
+                  <button onClick={() => { revokePdfBlob(); if (isAdminView) { router.back() } else { setView('list'); setActiveSession(null); setActiveSheet(null); setResults(null) } }}
                     style={{flex:1,height:46,background:'white',border:'1px solid #e8dfc8',borderRadius:10,color:'#0d2340',fontFamily:'Sora,sans-serif',fontSize:14,fontWeight:600,cursor:'pointer'}}>
-                    {isAdminView ? '← Back to admin' : '← Back to exams'}
+                    {isAdminView ? '← Back' : '← Back to exams'}
                   </button>
                   <button onClick={() => router.push('/dashboard/nbme')}
                     style={{flex:1,height:46,background:'#0d2340',border:'none',borderRadius:10,color:'#c9a84c',fontFamily:'Sora,sans-serif',fontSize:14,fontWeight:600,cursor:'pointer'}}>
@@ -1864,9 +1864,9 @@ export default function ExamCenter() {
                 )}
               </div>
               <div style={{display:'flex',gap:12,maxWidth:500}}>
-                <button onClick={() => { revokePdfBlob(); if (isAdminView) { router.push('/admin') } else { setView('list'); setActiveSession(null); setActiveSheet(null); setResults(null) } }}
+                <button onClick={() => { revokePdfBlob(); if (isAdminView) { router.back() } else { setView('list'); setActiveSession(null); setActiveSheet(null); setResults(null) } }}
                   style={{flex:1,height:46,background:'white',border:'1px solid #e8dfc8',borderRadius:10,color:'#0d2340',fontFamily:'Sora,sans-serif',fontSize:14,fontWeight:600,cursor:'pointer'}}>
-                  {isAdminView ? '← Back to admin' : '← Back to exams'}
+                  {isAdminView ? '← Back' : '← Back to exams'}
                 </button>
                 <button onClick={() => router.push('/dashboard/nbme')}
                   style={{flex:1,height:46,background:'#0d2340',border:'none',borderRadius:10,color:'#c9a84c',fontFamily:'Sora,sans-serif',fontSize:14,fontWeight:600,cursor:'pointer'}}>
@@ -2009,9 +2009,9 @@ export default function ExamCenter() {
                   )}
                 </div>
                 <div style={{display:'flex',gap:12,maxWidth:500}}>
-                  <button onClick={() => { revokePdfBlob(); if (isAdminView) { router.push('/admin') } else { setView('list'); setActiveSession(null); setActiveSheet(null); setResults(null) } }}
+                  <button onClick={() => { revokePdfBlob(); if (isAdminView) { router.back() } else { setView('list'); setActiveSession(null); setActiveSheet(null); setResults(null) } }}
                     style={{flex:1,height:46,background:'white',border:'1px solid #e8dfc8',borderRadius:10,color:'#0d2340',fontFamily:'Sora,sans-serif',fontSize:14,fontWeight:600,cursor:'pointer'}}>
-                    {isAdminView ? '← Back to admin' : '← Back to exams'}
+                    {isAdminView ? '← Back' : '← Back to exams'}
                   </button>
                   <button onClick={() => router.push('/dashboard/nbme')}
                     style={{flex:1,height:46,background:'#0d2340',border:'none',borderRadius:10,color:'#c9a84c',fontFamily:'Sora,sans-serif',fontSize:14,fontWeight:600,cursor:'pointer'}}>
