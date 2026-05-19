@@ -1376,7 +1376,12 @@ export function ExamReports({ supabase, students, returnPath }: any) {
     setDeleting(session.id)
     await supabase.from('exam_question_logs').delete().eq('exam_session_id', session.id)
     await supabase.from('answer_sheets').delete().eq('exam_session_id', session.id)
-    await supabase.from('exam_sessions').delete().eq('id', session.id)
+    const { error } = await supabase.from('exam_sessions').delete().eq('id', session.id)
+    if (error) {
+      alert(`Failed to delete: ${error.message}`)
+      setDeleting(null)
+      return
+    }
     if (selectedSession?.id === session.id) setSelectedSession(null)
     setSessions(prev => prev.filter(s => s.id !== session.id))
     setDeleting(null)
@@ -1391,6 +1396,15 @@ export function ExamReports({ supabase, students, returnPath }: any) {
 
   const filtered = selectedStudent === 'all' ? sessions : sessions.filter(s => s.student_id === selectedStudent)
 
+  const sortedStudents = [...students].sort((a: any, b: any) => {
+    const lastName = (s: any) => {
+      const name = s.full_name || s.email.split('@')[0]
+      const parts = name.trim().split(/\s+/)
+      return parts[parts.length - 1].toLowerCase()
+    }
+    return lastName(a).localeCompare(lastName(b))
+  })
+
   if (loading) return <div style={{fontSize: 14, color: '#8a7d6a'}}>Loading...</div>
 
   return (
@@ -1399,7 +1413,7 @@ export function ExamReports({ supabase, students, returnPath }: any) {
         <select value={selectedStudent} onChange={e => setSelectedStudent(e.target.value)}
           style={{height: 42, borderRadius: 8, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 14, padding: '0 12px', color: '#1a1008', outline: 'none', background: 'white'}}>
           <option value="all">All students</option>
-          {students.map((s: any) => <option key={s.id} value={s.id}>{s.full_name || s.email.split('@')[0]}</option>)}
+          {sortedStudents.map((s: any) => <option key={s.id} value={s.id}>{s.full_name || s.email.split('@')[0]}</option>)}
         </select>
         <div style={{fontSize: 13, color: '#8a7d6a'}}>{filtered.length} exam session{filtered.length !== 1 ? 's' : ''}</div>
       </div>

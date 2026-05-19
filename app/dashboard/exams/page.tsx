@@ -477,6 +477,10 @@ export default function ExamCenter() {
   const [showPriorityList, setShowPriorityList] = useState(false)
   const [showStudyChecklist, setShowStudyChecklist] = useState(false)
   const [checkedQuestions, setCheckedQuestions] = useState<Set<number>>(new Set())
+  const [showTimingSection, setShowTimingSection] = useState(false)
+  const [showFocusSection, setShowFocusSection] = useState(true)
+  const [showBreakdownSection, setShowBreakdownSection] = useState(true)
+  const [showTopicFullBreakdown, setShowTopicFullBreakdown] = useState(false)
   const [qReviewGrouped, setQReviewGrouped] = useState(true)
   const [focusLinks, setFocusLinks] = useState<Record<string,string>>(() => {
     try { const s = localStorage.getItem('stepup_focus_links'); return s ? JSON.parse(s) : {} } catch { return {} }
@@ -1529,7 +1533,7 @@ export default function ExamCenter() {
                 ))}
               </div>
 
-              {/* ── Timing Insight ── */}
+              {/* ── ⏱ Timing Insight (collapsible) ── */}
               {results.actualMinutes > 0 && (() => {
                 const totalSec = results.actualMinutes * 60
                 const secsPerQ = results.totalQ > 0 ? totalSec / results.totalQ : 0
@@ -1540,29 +1544,45 @@ export default function ExamCenter() {
                 const blockLimit = 60
                 const overBlock = minsPerBlock > blockLimit
                 return (
-                  <div style={{background:'white',border:'1px solid #ccc8be',borderRadius:8,padding:'12px 18px',marginBottom:16,display:'flex',gap:24,flexWrap:'wrap' as const,alignItems:'center'}}>
-                    <div style={{fontSize:11,fontWeight:700,color:'#8a7d6a',textTransform:'uppercase' as const,letterSpacing:'0.07em',whiteSpace:'nowrap' as const}}>⏱ Timing</div>
-                    <div style={{display:'flex',gap:20,flexWrap:'wrap' as const}}>
-                      <div>
-                        <div style={{fontSize:10,color:'#a89870'}}>Avg per question</div>
-                        <div style={{fontSize:15,fontWeight:700,color:'#0d2340',fontFamily:'Georgia,serif'}}>{minsPerQ}:{String(secsRem).padStart(2,'0')}</div>
+                  <div style={{border:'1px solid #e0dbd0',borderRadius:8,marginBottom:10,overflow:'hidden'}}>
+                    <div onClick={() => setShowTimingSection(v => !v)}
+                      style={{background:'#1a3a5a',padding:'11px 18px',display:'flex',alignItems:'center',justifyContent:'space-between',cursor:'pointer'}}>
+                      <div style={{display:'flex',alignItems:'center',gap:8}}>
+                        <span style={{fontSize:14}}>⏱</span>
+                        <div style={{fontSize:13,fontWeight:700,color:'white'}}>Timing Insight</div>
                       </div>
-                      <div>
-                        <div style={{fontSize:10,color:'#a89870'}}>Approx. per block ({results.totalQ > 0 ? Math.round(results.totalQ/blocks) : 50}Q)</div>
-                        <div style={{fontSize:15,fontWeight:700,color:overBlock?'#c0574a':'#6b7c3a',fontFamily:'Georgia,serif'}}>{minsPerBlock} min</div>
-                      </div>
-                      <div style={{display:'flex',alignItems:'center',gap:6}}>
-                        <span style={{fontSize:13,color:results.withinLimit?'#6b7c3a':'#c0574a'}}>{results.withinLimit?'✓':'⚠'}</span>
-                        <span style={{fontSize:12,color:'#6b6050'}}>{results.withinLimit?'Finished within time limit':'Exceeded total time limit'}</span>
+                      <div style={{display:'flex',alignItems:'center',gap:12}}>
+                        <span style={{fontSize:11,color:'rgba(255,255,255,0.5)'}}>How you managed time</span>
+                        <span style={{color:'#c9a84c',fontSize:18,fontWeight:700,lineHeight:1}}>{showTimingSection ? '−' : '+'}</span>
                       </div>
                     </div>
+                    {showTimingSection && (
+                      <div style={{background:'white',padding:'14px 18px'}}>
+                        <div style={{fontSize:12,color:'#6b6050',marginBottom:12,lineHeight:1.6}}>
+                          Your pacing during this exam. Aim for ~1:20 per question and under 60 minutes per 50-question block to stay on track.
+                        </div>
+                        <div style={{display:'flex',gap:24,flexWrap:'wrap' as const,alignItems:'center'}}>
+                          <div>
+                            <div style={{fontSize:10,color:'#a89870'}}>Avg per question</div>
+                            <div style={{fontSize:15,fontWeight:700,color:'#0d2340',fontFamily:'Georgia,serif'}}>{minsPerQ}:{String(secsRem).padStart(2,'0')}</div>
+                          </div>
+                          <div>
+                            <div style={{fontSize:10,color:'#a89870'}}>Approx. per block ({results.totalQ > 0 ? Math.round(results.totalQ/blocks) : 50}Q)</div>
+                            <div style={{fontSize:15,fontWeight:700,color:overBlock?'#c0574a':'#6b7c3a',fontFamily:'Georgia,serif'}}>{minsPerBlock} min</div>
+                          </div>
+                          <div style={{display:'flex',alignItems:'center',gap:6}}>
+                            <span style={{fontSize:13,color:results.withinLimit?'#6b7c3a':'#c0574a'}}>{results.withinLimit?'✓':'⚠'}</span>
+                            <span style={{fontSize:12,color:'#6b6050'}}>{results.withinLimit?'Finished within time limit':'Exceeded total time limit'}</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )
               })()}
 
-              {/* ── Focus Plan + Study Recommendations ── */}
+              {/* ── 🎯 Focus Plan + Study Recommendations (collapsible) ── */}
               {hasBreakdown && (() => {
-                // Aggregate misses by system and by discipline
                 const sysStats: Record<string,{missed:number,total:number}> = {}
                 const discStats: Record<string,{missed:number,total:number}> = {}
                 for (const q of (results.questionDetails || [])) {
@@ -1587,7 +1607,6 @@ export default function ExamCenter() {
                     step1Pct: STEP1_CONTENT_PCT[name] ?? 0,
                   }))
 
-                // Deduplicate by name (some names appear as both system and discipline)
                 const seen = new Set<string>()
                 const combined = [...toItems(sysStats,'System'), ...toItems(discStats,'Subject')]
                   .filter(e => e.missed > 0)
@@ -1595,7 +1614,6 @@ export default function ExamCenter() {
                   .filter(e => { if (seen.has(e.name)) return false; seen.add(e.name); return true })
                 const priorityItems = combined.slice(0, 5)
 
-                // Keep It Up: best-performing systems with ≥3 questions
                 const strongItems = toItems(sysStats,'System')
                   .filter(e => e.total >= 3 && e.pct >= 70)
                   .sort((a,b) => b.pct !== a.pct ? b.pct - a.pct : b.total - a.total)
@@ -1603,7 +1621,6 @@ export default function ExamCenter() {
 
                 if (priorityItems.length === 0) return null
 
-                // Same-exam history for progress delta
                 const sameExamSessions = pastSessions
                   .filter((s: {exam_id:string,status:string,percent_correct:number,submitted_at:string}) => s.exam_id === results.examId && s.status === 'submitted' && s.percent_correct != null)
                   .sort((a: {submitted_at:string},b: {submitted_at:string}) => new Date(a.submitted_at).getTime() - new Date(b.submitted_at).getTime())
@@ -1619,248 +1636,150 @@ export default function ExamCenter() {
                 const isAdmin = profile?.role === 'admin' || profile?.role === 'tutor'
 
                 return (
-                  <div style={{marginBottom:28}}>
-                    {/* Progress delta badge */}
-                    {delta !== null && (
-                      <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:16,padding:'10px 16px',background:'white',border:'1px solid #e0dbd0',borderRadius:8}}>
-                        <span style={{fontSize:22,fontWeight:700,color:delta>0?'#6b7c3a':delta<0?'#c0574a':'#8a7d6a'}}>
-                          {delta>0?'▲':delta<0?'▼':'–'} {Math.abs(delta)}%
-                        </span>
-                        <span style={{fontSize:13,color:'#6b6050'}}>
-                          {delta>0?'improvement':'change'} from your previous attempt ({prevSession.percent_correct}% → {results.percentCorrect}%)
-                        </span>
+                  <div style={{border:'1px solid #e0dbd0',borderRadius:8,marginBottom:10,overflow:'hidden'}}>
+                    <div onClick={() => setShowFocusSection(v => !v)}
+                      style={{background:'#0d2340',padding:'11px 18px',display:'flex',alignItems:'center',justifyContent:'space-between',cursor:'pointer'}}>
+                      <div style={{display:'flex',alignItems:'center',gap:8}}>
+                        <span style={{fontSize:14}}>🎯</span>
+                        <div style={{fontSize:13,fontWeight:700,color:'white'}}>Focus Plan &amp; Study Recommendations</div>
                       </div>
-                    )}
-
-                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16,marginBottom:0}}>
-                      {/* Left: Focus Plan */}
-                      <div style={{background:'white',border:'1px solid #e8dfc8',borderRadius:10,overflow:'hidden'}}>
-                        <div style={{background:'#0d2340',padding:'10px 16px',display:'flex',alignItems:'center',gap:8}}>
-                          <span style={{fontSize:16}}>🎯</span>
-                          <div style={{fontSize:13,fontWeight:700,color:'white'}}>Your Focus Plan</div>
-                          <div style={{fontSize:11,color:'rgba(201,168,76,0.7)',marginLeft:'auto'}}>Study these first</div>
+                      <div style={{display:'flex',alignItems:'center',gap:12}}>
+                        <span style={{fontSize:11,color:'rgba(255,255,255,0.5)'}}>Personalized study priorities</span>
+                        <span style={{color:'#c9a84c',fontSize:18,fontWeight:700,lineHeight:1}}>{showFocusSection ? '−' : '+'}</span>
+                      </div>
+                    </div>
+                    {showFocusSection && (
+                      <div style={{padding:'16px',background:'white'}}>
+                        <div style={{fontSize:12,color:'#6b6050',marginBottom:14,lineHeight:1.6}}>
+                          Your top areas to study based on missed questions, ranked by volume and Step 1 content weight. Use "Practice →" to start a targeted Q-Bank session for each area.
                         </div>
-                        <div style={{padding:'12px 14px',display:'flex',flexDirection:'column',gap:8}}>
-                          {priorityItems.map((item, idx) => {
-                            const color = item.missed > 10 ? '#c0574a' : item.missed > 4 ? '#c07040' : '#c9a84c'
-                            const link = focusLinks[item.name] || '/dashboard/qbank'
-                            const isHighYield = item.step1Pct >= 10
-                            return (
-                              <div key={item.name} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 10px',borderRadius:7,background:idx===0?'#fdf5f4':'#fdf9f2',border:`1px solid ${color}22`}}>
-                                <div style={{width:22,height:22,borderRadius:'50%',background:color,color:'white',fontSize:11,fontWeight:800,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>{idx+1}</div>
-                                <div style={{flex:1,minWidth:0}}>
-                                  <div style={{display:'flex',alignItems:'center',gap:6,flexWrap:'wrap' as const}}>
-                                    <span style={{fontSize:12,fontWeight:600,color:'#0d2340'}}>{item.name}</span>
-                                    <span style={{fontSize:9,color:'#8a7d6a',background:'#f0ece0',padding:'1px 5px',borderRadius:3}}>{item.kind}</span>
-                                    {isHighYield && (
-                                      <span style={{fontSize:9,fontWeight:700,color:'#c07040',background:'#fff3e0',padding:'1px 5px',borderRadius:3,border:'1px solid #f0c060'}}>
-                                        ⚡ ~{item.step1Pct}% of Step 1
-                                      </span>
+                        {delta !== null && (
+                          <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:16,padding:'10px 16px',background:'#f5f8fc',border:'1px solid #e0dbd0',borderRadius:8}}>
+                            <span style={{fontSize:22,fontWeight:700,color:delta>0?'#6b7c3a':delta<0?'#c0574a':'#8a7d6a'}}>
+                              {delta>0?'▲':delta<0?'▼':'–'} {Math.abs(delta)}%
+                            </span>
+                            <span style={{fontSize:13,color:'#6b6050'}}>
+                              {delta>0?'improvement':'change'} from your previous attempt ({prevSession.percent_correct}% → {results.percentCorrect}%)
+                            </span>
+                          </div>
+                        )}
+                        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16}}>
+                          {/* Left: Focus Plan */}
+                          <div style={{background:'#fafaf7',border:'1px solid #e8dfc8',borderRadius:10,overflow:'hidden'}}>
+                            <div style={{background:'#0d2340',padding:'10px 16px',display:'flex',alignItems:'center',gap:8}}>
+                              <span style={{fontSize:16}}>🎯</span>
+                              <div style={{fontSize:13,fontWeight:700,color:'white'}}>Your Focus Plan</div>
+                              <div style={{fontSize:11,color:'rgba(201,168,76,0.7)',marginLeft:'auto'}}>Study these first</div>
+                            </div>
+                            <div style={{padding:'12px 14px',display:'flex',flexDirection:'column',gap:8}}>
+                              {priorityItems.map((item, idx) => {
+                                const color = item.missed > 10 ? '#c0574a' : item.missed > 4 ? '#c07040' : '#c9a84c'
+                                const link = focusLinks[item.name] || '/dashboard/qbank'
+                                const isHighYield = item.step1Pct >= 10
+                                return (
+                                  <div key={item.name} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 10px',borderRadius:7,background:idx===0?'#fdf5f4':'#fdf9f2',border:`1px solid ${color}22`}}>
+                                    <div style={{width:22,height:22,borderRadius:'50%',background:color,color:'white',fontSize:11,fontWeight:800,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>{idx+1}</div>
+                                    <div style={{flex:1,minWidth:0}}>
+                                      <div style={{display:'flex',alignItems:'center',gap:6,flexWrap:'wrap' as const}}>
+                                        <span style={{fontSize:12,fontWeight:600,color:'#0d2340'}}>{item.name}</span>
+                                        <span style={{fontSize:9,color:'#8a7d6a',background:'#f0ece0',padding:'1px 5px',borderRadius:3}}>{item.kind}</span>
+                                        {isHighYield && (
+                                          <span style={{fontSize:9,fontWeight:700,color:'#c07040',background:'#fff3e0',padding:'1px 5px',borderRadius:3,border:'1px solid #f0c060'}}>
+                                            ⚡ ~{item.step1Pct}% of Step 1
+                                          </span>
+                                        )}
+                                      </div>
+                                      <div style={{fontSize:10,color:'#8a7d6a'}}>{item.missed}/{item.total} missed · {item.pct}% correct</div>
+                                    </div>
+                                    {isAdmin && editingLink === item.name ? (
+                                      <div style={{display:'flex',gap:3,alignItems:'center',flexShrink:0}}>
+                                        <input value={editLinkVal} onChange={e => setEditLinkVal(e.target.value)}
+                                          style={{width:110,fontSize:10,padding:'3px 6px',borderRadius:4,border:'1px solid #c9a84c',outline:'none',fontFamily:'Sora,sans-serif'}}
+                                          placeholder="/path or URL" autoFocus
+                                          onKeyDown={e => { if(e.key==='Enter') saveFocusLink(item.name,editLinkVal); if(e.key==='Escape') setEditingLink(null) }}/>
+                                        <button onClick={() => saveFocusLink(item.name, editLinkVal)}
+                                          style={{padding:'3px 6px',borderRadius:4,border:'none',background:'#6b7c3a',color:'white',fontSize:11,cursor:'pointer',fontWeight:700}}>✓</button>
+                                        <button onClick={() => setEditingLink(null)}
+                                          style={{padding:'3px 6px',borderRadius:4,border:'none',background:'#e8e0d0',color:'#6b6050',fontSize:11,cursor:'pointer'}}>✕</button>
+                                      </div>
+                                    ) : (
+                                      <div style={{display:'flex',gap:3,alignItems:'center',flexShrink:0}}>
+                                        <button onClick={() => router.push(link)}
+                                          style={{padding:'4px 10px',borderRadius:6,border:'1px solid #d8cfc0',background:'white',fontSize:11,fontWeight:600,color:'#0d2340',cursor:'pointer',whiteSpace:'nowrap' as const}}>
+                                          Practice →
+                                        </button>
+                                        {isAdmin && (
+                                          <button onClick={() => { setEditingLink(item.name); setEditLinkVal(focusLinks[item.name]||'') }}
+                                            title="Edit practice link"
+                                            style={{padding:'4px 6px',borderRadius:6,border:'1px solid #e8dfc8',background:'#f7f4ee',fontSize:11,color:'#8a7d6a',cursor:'pointer'}}>✏</button>
+                                        )}
+                                      </div>
                                     )}
                                   </div>
-                                  <div style={{fontSize:10,color:'#8a7d6a'}}>{item.missed}/{item.total} missed · {item.pct}% correct</div>
-                                </div>
-                                {isAdmin && editingLink === item.name ? (
-                                  <div style={{display:'flex',gap:3,alignItems:'center',flexShrink:0}}>
-                                    <input value={editLinkVal} onChange={e => setEditLinkVal(e.target.value)}
-                                      style={{width:110,fontSize:10,padding:'3px 6px',borderRadius:4,border:'1px solid #c9a84c',outline:'none',fontFamily:'Sora,sans-serif'}}
-                                      placeholder="/path or URL" autoFocus
-                                      onKeyDown={e => { if(e.key==='Enter') saveFocusLink(item.name,editLinkVal); if(e.key==='Escape') setEditingLink(null) }}/>
-                                    <button onClick={() => saveFocusLink(item.name, editLinkVal)}
-                                      style={{padding:'3px 6px',borderRadius:4,border:'none',background:'#6b7c3a',color:'white',fontSize:11,cursor:'pointer',fontWeight:700}}>✓</button>
-                                    <button onClick={() => setEditingLink(null)}
-                                      style={{padding:'3px 6px',borderRadius:4,border:'none',background:'#e8e0d0',color:'#6b6050',fontSize:11,cursor:'pointer'}}>✕</button>
+                                )
+                              })}
+                            </div>
+                          </div>
+
+                          {/* Right: Keep It Up + Study Recommendations */}
+                          <div style={{display:'flex',flexDirection:'column',gap:16}}>
+                            <div style={{background:'#fafaf7',border:'1px solid #e8dfc8',borderRadius:10,overflow:'hidden'}}>
+                              <div style={{background:'#3a5a2a',padding:'10px 16px',display:'flex',alignItems:'center',gap:8}}>
+                                <span style={{fontSize:16}}>✓</span>
+                                <div style={{fontSize:13,fontWeight:700,color:'white'}}>Keep It Up</div>
+                                <div style={{fontSize:11,color:'rgba(255,255,255,0.55)',marginLeft:'auto'}}>You've got these</div>
+                              </div>
+                              <div style={{padding:'12px 14px',display:'flex',flexDirection:'column',gap:6}}>
+                                {strongItems.length > 0 ? strongItems.map(item => (
+                                  <div key={item.name} style={{display:'flex',alignItems:'center',gap:8,padding:'6px 10px',borderRadius:7,background:'#f3f8ef',border:'1px solid #c8dcc0'}}>
+                                    <span style={{fontSize:14,color:'#6b7c3a'}}>✓</span>
+                                    <div style={{flex:1,minWidth:0}}>
+                                      <div style={{fontSize:12,fontWeight:600,color:'#2a4a1a',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' as const}}>{item.name}</div>
+                                      <div style={{fontSize:10,color:'#6b7c3a'}}>{item.pct}% correct · {item.total - item.missed}/{item.total} right</div>
+                                    </div>
                                   </div>
-                                ) : (
-                                  <div style={{display:'flex',gap:3,alignItems:'center',flexShrink:0}}>
-                                    <button onClick={() => router.push(link)}
-                                      style={{padding:'4px 10px',borderRadius:6,border:'1px solid #d8cfc0',background:'white',fontSize:11,fontWeight:600,color:'#0d2340',cursor:'pointer',whiteSpace:'nowrap' as const}}>
-                                      Practice →
-                                    </button>
-                                    {isAdmin && (
-                                      <button onClick={() => { setEditingLink(item.name); setEditLinkVal(focusLinks[item.name]||'') }}
-                                        title="Edit practice link"
-                                        style={{padding:'4px 6px',borderRadius:6,border:'1px solid #e8dfc8',background:'#f7f4ee',fontSize:11,color:'#8a7d6a',cursor:'pointer'}}>✏</button>
-                                    )}
+                                )) : (
+                                  <div style={{fontSize:12,color:'#8a7d6a',padding:'6px 10px',lineHeight:1.5}}>
+                                    Keep practicing — your strengths will show here as your scores build.
                                   </div>
                                 )}
                               </div>
-                            )
-                          })}
-                        </div>
-                      </div>
+                            </div>
 
-                      {/* Right: Keep It Up + Study Recommendations */}
-                      <div style={{display:'flex',flexDirection:'column',gap:16}}>
-                        {/* Keep It Up */}
-                        <div style={{background:'white',border:'1px solid #e8dfc8',borderRadius:10,overflow:'hidden'}}>
-                          <div style={{background:'#3a5a2a',padding:'10px 16px',display:'flex',alignItems:'center',gap:8}}>
-                            <span style={{fontSize:16}}>✓</span>
-                            <div style={{fontSize:13,fontWeight:700,color:'white'}}>Keep It Up</div>
-                            <div style={{fontSize:11,color:'rgba(255,255,255,0.55)',marginLeft:'auto'}}>You've got these</div>
-                          </div>
-                          <div style={{padding:'12px 14px',display:'flex',flexDirection:'column',gap:6}}>
-                            {strongItems.length > 0 ? strongItems.map(item => (
-                              <div key={item.name} style={{display:'flex',alignItems:'center',gap:8,padding:'6px 10px',borderRadius:7,background:'#f3f8ef',border:'1px solid #c8dcc0'}}>
-                                <span style={{fontSize:14,color:'#6b7c3a'}}>✓</span>
-                                <div style={{flex:1,minWidth:0}}>
-                                  <div style={{fontSize:12,fontWeight:600,color:'#2a4a1a',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' as const}}>{item.name}</div>
-                                  <div style={{fontSize:10,color:'#6b7c3a'}}>{item.pct}% correct · {item.total - item.missed}/{item.total} right</div>
+                            <div style={{background:'#fafaf7',border:'1px solid #e8dfc8',borderRadius:10,overflow:'hidden',flex:1}}>
+                              <div style={{background:'#1a3a5a',padding:'10px 16px',display:'flex',alignItems:'center',gap:8}}>
+                                <span style={{fontSize:16}}>📖</span>
+                                <div style={{fontSize:13,fontWeight:700,color:'white'}}>Study Recommendations</div>
+                              </div>
+                              <div style={{padding:'12px 14px',display:'flex',flexDirection:'column',gap:6}}>
+                                {priorityItems.slice(0,3).map(item => (
+                                  <div key={item.name} style={{display:'flex',alignItems:'center',gap:8,padding:'6px 10px',borderRadius:7,background:'#f5f8fc',border:'1px solid #d0dcea'}}>
+                                    <div style={{width:6,height:6,borderRadius:'50%',background:'#2a6cb0',flexShrink:0}}/>
+                                    <div style={{flex:1,fontSize:12,color:'#1a3a5a',fontWeight:600,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' as const}}>{item.name}</div>
+                                    <span style={{fontSize:10,color:'#8a7d6a',whiteSpace:'nowrap' as const}}>{item.kind} · {item.missed} missed</span>
+                                  </div>
+                                ))}
+                                <div style={{fontSize:11,color:'#a89870',marginTop:4,lineHeight:1.5}}>
+                                  Review these areas in First Aid, Sketchy, or your preferred resource, then drill Q-Bank questions for each.
                                 </div>
                               </div>
-                            )) : (
-                              <div style={{fontSize:12,color:'#8a7d6a',padding:'6px 10px',lineHeight:1.5}}>
-                                Keep practicing — your strengths will show here as your scores build.
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Study Recommendations */}
-                        <div style={{background:'white',border:'1px solid #e8dfc8',borderRadius:10,overflow:'hidden',flex:1}}>
-                          <div style={{background:'#1a3a5a',padding:'10px 16px',display:'flex',alignItems:'center',gap:8}}>
-                            <span style={{fontSize:16}}>📖</span>
-                            <div style={{fontSize:13,fontWeight:700,color:'white'}}>Study Recommendations</div>
-                          </div>
-                          <div style={{padding:'12px 14px',display:'flex',flexDirection:'column',gap:6}}>
-                            {priorityItems.slice(0,3).map(item => (
-                              <div key={item.name} style={{display:'flex',alignItems:'center',gap:8,padding:'6px 10px',borderRadius:7,background:'#f5f8fc',border:'1px solid #d0dcea'}}>
-                                <div style={{width:6,height:6,borderRadius:'50%',background:'#2a6cb0',flexShrink:0}}/>
-                                <div style={{flex:1,fontSize:12,color:'#1a3a5a',fontWeight:600,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' as const}}>{item.name}</div>
-                                <span style={{fontSize:10,color:'#8a7d6a',whiteSpace:'nowrap' as const}}>{item.kind} · {item.missed} missed</span>
-                              </div>
-                            ))}
-                            <div style={{fontSize:11,color:'#a89870',marginTop:4,lineHeight:1.5}}>
-                              Review these areas in First Aid, Sketchy, or your preferred resource, then drill Q-Bank questions for each.
                             </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </div>
-                )
-              })()}
-
-              {/* Relative Strengths & Weaknesses */}
-              {hasBreakdown && (
-                <>
-                  <div style={{marginBottom:14}}>
-                    <div style={{fontFamily:'Georgia,serif',fontSize:20,color:'#0d2340',marginBottom:8}}>Your Relative Strengths and Weaknesses</div>
-                    <div style={{fontSize:13,color:'#6b6050',lineHeight:1.65,maxWidth:780}}>
-                      The boxes below indicate areas of strength or weakness compared to the estimated national average for USMLE Step 1 first-takers (~70%). A box in the &ldquo;Higher&rdquo; column indicates you performed above the national average in that content area; &ldquo;Lower&rdquo; indicates below average. Use this to identify areas to focus future study.
-                    </div>
-                    <div style={{display:'flex',gap:18,alignItems:'center',fontSize:12,color:'#6b6050',marginTop:10}}>
-                      <div style={{display:'flex',gap:6,alignItems:'center'}}><div style={{width:14,height:14,background:'#2a8f8a',borderRadius:3}}/> Score comparison vs. national average</div>
-                    </div>
-                  </div>
-                  {hasBreakdown && (
-                    <div style={{background:'#f5f2eb',border:'1px solid #e0dbd0',borderRadius:8,padding:'12px 16px',marginBottom:18}}>
-                      <div style={{fontSize:11,fontWeight:700,color:'#0d2340',marginBottom:10,textTransform:'uppercase',letterSpacing:'0.06em'}}>How to read this report</div>
-                      <div style={{display:'flex',gap:24,flexWrap:'wrap'}}>
-                        {/* Score color legend */}
-                        <div style={{flex:1,minWidth:200}}>
-                          <div style={{fontSize:11,color:'#7a6d5a',marginBottom:6}}>Your score color</div>
-                          <div style={{display:'flex',gap:14,flexWrap:'wrap'}}>
-                            {[
-                              {color:'#c0574a', label:'Focus First', range:'<55%'},
-                              {color:'#c07040', label:'Needs work', range:'55–64%'},
-                              {color:'#c9a84c', label:'Developing', range:'65–74%'},
-                              {color:'#6b7c3a', label:'Strong', range:'75%+'},
-                            ].map(({color, label, range}) => (
-                              <div key={label} style={{display:'flex',alignItems:'center',gap:6}}>
-                                <div style={{width:10,height:10,borderRadius:'50%',background:color,flexShrink:0}}/>
-                                <span style={{fontSize:12,color:'#3a3020',fontWeight:500}}>{label}</span>
-                                <span style={{fontSize:11,color:'#8a7d6a'}}>{range}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                        {/* Lower/Same/Higher legend */}
-                        <div style={{flex:1,minWidth:220}}>
-                          <div style={{fontSize:11,color:'#7a6d5a',marginBottom:6}}>Compared to national average for each category</div>
-                          <div style={{display:'flex',gap:12,flexWrap:'wrap'}}>
-                            {[
-                              {col:'Lower', desc:'5%+ below'},
-                              {col:'Same',  desc:'Within 5%'},
-                              {col:'Higher',desc:'5%+ above'},
-                            ].map(({col, desc}) => (
-                              <div key={col} style={{display:'flex',alignItems:'center',gap:6}}>
-                                <div style={{width:13,height:13,background:'#2a8f8a',borderRadius:3,flexShrink:0}}/>
-                                <span style={{fontSize:12,color:'#3a3020',fontWeight:500}}>{col}</span>
-                                <span style={{fontSize:11,color:'#8a7d6a'}}>{desc}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  {hasSystem && <NBMEBreakdownTable title="Performance by Organ System" data={results.systemBreakdown} avgLookup={SYSTEM_NATIONAL_AVG}/>}
-                  {hasDiscipline && <NBMEBreakdownTable title="Performance by Subject / Discipline" data={results.disciplineBreakdown} avgLookup={DISCIPLINE_NATIONAL_AVG}/>}
-                  {hasTopic && <NBMEBreakdownTable title="Performance by Topic" data={results.topicBreakdown}/>}
-                </>
-              )}
-
-              {/* ── Priority Study List ── */}
-              {Object.keys(results.systemBreakdown || {}).length > 0 && (() => {
-                const rows = Object.entries(results.systemBreakdown as Record<string,{correct:number,total:number}>)
-                  .map(([name, s]) => ({
-                    name,
-                    correct: s.correct,
-                    total: s.total,
-                    wrong: s.total - s.correct,
-                    pct: s.total > 0 ? Math.round((s.correct / s.total) * 100) : 0,
-                  }))
-                  .sort((a,b) => a.pct - b.pct)
-                const dot = (pct: number) => pct < 65 ? '🔴 HIGH' : pct < 85 ? '🟡 MODERATE' : '🟢 STRONG'
-                return (
-                  <div style={{border:'1px solid #e0dbd0',borderRadius:8,marginBottom:10,overflow:'hidden'}}>
-                    <div onClick={() => setShowPriorityList(v => !v)}
-                      style={{background:'#0d2340',padding:'11px 18px',display:'flex',alignItems:'center',justifyContent:'space-between',cursor:'pointer'}}>
-                      <div style={{fontSize:13,fontWeight:700,color:'white'}}>📋 Priority Study List</div>
-                      <div style={{display:'flex',alignItems:'center',gap:12}}>
-                        <span style={{fontSize:11,color:'rgba(255,255,255,0.5)'}}>All systems ranked worst → best</span>
-                        <span style={{color:'#c9a84c',fontSize:18,fontWeight:700,lineHeight:1}}>{showPriorityList ? '−' : '+'}</span>
-                      </div>
-                    </div>
-                    {showPriorityList && (
-                      <div style={{background:'white',overflowX:'auto'}}>
-                        <table style={{width:'100%',borderCollapse:'collapse'}}>
-                          <thead>
-                            <tr style={{background:'#f5f2eb',borderBottom:'1px solid #e0dbd0'}}>
-                              <th style={{padding:'7px 14px',textAlign:'left',fontSize:10,color:'#8a7d6a',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.06em',width:50}}>Rank</th>
-                              <th style={{padding:'7px 14px',textAlign:'left',fontSize:10,color:'#8a7d6a',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.06em'}}>System / Subject</th>
-                              <th style={{padding:'7px 14px',textAlign:'center',fontSize:10,color:'#8a7d6a',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.06em',width:80}}>Score</th>
-                              <th style={{padding:'7px 14px',textAlign:'center',fontSize:10,color:'#8a7d6a',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.06em',width:80}}>Wrong</th>
-                              <th style={{padding:'7px 14px',textAlign:'center',fontSize:10,color:'#8a7d6a',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.06em',width:140}}>Priority</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {rows.map((r, i) => (
-                              <tr key={r.name} style={{borderBottom:'0.5px solid #f5f0e8',background:i%2===0?'white':'#fdfcfa'}}>
-                                <td style={{padding:'8px 14px',fontSize:13,color:'#a89870',textAlign:'center',fontWeight:600}}>{i+1}</td>
-                                <td style={{padding:'8px 14px',fontSize:13,color:'#0d2340',fontWeight:500}}>{r.name}</td>
-                                <td style={{padding:'8px 14px',fontSize:13,fontWeight:700,color:scoreColor(r.pct),textAlign:'center'}}>{r.pct}%</td>
-                                <td style={{padding:'8px 14px',fontSize:13,color:'#c0574a',fontWeight:600,textAlign:'center'}}>{r.wrong}</td>
-                                <td style={{padding:'8px 14px',fontSize:12,textAlign:'center'}}>{dot(r.pct)}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
                     )}
                   </div>
                 )
               })()}
 
-              {/* ── Study Checklist (220Q Assessment only) ── */}
+              {/* ── ✅ Study Checklist (220Q Assessment only, collapsible) ── */}
               {(results.examName || '').toLowerCase().includes('220q assessment') && (results.questionDetails || []).length > 0 && (() => {
                 const incorrectItems = (results.questionDetails as any[])
                   .filter(qd => !qd.correct)
                   .map(qd => {
-                    const mapped = Q220_SUBJECT_MAP[qd.qNum as number]
+                    const mapped = Q220_SUBJECT_MAP[Number(qd.qNum)]
                     return {
-                      qNum: qd.qNum as number,
+                      qNum: Number(qd.qNum),
                       subject: mapped?.subject || qd.discipline || qd.system || 'Other',
                       subtopic: mapped?.subtopic || qd.topic || '—',
                     }
@@ -1877,7 +1796,10 @@ export default function ExamCenter() {
                   <div style={{border:'1px solid #e0dbd0',borderRadius:8,marginBottom:10,overflow:'hidden'}}>
                     <div onClick={() => setShowStudyChecklist(v => !v)}
                       style={{background:'#1a3a5a',padding:'11px 18px',display:'flex',alignItems:'center',justifyContent:'space-between',cursor:'pointer'}}>
-                      <div style={{fontSize:13,fontWeight:700,color:'white'}}>✅ Study Checklist — All Incorrect Topics</div>
+                      <div style={{display:'flex',alignItems:'center',gap:8}}>
+                        <span style={{fontSize:14}}>✅</span>
+                        <div style={{fontSize:13,fontWeight:700,color:'white'}}>Study Checklist — Incorrect Topics</div>
+                      </div>
                       <div style={{display:'flex',alignItems:'center',gap:12}}>
                         <span style={{fontSize:11,color:'rgba(255,255,255,0.5)'}}>{doneCount}/{incorrectItems.length} reviewed</span>
                         <span style={{color:'#c9a84c',fontSize:18,fontWeight:700,lineHeight:1}}>{showStudyChecklist ? '−' : '+'}</span>
@@ -1885,6 +1807,9 @@ export default function ExamCenter() {
                     </div>
                     {showStudyChecklist && (
                       <div style={{background:'white'}}>
+                        <div style={{padding:'10px 14px',borderBottom:'0.5px solid #f0ece0',fontSize:12,color:'#6b6050',lineHeight:1.6}}>
+                          Tick off each topic as you review it. Your progress saves in your browser session. Start with highest-priority subjects first.
+                        </div>
                         {doneCount > 0 && (
                           <div style={{padding:'8px 14px',borderBottom:'0.5px solid #f0ece0',display:'flex',alignItems:'center',gap:10}}>
                             <div style={{flex:1,height:6,background:'#e8e4dc',borderRadius:3,overflow:'hidden'}}>
@@ -1899,12 +1824,18 @@ export default function ExamCenter() {
                           {incorrectItems.map(item => {
                             const done = checkedQuestions.has(item.qNum)
                             return (
-                              <div key={item.qNum} onClick={() => toggleCheck(item.qNum)}
-                                style={{display:'flex',alignItems:'baseline',gap:10,padding:'7px 14px',borderBottom:'0.5px solid #f5f0e8',cursor:'pointer',background:done?'#f3f8ef':'white',transition:'background 0.15s'}}>
-                                <span style={{fontSize:14,color:done?'#6b7c3a':'#ccc8be',flexShrink:0,marginTop:1}}>{done ? '☑' : '☐'}</span>
+                              <div key={item.qNum}
+                                role="button"
+                                tabIndex={0}
+                                onClick={() => toggleCheck(item.qNum)}
+                                onKeyDown={e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggleCheck(item.qNum) } }}
+                                style={{display:'flex',alignItems:'center',gap:10,padding:'7px 14px',borderBottom:'0.5px solid #f5f0e8',cursor:'pointer',background:done?'#f3f8ef':'white',transition:'background 0.15s'}}>
+                                <div style={{width:16,height:16,borderRadius:3,border:`2px solid ${done?'#6b7c3a':'#c0b8a8'}`,background:done?'#6b7c3a':'white',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,transition:'all 0.15s'}}>
+                                  {done && <span style={{color:'white',fontSize:11,fontWeight:700,lineHeight:1}}>✓</span>}
+                                </div>
                                 <span style={{fontWeight:700,color:done?'#6b7c3a':'#0d2340',minWidth:42,flexShrink:0,fontSize:12}}>Q{item.qNum}</span>
                                 <span style={{fontSize:11,color:'#a89870',minWidth:110,flexShrink:0,whiteSpace:'nowrap'}}>{item.subject}</span>
-                                <span style={{fontSize:12,color:done?'#8aaa80':'#1a1008',textDecoration:done?'line-through':'none'}}>{item.subtopic}</span>
+                                <span style={{fontSize:12,color:done?'#8aaa80':'#1a1008',textDecoration:done?'line-through':'none',flex:1}}>{item.subtopic}</span>
                               </div>
                             )
                           })}
@@ -1915,7 +1846,132 @@ export default function ExamCenter() {
                 )
               })()}
 
-              {/* ── 220Q Assessment: Performance by Topic Accordion ── */}
+              {/* ── 📋 Priority Study List (collapsible) ── */}
+              {Object.keys(results.systemBreakdown || {}).length > 0 && (() => {
+                const rows = Object.entries(results.systemBreakdown as Record<string,{correct:number,total:number}>)
+                  .map(([name, s]) => ({
+                    name,
+                    correct: s.correct,
+                    total: s.total,
+                    wrong: s.total - s.correct,
+                    pct: s.total > 0 ? Math.round((s.correct / s.total) * 100) : 0,
+                  }))
+                  .sort((a,b) => a.pct - b.pct)
+                const dot = (pct: number) => pct < 65 ? '🔴 HIGH' : pct < 85 ? '🟡 MODERATE' : '🟢 STRONG'
+                return (
+                  <div style={{border:'1px solid #e0dbd0',borderRadius:8,marginBottom:10,overflow:'hidden'}}>
+                    <div onClick={() => setShowPriorityList(v => !v)}
+                      style={{background:'#0d2340',padding:'11px 18px',display:'flex',alignItems:'center',justifyContent:'space-between',cursor:'pointer'}}>
+                      <div style={{display:'flex',alignItems:'center',gap:8}}>
+                        <span style={{fontSize:14}}>📋</span>
+                        <div style={{fontSize:13,fontWeight:700,color:'white'}}>Priority Study List</div>
+                      </div>
+                      <div style={{display:'flex',alignItems:'center',gap:12}}>
+                        <span style={{fontSize:11,color:'rgba(255,255,255,0.5)'}}>All systems ranked worst → best</span>
+                        <span style={{color:'#c9a84c',fontSize:18,fontWeight:700,lineHeight:1}}>{showPriorityList ? '−' : '+'}</span>
+                      </div>
+                    </div>
+                    {showPriorityList && (
+                      <div style={{background:'white'}}>
+                        <div style={{padding:'10px 14px',borderBottom:'0.5px solid #f0ece0',fontSize:12,color:'#6b6050',lineHeight:1.6}}>
+                          Every system ranked lowest to highest. 🔴 High priority means below 65% — these need the most attention before your exam.
+                        </div>
+                        <div style={{overflowX:'auto'}}>
+                          <table style={{width:'100%',borderCollapse:'collapse'}}>
+                            <thead>
+                              <tr style={{background:'#f5f2eb',borderBottom:'1px solid #e0dbd0'}}>
+                                <th style={{padding:'7px 14px',textAlign:'left',fontSize:10,color:'#8a7d6a',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.06em',width:50}}>Rank</th>
+                                <th style={{padding:'7px 14px',textAlign:'left',fontSize:10,color:'#8a7d6a',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.06em'}}>System / Subject</th>
+                                <th style={{padding:'7px 14px',textAlign:'center',fontSize:10,color:'#8a7d6a',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.06em',width:80}}>Score</th>
+                                <th style={{padding:'7px 14px',textAlign:'center',fontSize:10,color:'#8a7d6a',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.06em',width:80}}>Wrong</th>
+                                <th style={{padding:'7px 14px',textAlign:'center',fontSize:10,color:'#8a7d6a',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.06em',width:140}}>Priority</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {rows.map((r, i) => (
+                                <tr key={r.name} style={{borderBottom:'0.5px solid #f5f0e8',background:i%2===0?'white':'#fdfcfa'}}>
+                                  <td style={{padding:'8px 14px',fontSize:13,color:'#a89870',textAlign:'center',fontWeight:600}}>{i+1}</td>
+                                  <td style={{padding:'8px 14px',fontSize:13,color:'#0d2340',fontWeight:500}}>{r.name}</td>
+                                  <td style={{padding:'8px 14px',fontSize:13,fontWeight:700,color:scoreColor(r.pct),textAlign:'center'}}>{r.pct}%</td>
+                                  <td style={{padding:'8px 14px',fontSize:13,color:'#c0574a',fontWeight:600,textAlign:'center'}}>{r.wrong}</td>
+                                  <td style={{padding:'8px 14px',fontSize:12,textAlign:'center'}}>{dot(r.pct)}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )
+              })()}
+
+              {/* ── 📊 Performance Breakdown — Strengths & Weaknesses (collapsible) ── */}
+              {hasBreakdown && (
+                <div style={{border:'1px solid #e0dbd0',borderRadius:8,marginBottom:10,overflow:'hidden'}}>
+                  <div onClick={() => setShowBreakdownSection(v => !v)}
+                    style={{background:'#0d2340',padding:'11px 18px',display:'flex',alignItems:'center',justifyContent:'space-between',cursor:'pointer'}}>
+                    <div style={{display:'flex',alignItems:'center',gap:8}}>
+                      <span style={{fontSize:14}}>📊</span>
+                      <div style={{fontSize:13,fontWeight:700,color:'white'}}>Performance Breakdown</div>
+                    </div>
+                    <div style={{display:'flex',alignItems:'center',gap:12}}>
+                      <span style={{fontSize:11,color:'rgba(255,255,255,0.5)'}}>Strengths &amp; weaknesses vs. national avg</span>
+                      <span style={{color:'#c9a84c',fontSize:18,fontWeight:700,lineHeight:1}}>{showBreakdownSection ? '−' : '+'}</span>
+                    </div>
+                  </div>
+                  {showBreakdownSection && (
+                    <div style={{padding:'16px',background:'white'}}>
+                      <div style={{fontSize:12,color:'#6b6050',marginBottom:14,lineHeight:1.6}}>
+                        How your performance compares to the estimated national average for USMLE Step 1 (~70%). A result in "Higher" means you outperformed average; "Lower" means room to grow. Use this alongside the Focus Plan to calibrate your study strategy.
+                      </div>
+                      <div style={{background:'#f5f2eb',border:'1px solid #e0dbd0',borderRadius:8,padding:'12px 16px',marginBottom:18}}>
+                        <div style={{fontSize:11,fontWeight:700,color:'#0d2340',marginBottom:10,textTransform:'uppercase',letterSpacing:'0.06em'}}>How to read this report</div>
+                        <div style={{display:'flex',gap:24,flexWrap:'wrap'}}>
+                          <div style={{flex:1,minWidth:200}}>
+                            <div style={{fontSize:11,color:'#7a6d5a',marginBottom:6}}>Your score color</div>
+                            <div style={{display:'flex',gap:14,flexWrap:'wrap'}}>
+                              {[
+                                {color:'#c0574a', label:'Focus First', range:'<55%'},
+                                {color:'#c07040', label:'Needs work', range:'55–64%'},
+                                {color:'#c9a84c', label:'Developing', range:'65–74%'},
+                                {color:'#6b7c3a', label:'Strong', range:'75%+'},
+                              ].map(({color, label, range}) => (
+                                <div key={label} style={{display:'flex',alignItems:'center',gap:6}}>
+                                  <div style={{width:10,height:10,borderRadius:'50%',background:color,flexShrink:0}}/>
+                                  <span style={{fontSize:12,color:'#3a3020',fontWeight:500}}>{label}</span>
+                                  <span style={{fontSize:11,color:'#8a7d6a'}}>{range}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                          <div style={{flex:1,minWidth:220}}>
+                            <div style={{fontSize:11,color:'#7a6d5a',marginBottom:6}}>Compared to national average for each category</div>
+                            <div style={{display:'flex',gap:12,flexWrap:'wrap'}}>
+                              {[
+                                {col:'Lower', desc:'5%+ below'},
+                                {col:'Same',  desc:'Within 5%'},
+                                {col:'Higher',desc:'5%+ above'},
+                              ].map(({col, desc}) => (
+                                <div key={col} style={{display:'flex',alignItems:'center',gap:6}}>
+                                  <div style={{width:13,height:13,background:'#2a8f8a',borderRadius:3,flexShrink:0}}/>
+                                  <span style={{fontSize:12,color:'#3a3020',fontWeight:500}}>{col}</span>
+                                  <span style={{fontSize:11,color:'#8a7d6a'}}>{desc}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      {hasSystem && <NBMEBreakdownTable title="Performance by Organ System" data={results.systemBreakdown} avgLookup={SYSTEM_NATIONAL_AVG}/>}
+                      {hasDiscipline && <NBMEBreakdownTable title="Performance by Subject / Discipline" data={results.disciplineBreakdown} avgLookup={DISCIPLINE_NATIONAL_AVG}/>}
+                      {hasTopic && <NBMEBreakdownTable title="Performance by Topic" data={results.topicBreakdown}/>}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ── 📖 Topic Full Breakdown 220Q (collapsible) ── */}
               {(results.examName || '').toLowerCase().includes('220q assessment') && (results.questionDetails || []).length > 0 && (() => {
                 type Q220Item = {qNum: number, subtopic: string, studentAnswer: string, correctAnswer: string}
                 const subjectGroups: Record<string, {correct: Q220Item[], incorrect: Q220Item[]}> = {}
@@ -1940,60 +1996,76 @@ export default function ExamCenter() {
                   return next
                 })
                 return (
-                  <div style={{marginBottom:20}}>
-                    <div style={{fontFamily:'Georgia,serif',fontSize:18,color:'#0d2340',marginBottom:4}}>Performance by Topic — Full Breakdown</div>
-                    <div style={{fontSize:12,color:'#8a7d6a',marginBottom:12}}>Sorted worst → best · click + to expand each subject</div>
-                    {sorted.map(([subj, {correct: cList, incorrect: iList}]) => {
-                      const total = cList.length + iList.length
-                      const pct = total > 0 ? Math.round((cList.length / total) * 100) : 0
-                      const priorityDot = pct < 65 ? '🔴' : pct < 85 ? '🟡' : '🟢'
-                      const priorityLabel = pct < 65 ? 'HIGH' : pct < 85 ? 'MODERATE' : 'STRONG'
-                      const isExpanded = expandedQ220Subjects.has(subj)
-                      const headerBg = pct < 65 ? '#fdf0ee' : pct < 85 ? '#fdfaee' : '#f0f5eb'
-                      const headerBorder = pct < 65 ? '#f0ccc8' : pct < 85 ? '#e8dfc8' : '#c8dcc0'
-                      return (
-                        <div key={subj} style={{border:`1px solid ${headerBorder}`,borderRadius:8,marginBottom:6,overflow:'hidden'}}>
-                          <div style={{background:headerBg,padding:'10px 16px',display:'flex',alignItems:'center',gap:12}}>
-                            <div style={{flex:1,display:'flex',alignItems:'center',gap:10,flexWrap:'wrap' as const}}>
-                              <span style={{fontWeight:700,fontSize:13,color:'#0d2340'}}>{subj}</span>
-                              <span style={{fontSize:12,color:'#6b6050'}}>{cList.length}/{total} correct ({pct}%)</span>
-                              <span style={{fontSize:12}}>{priorityDot} <span style={{fontSize:11,fontWeight:600,color:pct<65?'#c0574a':pct<85?'#c07040':'#6b7c3a'}}>{priorityLabel}</span></span>
-                            </div>
-                            <button onClick={() => toggleSubject(subj)}
-                              style={{width:26,height:26,borderRadius:6,border:'1.5px solid #c9a84c',background:'white',color:'#c9a84c',fontSize:18,fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',lineHeight:1,flexShrink:0,padding:0}}>
-                              {isExpanded ? '−' : '+'}
-                            </button>
-                          </div>
-                          {isExpanded && (
-                            <div style={{background:'white',padding:'10px 16px'}}>
-                              {iList.length > 0 && (
-                                <div style={{marginBottom: cList.length > 0 ? 12 : 0}}>
-                                  <div style={{fontSize:11,fontWeight:700,color:'#c0574a',marginBottom:5,textTransform:'uppercase' as const,letterSpacing:'0.06em'}}>✗ INCORRECT ({iList.length})</div>
-                                  {iList.sort((a,b)=>a.qNum-b.qNum).map(item => (
-                                    <div key={item.qNum} style={{display:'flex',alignItems:'baseline',gap:8,padding:'4px 8px',borderBottom:'0.5px solid #f5f0e8',fontSize:12}}>
-                                      <span style={{fontWeight:700,color:'#c0574a',minWidth:34,flexShrink:0}}>Q{item.qNum}</span>
-                                      <span style={{flex:1,color:'#1a1008'}}>{item.subtopic}</span>
-                                      <span style={{fontSize:11,color:'#a89870',flexShrink:0,whiteSpace:'nowrap' as const}}>Answered {item.studentAnswer} → {item.correctAnswer}</span>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                              {cList.length > 0 && (
-                                <div>
-                                  <div style={{fontSize:11,fontWeight:700,color:'#6b7c3a',marginBottom:5,textTransform:'uppercase' as const,letterSpacing:'0.06em'}}>✓ CORRECT ({cList.length})</div>
-                                  {cList.sort((a,b)=>a.qNum-b.qNum).map(item => (
-                                    <div key={item.qNum} style={{display:'flex',alignItems:'baseline',gap:8,padding:'4px 8px',borderBottom:'0.5px solid #f5f0e8',fontSize:12}}>
-                                      <span style={{fontWeight:700,color:'#6b7c3a',minWidth:34,flexShrink:0}}>Q{item.qNum}</span>
-                                      <span style={{flex:1,color:'#1a1008'}}>{item.subtopic}</span>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          )}
+                  <div style={{border:'1px solid #e0dbd0',borderRadius:8,marginBottom:10,overflow:'hidden'}}>
+                    <div onClick={() => setShowTopicFullBreakdown(v => !v)}
+                      style={{background:'#1a3a5a',padding:'11px 18px',display:'flex',alignItems:'center',justifyContent:'space-between',cursor:'pointer'}}>
+                      <div style={{display:'flex',alignItems:'center',gap:8}}>
+                        <span style={{fontSize:14}}>📖</span>
+                        <div style={{fontSize:13,fontWeight:700,color:'white'}}>Topic Full Breakdown</div>
+                      </div>
+                      <div style={{display:'flex',alignItems:'center',gap:12}}>
+                        <span style={{fontSize:11,color:'rgba(255,255,255,0.5)'}}>All 220 topics by subject — worst → best</span>
+                        <span style={{color:'#c9a84c',fontSize:18,fontWeight:700,lineHeight:1}}>{showTopicFullBreakdown ? '−' : '+'}</span>
+                      </div>
+                    </div>
+                    {showTopicFullBreakdown && (
+                      <div style={{padding:'16px',background:'white'}}>
+                        <div style={{fontSize:12,color:'#6b6050',marginBottom:14,lineHeight:1.6}}>
+                          Every question from the 220Q Assessment grouped by subject, sorted worst → best. Expand a subject to see individual question results and subtopics.
                         </div>
-                      )
-                    })}
+                        {sorted.map(([subj, {correct: cList, incorrect: iList}]) => {
+                          const total = cList.length + iList.length
+                          const pct = total > 0 ? Math.round((cList.length / total) * 100) : 0
+                          const priorityDot = pct < 65 ? '🔴' : pct < 85 ? '🟡' : '🟢'
+                          const priorityLabel = pct < 65 ? 'HIGH' : pct < 85 ? 'MODERATE' : 'STRONG'
+                          const isExpanded = expandedQ220Subjects.has(subj)
+                          const headerBg = pct < 65 ? '#fdf0ee' : pct < 85 ? '#fdfaee' : '#f0f5eb'
+                          const headerBorder = pct < 65 ? '#f0ccc8' : pct < 85 ? '#e8dfc8' : '#c8dcc0'
+                          return (
+                            <div key={subj} style={{border:`1px solid ${headerBorder}`,borderRadius:8,marginBottom:6,overflow:'hidden'}}>
+                              <div style={{background:headerBg,padding:'10px 16px',display:'flex',alignItems:'center',gap:12}}>
+                                <div style={{flex:1,display:'flex',alignItems:'center',gap:10,flexWrap:'wrap' as const}}>
+                                  <span style={{fontWeight:700,fontSize:13,color:'#0d2340'}}>{subj}</span>
+                                  <span style={{fontSize:12,color:'#6b6050'}}>{cList.length}/{total} correct ({pct}%)</span>
+                                  <span style={{fontSize:12}}>{priorityDot} <span style={{fontSize:11,fontWeight:600,color:pct<65?'#c0574a':pct<85?'#c07040':'#6b7c3a'}}>{priorityLabel}</span></span>
+                                </div>
+                                <button onClick={() => toggleSubject(subj)}
+                                  style={{width:26,height:26,borderRadius:6,border:'1.5px solid #c9a84c',background:'white',color:'#c9a84c',fontSize:18,fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',lineHeight:1,flexShrink:0,padding:0}}>
+                                  {isExpanded ? '−' : '+'}
+                                </button>
+                              </div>
+                              {isExpanded && (
+                                <div style={{background:'white',padding:'10px 16px'}}>
+                                  {iList.length > 0 && (
+                                    <div style={{marginBottom: cList.length > 0 ? 12 : 0}}>
+                                      <div style={{fontSize:11,fontWeight:700,color:'#c0574a',marginBottom:5,textTransform:'uppercase' as const,letterSpacing:'0.06em'}}>✗ INCORRECT ({iList.length})</div>
+                                      {iList.sort((a,b)=>a.qNum-b.qNum).map(item => (
+                                        <div key={item.qNum} style={{display:'flex',alignItems:'baseline',gap:8,padding:'4px 8px',borderBottom:'0.5px solid #f5f0e8',fontSize:12}}>
+                                          <span style={{fontWeight:700,color:'#c0574a',minWidth:34,flexShrink:0}}>Q{item.qNum}</span>
+                                          <span style={{flex:1,color:'#1a1008'}}>{item.subtopic}</span>
+                                          <span style={{fontSize:11,color:'#a89870',flexShrink:0,whiteSpace:'nowrap' as const}}>Answered {item.studentAnswer} → {item.correctAnswer}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                  {cList.length > 0 && (
+                                    <div>
+                                      <div style={{fontSize:11,fontWeight:700,color:'#6b7c3a',marginBottom:5,textTransform:'uppercase' as const,letterSpacing:'0.06em'}}>✓ CORRECT ({cList.length})</div>
+                                      {cList.sort((a,b)=>a.qNum-b.qNum).map(item => (
+                                        <div key={item.qNum} style={{display:'flex',alignItems:'baseline',gap:8,padding:'4px 8px',borderBottom:'0.5px solid #f5f0e8',fontSize:12}}>
+                                          <span style={{fontWeight:700,color:'#6b7c3a',minWidth:34,flexShrink:0}}>Q{item.qNum}</span>
+                                          <span style={{flex:1,color:'#1a1008'}}>{item.subtopic}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
                   </div>
                 )
               })()}
