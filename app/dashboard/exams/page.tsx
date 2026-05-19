@@ -882,14 +882,15 @@ export default function ExamCenter() {
         }
       }
 
-      const wrongCount = totalQ - correct
-      const percentCorrect = Math.round((correct / totalQ) * 100)
+      const gradedTotal = is200QExam(activeSession.exam_name || '') ? questionDetails.length : totalQ
+      const wrongCount = gradedTotal - correct
+      const percentCorrect = Math.round((correct / gradedTotal) * 100)
       const predictedStep1 = calcStep1Score(activeSession.exam_name, wrongCount, percentCorrect)
 
       await supabase.from('exam_sessions').update({
         submitted_at: submittedAt.toISOString(), actual_minutes: actualMinutes,
         within_limit: withinLimit, status: 'submitted',
-        score: correct, wrong_count: wrongCount, total_questions: totalQ,
+        score: correct, wrong_count: wrongCount, total_questions: gradedTotal,
         percent_correct: percentCorrect, predicted_step1: predictedStep1,
       }).eq('id', activeSession.id)
 
@@ -1093,14 +1094,15 @@ export default function ExamCenter() {
 
       // Use freshly computed scores (saved values were wrong — answer key wasn't loaded at submission)
       const correct = freshCorrect
-      const wrongCount = totalQ - freshCorrect
-      const percentCorrect = totalQ > 0 ? Math.round((correct / totalQ) * 100) : 0
+      const gradedTotal = is200QExam(session.exam_name || '') ? questionDetails.length : totalQ
+      const wrongCount = gradedTotal - freshCorrect
+      const percentCorrect = gradedTotal > 0 ? Math.round((correct / gradedTotal) * 100) : 0
       const predictedStep1 = calcStep1Score(session.exam_name, wrongCount, percentCorrect)
       const actualMinutes = session.actual_minutes ?? 0
       const withinLimit = session.within_limit ?? true
 
       await supabase.from('exam_sessions').update({
-        score: correct, wrong_count: wrongCount,
+        score: correct, wrong_count: wrongCount, total_questions: gradedTotal,
         percent_correct: percentCorrect, predicted_step1: predictedStep1,
       }).eq('id', session.id)
 

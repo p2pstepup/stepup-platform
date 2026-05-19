@@ -231,35 +231,33 @@ export interface QuestionDetail {
   discipline?: string
 }
 
+// Grades only the questions students actually saw on the PDF (skips auto-credit placeholders).
+// Returns one entry per real bubble position, numbered sequentially 1–N.
 export function gradeWith200QKey(
   allAnswers: Record<string, string>
 ): QuestionDetail[] {
-  return AMBOSS_200Q_MAP.map(entry => {
-    let studentAnswer = ''
-    let correct = false
+  const results: QuestionDetail[] = []
+  let seq = 0
 
-    if (entry.action === 'AWARD_AUTO_CREDIT') {
-      correct = true
-      studentAnswer = '(auto-credit)'
-    } else {
-      const origKey = String(entry.orig!)
-      studentAnswer = (String(allAnswers[origKey] ?? allAnswers[entry.orig!] ?? '')).toUpperCase().trim()
-      // Use PDF_ANSWERS (from actual exam PDF) — the `ans` field in AMBOSS_200Q_MAP had transcription errors
-      const correctAnswer = PDF_ANSWERS[origKey] ?? entry.ans
-      correct = !!studentAnswer && studentAnswer !== '—' && studentAnswer === correctAnswer
-    }
+  for (const entry of AMBOSS_200Q_MAP) {
+    if (entry.action === 'AWARD_AUTO_CREDIT') continue  // question wasn't on the PDF
 
-    const origKey = String(entry.orig ?? '')
-    const correctAnswer = entry.action === 'AWARD_AUTO_CREDIT' ? entry.ans : (PDF_ANSWERS[origKey] ?? entry.ans)
+    seq++
+    const origKey = String(entry.orig!)
+    const studentAnswer = (String(allAnswers[origKey] ?? allAnswers[entry.orig!] ?? '')).toUpperCase().trim()
+    const correctAnswer = PDF_ANSWERS[origKey] ?? entry.ans
+    const correct = !!studentAnswer && studentAnswer !== '—' && studentAnswer === correctAnswer
 
-    return {
-      qNum: entry.q,
+    results.push({
+      qNum: seq,
       studentAnswer: studentAnswer || '—',
       correctAnswer,
       correct,
       system: entry.system,
       topic: entry.topic,
       discipline: entry.system,
-    }
-  })
+    })
+  }
+
+  return results
 }
