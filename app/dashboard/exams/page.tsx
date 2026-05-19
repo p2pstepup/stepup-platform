@@ -18,9 +18,33 @@ const SCORE_FORMULAS: Record<string, {base: number, multiplier: number}> = {
   'UWSA 2':  {base: 296.94, multiplier: 1.097},
 }
 
-const calcStep1Score = (examName: string, wrongCount: number): number | null => {
+const AMBOSS_CORRELATION = [
+  {pct: 25, score: 180},
+  {pct: 30, score: 190},
+  {pct: 40, score: 202},
+  {pct: 50, score: 212},
+  {pct: 60, score: 222},
+  {pct: 70, score: 232},
+  {pct: 80, score: 245},
+]
+
+const calcStep1Score = (examName: string, wrongCount: number, pctCorrect?: number): number | null => {
+  const name = examName.toLowerCase()
+  if (name.includes('200q') || name.includes('amboss')) {
+    const pct = pctCorrect ?? 0
+    if (pct <= 25) return 180
+    if (pct >= 80) return 245
+    for (let i = 0; i < AMBOSS_CORRELATION.length - 1; i++) {
+      const lo = AMBOSS_CORRELATION[i], hi = AMBOSS_CORRELATION[i + 1]
+      if (pct >= lo.pct && pct < hi.pct) {
+        const t = (pct - lo.pct) / (hi.pct - lo.pct)
+        return Math.round(lo.score + t * (hi.score - lo.score))
+      }
+    }
+    return 245
+  }
   const formula = Object.entries(SCORE_FORMULAS).find(([key]) =>
-    examName.toLowerCase().includes(key.toLowerCase())
+    name.includes(key.toLowerCase())
   )
   if (!formula) return null
   return Math.round(formula[1].base - formula[1].multiplier * wrongCount)
@@ -566,7 +590,7 @@ export default function ExamCenter() {
 
       const wrongCount = totalQ - correct
       const percentCorrect = Math.round((correct / totalQ) * 100)
-      const predictedStep1 = calcStep1Score(activeSession.exam_name, wrongCount)
+      const predictedStep1 = calcStep1Score(activeSession.exam_name, wrongCount, percentCorrect)
 
       await supabase.from('exam_sessions').update({
         submitted_at: submittedAt.toISOString(), actual_minutes: actualMinutes,
@@ -753,7 +777,7 @@ export default function ExamCenter() {
       const correct = freshCorrect
       const wrongCount = totalQ - freshCorrect
       const percentCorrect = totalQ > 0 ? Math.round((correct / totalQ) * 100) : 0
-      const predictedStep1 = calcStep1Score(session.exam_name, wrongCount)
+      const predictedStep1 = calcStep1Score(session.exam_name, wrongCount, percentCorrect)
       const actualMinutes = session.actual_minutes ?? 0
       const withinLimit = session.within_limit ?? true
 
