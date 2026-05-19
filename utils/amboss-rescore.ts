@@ -212,6 +212,11 @@ export const AMBOSS_200Q_MAP: RescoreEntry[] = [
   {q:200,ans:"F",system:"Biostatistics & Public Health Science",topic:"Shaken baby syndrome — subdural hematoma (bridging vein tear)",action:"RESCORE_WITH_SHIFT",orig:196},
 ]
 
+// Correct answers from the AMBOSS 200Q exam PDF (authoritative source).
+// Keyed by original bubble-sheet position (same as AMBOSS_200Q_MAP's `orig` field).
+// Replaces the transcription-error-laden `ans` fields in AMBOSS_200Q_MAP.
+const PDF_ANSWERS: Record<string, string> = {"1":"E","2":"B","3":"F","4":"C","5":"E","6":"A","7":"B","8":"A","9":"E","10":"A","11":"F","12":"E","13":"B","14":"E","15":"A","16":"G","17":"B","18":"A","19":"C","20":"F","21":"E","22":"E","23":"B","24":"D","25":"D","26":"D","27":"C","28":"A","29":"A","30":"D","31":"B","32":"B","33":"A","34":"F","35":"F","36":"C","37":"E","38":"E","39":"A","40":"D","41":"F","42":"A","43":"C","44":"B","45":"D","46":"E","47":"A","48":"C","49":"E","50":"F","51":"C","52":"D","53":"D","54":"C","55":"C","56":"B","57":"A","58":"D","59":"D","60":"F","61":"C","62":"F","63":"C","64":"C","65":"E","66":"A","67":"A","68":"A","69":"C","70":"C","71":"E","72":"C","73":"C","74":"A","75":"F","76":"D","77":"D","78":"B","79":"C","80":"B","81":"C","82":"E","83":"B","84":"A","85":"B","86":"B","87":"A","88":"A","89":"B","90":"A","91":"B","92":"A","93":"D","94":"F","95":"B","96":"A","97":"F","98":"D","99":"A","100":"C","101":"B","102":"D","103":"D","104":"F","105":"E","106":"F","107":"B","108":"D","109":"E","110":"F","111":"F","112":"A","113":"D","114":"E","115":"D","116":"C","117":"D","118":"B","119":"E","120":"F","121":"C","122":"E","123":"F","124":"E","125":"A","126":"E","127":"F","128":"C","129":"D","130":"E","131":"F","132":"E","133":"F","134":"C","135":"C","136":"B","137":"F","138":"B","139":"C","140":"C","141":"E","142":"B","143":"C","144":"E","145":"E","146":"C","147":"A","148":"B","149":"C","150":"D","151":"A","152":"B","153":"D","154":"B","155":"E","156":"B","157":"A","158":"A","159":"E","160":"A","161":"E","162":"E","163":"C","164":"D","165":"B","166":"F","167":"C","168":"D","169":"E","170":"F","171":"C","172":"C","173":"A","174":"B","175":"F","176":"E","177":"D","178":"C","179":"E","180":"E","181":"C","182":"B","183":"B","184":"E","185":"F","186":"F","187":"A","188":"B","189":"C","190":"A","191":"D","192":"A","193":"D","194":"C","195":"B","196":"B"}
+
 export function is200QExam(examName: string): boolean {
   return examName.toLowerCase().includes('200q') || examName.toLowerCase().includes('stepup 200')
 }
@@ -237,14 +242,20 @@ export function gradeWith200QKey(
       correct = true
       studentAnswer = '(auto-credit)'
     } else {
-      studentAnswer = (String(allAnswers[String(entry.orig!)] ?? allAnswers[entry.orig!] ?? '')).toUpperCase().trim()
-      correct = !!studentAnswer && studentAnswer !== '—' && studentAnswer === entry.ans
+      const origKey = String(entry.orig!)
+      studentAnswer = (String(allAnswers[origKey] ?? allAnswers[entry.orig!] ?? '')).toUpperCase().trim()
+      // Use PDF_ANSWERS (from actual exam PDF) — the `ans` field in AMBOSS_200Q_MAP had transcription errors
+      const correctAnswer = PDF_ANSWERS[origKey] ?? entry.ans
+      correct = !!studentAnswer && studentAnswer !== '—' && studentAnswer === correctAnswer
     }
+
+    const origKey = String(entry.orig ?? '')
+    const correctAnswer = entry.action === 'AWARD_AUTO_CREDIT' ? entry.ans : (PDF_ANSWERS[origKey] ?? entry.ans)
 
     return {
       qNum: entry.q,
       studentAnswer: studentAnswer || '—',
-      correctAnswer: entry.ans,
+      correctAnswer,
       correct,
       system: entry.system,
       topic: entry.topic,
