@@ -1329,13 +1329,14 @@ export default function ExamCenter() {
                   const nationalAvg = lookup?.[name] ?? 70
                   return { name, pct, correct: s.correct, total: s.total, missed: s.total - s.correct, nationalAvg }
                 })
-                .sort((a,b) => a.pct - b.pct)
+                .sort((a,b) => b.missed !== a.missed ? b.missed - a.missed : a.pct - b.pct)
 
             const systemRows = buildMap(results.systemBreakdown || {}, SYSTEM_NATIONAL_AVG)
             const disciplineRows = buildMap(results.disciplineBreakdown || {}, DISCIPLINE_NATIONAL_AVG)
 
-            const urgency = (pct: number, nationalAvg: number) =>
-              pct < nationalAvg - 8 ? 'red' : pct < nationalAvg + 5 ? 'amber' : 'green'
+            const urgency = (pct: number, nationalAvg: number, missed: number) =>
+              missed > 10 || pct < nationalAvg - 8 ? 'red' :
+              missed > 4 || pct < nationalAvg + 5 ? 'amber' : 'green'
             const urgencyColor = (u: string) =>
               u === 'red' ? '#c0574a' : u === 'amber' ? '#c9a84c' : '#6b7c3a'
             const urgencyBg = (u: string) =>
@@ -1355,9 +1356,9 @@ export default function ExamCenter() {
               prefix: string
             }) => {
               if (rows.length === 0) return null
-              const redRows = rows.filter(r => urgency(r.pct, r.nationalAvg) === 'red')
-              const amberRows = rows.filter(r => urgency(r.pct, r.nationalAvg) === 'amber')
-              const greenRows = rows.filter(r => urgency(r.pct, r.nationalAvg) === 'green')
+              const redRows = rows.filter(r => urgency(r.pct, r.nationalAvg, r.missed) === 'red')
+              const amberRows = rows.filter(r => urgency(r.pct, r.nationalAvg, r.missed) === 'amber')
+              const greenRows = rows.filter(r => urgency(r.pct, r.nationalAvg, r.missed) === 'green')
 
               const RowGroup = ({ label, color, bg, items }: { label:string, color:string, bg:string, items: typeof rows }) => {
                 if (items.length === 0) return null
@@ -1374,8 +1375,8 @@ export default function ExamCenter() {
                       const avgMarker = Math.min(row.nationalAvg, 100)
                       const diff = row.pct - row.nationalAvg
                       const topicEntries = Object.entries(subtopicMap[row.name] || {})
-                        .map(([t, s]) => ({ name: t, pct: s.total > 0 ? Math.round((s.correct/s.total)*100) : 0, correct: s.correct, total: s.total }))
-                        .sort((a,b) => a.pct - b.pct)
+                        .map(([t, s]) => ({ name: t, pct: s.total > 0 ? Math.round((s.correct/s.total)*100) : 0, correct: s.correct, total: s.total, missed: s.total - s.correct }))
+                        .sort((a,b) => b.missed !== a.missed ? b.missed - a.missed : a.pct - b.pct)
                       return (
                         <div key={row.name} style={{background:bg,borderRadius:8,padding:'12px 16px',marginBottom:6,border:`1px solid ${color}22`}}>
                           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
@@ -1440,8 +1441,8 @@ export default function ExamCenter() {
               )
             }
 
-            const topWeakSystems = systemRows.filter(r => urgency(r.pct, r.nationalAvg) === 'red').slice(0,3)
-            const topWeakDisciplines = disciplineRows.filter(r => urgency(r.pct, r.nationalAvg) === 'red').slice(0,3)
+            const topWeakSystems = systemRows.filter(r => urgency(r.pct, r.nationalAvg, r.missed) === 'red').slice(0,3)
+            const topWeakDisciplines = disciplineRows.filter(r => urgency(r.pct, r.nationalAvg, r.missed) === 'red').slice(0,3)
 
             return (
               <div style={{paddingTop:20}}>
