@@ -20,7 +20,7 @@ const SCORE_FORMULAS: Record<string, {base: number, multiplier: number}> = {
 
 const AMBOSS_CORRELATION = [
   {pct: 25, score: 180},
-  {pct: 30, score: 190},
+  {pct: 30, score: 185},
   {pct: 40, score: 202},
   {pct: 50, score: 212},
   {pct: 60, score: 222},
