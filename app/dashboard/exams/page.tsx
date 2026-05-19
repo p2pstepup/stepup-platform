@@ -252,8 +252,9 @@ export default function ExamCenter() {
   const [pdfUrl, setPdfUrl] = useState<string|null>(null)
   const [answerKey, setAnswerKey] = useState<Record<string, AKEntry>>({})
   const [resultsFilter, setResultsFilter] = useState<'all'|'correct'|'incorrect'>('all')
-  const [resultsTab, setResultsTab] = useState<'report'|'weakness'|'questions'>('report')
+  const [resultsTab, setResultsTab] = useState<'report'|'weakness'|'questions'|'progress'>('report')
   const [expandedWeaknessRows, setExpandedWeaknessRows] = useState<Set<string>>(new Set())
+  const [qReviewGrouped, setQReviewGrouped] = useState(true)
   const [currentSection, setCurrentSection] = useState(1)
   const [sectionAnswers, setSectionAnswers] = useState<Record<number, Record<number, string>>>({1:{},2:{},3:{},4:{}})
   const [sectionTimeLeft, setSectionTimeLeft] = useState(0)
@@ -610,7 +611,7 @@ export default function ExamCenter() {
 
       setResultsFilter('all')
       setResultsTab('report')
-      setResults({ correct, wrongCount, totalQ, percentCorrect, predictedStep1, actualMinutes, withinLimit, examName: activeSession.exam_name, timeUp, systemBreakdown, topicBreakdown, disciplineBreakdown, questionDetails })
+      setResults({ correct, wrongCount, totalQ, percentCorrect, predictedStep1, actualMinutes, withinLimit, examName: activeSession.exam_name, examId: activeSession.exam_id, timeUp, systemBreakdown, topicBreakdown, disciplineBreakdown, questionDetails })
       setView('results')
     } catch (err) {
       console.error('submitExam error:', err)
@@ -800,7 +801,7 @@ export default function ExamCenter() {
 
       setResultsFilter('all')
       setResultsTab('report')
-      setResults({ correct, wrongCount, totalQ, percentCorrect, predictedStep1, actualMinutes, withinLimit, examName: session.exam_name, timeUp: false, systemBreakdown, topicBreakdown, disciplineBreakdown, questionDetails })
+      setResults({ correct, wrongCount, totalQ, percentCorrect, predictedStep1, actualMinutes, withinLimit, examName: session.exam_name, examId: session.exam_id, timeUp: false, systemBreakdown, topicBreakdown, disciplineBreakdown, questionDetails })
       setView('results')
     } catch (err) {
       console.error('viewSessionReport error:', err)
@@ -1173,6 +1174,7 @@ export default function ExamCenter() {
               {key:'report', label:'Score Report'},
               {key:'weakness', label:'Weakness Map'},
               {key:'questions', label:`Question Review (${results.questionDetails?.length||0})`},
+              {key:'progress', label:'My Progress'},
             ] as const).map(t => (
               <button key={t.key} onClick={() => setResultsTab(t.key)}
                 style={{padding:'10px 24px',border:'none',borderBottom:resultsTab===t.key?'2px solid #c9a84c':'2px solid transparent',marginBottom:-2,
@@ -1227,6 +1229,123 @@ export default function ExamCenter() {
                   </div>
                 ))}
               </div>
+
+              {/* ── Focus Plan + Study Recommendations ── */}
+              {hasBreakdown && (() => {
+                // Build topic-level miss counts
+                const topicStats: Record<string, {missed:number,total:number,system?:string,discipline?:string}> = {}
+                for (const q of (results.questionDetails || [])) {
+                  if (!q.topic) continue
+                  if (!topicStats[q.topic]) topicStats[q.topic] = {missed:0, total:0, system:q.system, discipline:q.discipline}
+                  topicStats[q.topic].total++
+                  if (!q.correct) topicStats[q.topic].missed++
+                }
+                const sorted = Object.entries(topicStats).sort((a,b) =>
+                  b[1].missed !== a[1].missed ? b[1].missed - a[1].missed : (b[1].missed/b[1].total) - (a[1].missed/a[1].total)
+                )
+                const priorityTopics = sorted.filter(([,v]) => v.missed > 0).slice(0, 5)
+                const strongTopics = sorted.filter(([,v]) => v.missed === 0 && v.total >= 2).slice(0, 3)
+                if (priorityTopics.length === 0) return null
+
+                // Same-exam history for comparison
+                const sameExamSessions = pastSessions
+                  .filter(s => s.exam_id === results.examId && s.status === 'submitted' && s.percent_correct != null)
+                  .sort((a,b) => new Date(a.submitted_at as string).getTime() - new Date(b.submitted_at as string).getTime())
+                const prevSession = sameExamSessions.length >= 2 ? sameExamSessions[sameExamSessions.length - 2] : null
+                const delta = prevSession ? results.percentCorrect - prevSession.percent_correct : null
+
+                return (
+                  <div style={{marginBottom:28}}>
+                    {/* Progress delta badge */}
+                    {delta !== null && (
+                      <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:16,padding:'10px 16px',background:'white',border:'1px solid #e0dbd0',borderRadius:8}}>
+                        <span style={{fontSize:22,fontWeight:700,color:delta>0?'#6b7c3a':delta<0?'#c0574a':'#8a7d6a'}}>
+                          {delta>0?'▲':delta<0?'▼':'–'} {Math.abs(delta)}%
+                        </span>
+                        <span style={{fontSize:13,color:'#6b6050'}}>
+                          {delta>0?'improvement':'change'} from your previous attempt ({prevSession.percent_correct}% → {results.percentCorrect}%)
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Focus Plan */}
+                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16,marginBottom:0}}>
+                      {/* Left: priorities */}
+                      <div style={{background:'white',border:'1px solid #e8dfc8',borderRadius:10,overflow:'hidden'}}>
+                        <div style={{background:'#0d2340',padding:'10px 16px',display:'flex',alignItems:'center',gap:8}}>
+                          <span style={{fontSize:16}}>🎯</span>
+                          <div style={{fontSize:13,fontWeight:700,color:'white'}}>Your Focus Plan</div>
+                          <div style={{fontSize:11,color:'rgba(201,168,76,0.7)',marginLeft:'auto'}}>Study these first</div>
+                        </div>
+                        <div style={{padding:'12px 14px',display:'flex',flexDirection:'column',gap:8}}>
+                          {priorityTopics.map(([topic, v], idx) => {
+                            const pct = Math.round(((v.total - v.missed) / v.total) * 100)
+                            const color = v.missed >= 5 ? '#c0574a' : v.missed >= 3 ? '#c07040' : '#c9a84c'
+                            return (
+                              <div key={topic} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 10px',borderRadius:7,background:idx===0?'#fdf5f4':'#fdf9f2',border:`1px solid ${color}22`}}>
+                                <div style={{width:22,height:22,borderRadius:'50%',background:color,color:'white',fontSize:11,fontWeight:800,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>{idx+1}</div>
+                                <div style={{flex:1,minWidth:0}}>
+                                  <div style={{fontSize:12,fontWeight:600,color:'#0d2340',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{topic}</div>
+                                  <div style={{fontSize:10,color:'#8a7d6a'}}>{v.system} · {v.missed}/{v.total} missed ({pct}% correct)</div>
+                                </div>
+                                <button onClick={() => router.push('/dashboard/qbank')}
+                                  style={{flexShrink:0,padding:'4px 10px',borderRadius:6,border:'1px solid #d8cfc0',background:'white',fontSize:11,fontWeight:600,color:'#0d2340',cursor:'pointer',whiteSpace:'nowrap'}}>
+                                  Practice →
+                                </button>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Right: strengths + study rec */}
+                      <div style={{display:'flex',flexDirection:'column',gap:16}}>
+                        {/* Keep it up */}
+                        {strongTopics.length > 0 && (
+                          <div style={{background:'white',border:'1px solid #e8dfc8',borderRadius:10,overflow:'hidden',flex:strongTopics.length > 0 ? 'none' : 1}}>
+                            <div style={{background:'#3a5a2a',padding:'10px 16px',display:'flex',alignItems:'center',gap:8}}>
+                              <span style={{fontSize:16}}>✓</span>
+                              <div style={{fontSize:13,fontWeight:700,color:'white'}}>Keep It Up</div>
+                              <div style={{fontSize:11,color:'rgba(255,255,255,0.55)',marginLeft:'auto'}}>No review needed</div>
+                            </div>
+                            <div style={{padding:'12px 14px',display:'flex',flexDirection:'column',gap:6}}>
+                              {strongTopics.map(([topic, v]) => (
+                                <div key={topic} style={{display:'flex',alignItems:'center',gap:8,padding:'6px 10px',borderRadius:7,background:'#f3f8ef',border:'1px solid #c8dcc0'}}>
+                                  <span style={{fontSize:14,color:'#6b7c3a'}}>✓</span>
+                                  <div style={{flex:1,minWidth:0}}>
+                                    <div style={{fontSize:12,fontWeight:600,color:'#2a4a1a',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{topic}</div>
+                                    <div style={{fontSize:10,color:'#6b7c3a'}}>{v.total}/{v.total} correct · {v.system}</div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Study recommendations */}
+                        <div style={{background:'white',border:'1px solid #e8dfc8',borderRadius:10,overflow:'hidden',flex:1}}>
+                          <div style={{background:'#1a3a5a',padding:'10px 16px',display:'flex',alignItems:'center',gap:8}}>
+                            <span style={{fontSize:16}}>📖</span>
+                            <div style={{fontSize:13,fontWeight:700,color:'white'}}>Study Recommendations</div>
+                          </div>
+                          <div style={{padding:'12px 14px',display:'flex',flexDirection:'column',gap:6}}>
+                            {priorityTopics.slice(0,3).map(([topic, v]) => (
+                              <div key={topic} style={{display:'flex',alignItems:'center',gap:8,padding:'6px 10px',borderRadius:7,background:'#f5f8fc',border:'1px solid #d0dcea'}}>
+                                <div style={{width:6,height:6,borderRadius:'50%',background:'#2a6cb0',flexShrink:0}}/>
+                                <div style={{flex:1,fontSize:12,color:'#1a3a5a',fontWeight:500,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{topic}</div>
+                                <span style={{fontSize:10,color:'#8a7d6a',whiteSpace:'nowrap'}}>{v.discipline}</span>
+                              </div>
+                            ))}
+                            <div style={{fontSize:11,color:'#a89870',marginTop:4,lineHeight:1.5}}>
+                              Review these topics in First Aid, Sketchy, or your preferred resource, then practice Q-Bank questions.
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })()}
 
               {/* Relative Strengths & Weaknesses */}
               {hasBreakdown && (
@@ -1503,9 +1622,9 @@ export default function ExamCenter() {
           {resultsTab === 'questions' && (
             <div style={{paddingTop:20}}>
               <div style={{background:'white',border:'0.5px solid #e8dfc8',borderRadius:12,overflow:'hidden',marginBottom:24}}>
-                <div style={{background:'#0d2340',padding:'12px 18px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                <div style={{background:'#0d2340',padding:'12px 18px',display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:8}}>
                   <div style={{fontSize:14,fontWeight:600,color:'white'}}>Question Review</div>
-                  <div style={{display:'flex',gap:6}}>
+                  <div style={{display:'flex',gap:6,alignItems:'center',flexWrap:'wrap'}}>
                     {(['all','correct','incorrect'] as const).map(f => (
                       <button key={f} onClick={() => setResultsFilter(f)}
                         style={{padding:'4px 14px',borderRadius:6,border:'none',fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:'Sora,sans-serif',
@@ -1514,11 +1633,69 @@ export default function ExamCenter() {
                         {f==='all'?`All (${results.questionDetails?.length||0})`:f==='correct'?`✓ Correct (${results.correct})`:`✗ Incorrect (${results.wrongCount})`}
                       </button>
                     ))}
+                    <div style={{width:1,height:20,background:'rgba(255,255,255,0.2)',margin:'0 2px'}}/>
+                    <button onClick={() => setQReviewGrouped(g => !g)}
+                      style={{padding:'4px 12px',borderRadius:6,border:'none',fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:'Sora,sans-serif',
+                        background:qReviewGrouped?'rgba(201,168,76,0.25)':'rgba(255,255,255,0.12)',
+                        color:qReviewGrouped?'#c9a84c':'rgba(255,255,255,0.6)'}}>
+                      ⊞ Group by System
+                    </button>
                   </div>
                 </div>
                 {filteredQs.length === 0 ? (
                   <div style={{padding:'32px',textAlign:'center',color:'#a89870',fontSize:14}}>No questions to display</div>
-                ) : (
+                ) : qReviewGrouped ? (() => {
+                  const groups: Record<string, Array<{qNum:number,system?:string,discipline?:string,topic?:string,concept?:string,studentAnswer:string,correctAnswer?:string,correct:boolean}>> = {}
+                  type QItem = {qNum:number,system?:string,discipline?:string,topic?:string,concept?:string,studentAnswer:string,correctAnswer?:string,correct:boolean}
+                  ;(filteredQs as QItem[]).forEach(q => {
+                    const key = q.system || 'Other'
+                    if (!groups[key]) groups[key] = []
+                    groups[key].push(q)
+                  })
+                  return (
+                    <div style={{overflowX:'auto'}}>
+                      {Object.entries(groups).sort(([,a],[,b]) => b.filter(q => !q.correct).length - a.filter(q => !q.correct).length).map(([system, qs]) => {
+                        const missed = qs.filter(q => !q.correct).length
+                        const pct = Math.round(((qs.length - missed) / qs.length) * 100)
+                        const headerColor = pct < 55 ? '#c0574a' : pct < 65 ? '#c07040' : pct < 75 ? '#c9a84c' : '#6b7c3a'
+                        return (
+                          <div key={system} style={{marginBottom:0}}>
+                            <div style={{background:'#f0ece0',padding:'8px 14px',display:'flex',alignItems:'center',gap:12,borderBottom:'1px solid #e8dfc8',borderTop:'1px solid #e8dfc8'}}>
+                              <div style={{width:10,height:10,borderRadius:'50%',background:headerColor,flexShrink:0}}/>
+                              <span style={{fontSize:13,fontWeight:700,color:'#0d2340',flex:1}}>{system}</span>
+                              <span style={{fontSize:12,color:'#8a7d6a'}}>{qs.length}Q · {pct}% correct</span>
+                              {missed > 0 && <span style={{fontSize:12,fontWeight:600,color:headerColor}}>{missed} missed</span>}
+                            </div>
+                            <table style={{width:'100%',borderCollapse:'collapse'}}>
+                              <thead>
+                                <tr style={{background:'#faf8f4'}}>
+                                  {['Q#','Subject','Topic','Concept','Your Answer','Correct','Result'].map(h => (
+                                    <th key={h} style={{fontSize:10,textTransform:'uppercase',letterSpacing:'0.07em',color:'#a89870',padding:'7px 14px',textAlign:'left',borderBottom:'0.5px solid #f0ece0',whiteSpace:'nowrap'}}>{h}</th>
+                                  ))}
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {qs.map((q, i) => (
+                                  <tr key={q.qNum} style={{borderBottom:'0.5px solid #faf8f4',background:i%2===0?'white':'#fdfcfa'}}>
+                                    <td style={{padding:'8px 14px',fontSize:13,color:'#0d2340',fontWeight:600,width:40}}>{q.qNum}</td>
+                                    <td style={{padding:'8px 14px',fontSize:12,color:'#3d3020',whiteSpace:'nowrap'}}>{q.discipline||'—'}</td>
+                                    <td style={{padding:'8px 14px',fontSize:12,color:'#3d3020'}}>{q.topic||'—'}</td>
+                                    <td style={{padding:'8px 14px',fontSize:11,color:'#8a7d6a',maxWidth:200}}>{q.concept||'—'}</td>
+                                    <td style={{padding:'8px 14px',fontSize:13,fontWeight:700,color:q.correct?'#6b7c3a':'#c0574a',textAlign:'center',width:56}}>{q.studentAnswer}</td>
+                                    <td style={{padding:'8px 14px',fontSize:13,fontWeight:700,color:'#0d2340',textAlign:'center',width:56}}>{q.correctAnswer||'—'}</td>
+                                    <td style={{padding:'8px 14px',textAlign:'center',width:44}}>
+                                      <span style={{fontSize:15,color:q.correct?'#6b7c3a':'#c0574a'}}>{q.correct?'✓':'✗'}</span>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )
+                })() : (
                   <div style={{overflowX:'auto'}}>
                     <table style={{width:'100%',borderCollapse:'collapse'}}>
                       <thead>
@@ -1529,7 +1706,7 @@ export default function ExamCenter() {
                         </tr>
                       </thead>
                       <tbody>
-                        {filteredQs.map((q: {qNum:number,system?:string,discipline?:string,topic?:string,concept?:string,studentAnswer:string,correctAnswer?:string,correct:boolean}, i: number) => (
+                        {(filteredQs as Array<{qNum:number,system?:string,discipline?:string,topic?:string,concept?:string,studentAnswer:string,correctAnswer?:string,correct:boolean}>).map((q, i) => (
                           <tr key={q.qNum} style={{borderBottom:'0.5px solid #faf8f4',background:i%2===0?'white':'#fdfcfa'}}>
                             <td style={{padding:'9px 14px',fontSize:13,color:'#0d2340',fontWeight:600,width:40}}>{q.qNum}</td>
                             <td style={{padding:'9px 14px',fontSize:12,color:'#3d3020',whiteSpace:'nowrap'}}>{q.system||'—'}</td>
@@ -1560,6 +1737,151 @@ export default function ExamCenter() {
               </div>
             </div>
           )}
+
+          {/* ── MY PROGRESS TAB ── */}
+          {resultsTab === 'progress' && (() => {
+            const examSessions = pastSessions
+              .filter((s: {exam_id:string,status:string,percent_correct:number|null,submitted_at:string}) => s.exam_id === results.examId && s.status === 'submitted' && s.percent_correct != null)
+              .sort((a: {submitted_at:string},b: {submitted_at:string}) => new Date(a.submitted_at).getTime() - new Date(b.submitted_at).getTime())
+
+            const PASS = 65
+            const W = 560, H = 200
+            const PL = 52, PR = 36, PT = 28, PB = 40
+            const cW = W - PL - PR, cH = H - PT - PB
+            const scores: number[] = examSessions.map((s: {percent_correct:number}) => s.percent_correct)
+            const n = scores.length
+            const xOf = (i: number) => n <= 1 ? PL + cW / 2 : PL + (i / (n - 1)) * cW
+            const yOf = (pct: number) => PT + cH - (pct / 100) * cH
+
+            let trendPath = ''
+            let projectedDate: string | null = null
+            if (n >= 2) {
+              const meanX = (n - 1) / 2
+              const meanY = scores.reduce((a: number, b: number) => a + b, 0) / n
+              const slope = scores.reduce((acc: number, y: number, i: number) => acc + (i - meanX) * (y - meanY), 0) /
+                scores.reduce((acc: number, _: number, i: number) => acc + (i - meanX) ** 2, 0)
+              const intercept = meanY - slope * meanX
+              const ty1 = Math.max(0, Math.min(100, slope * 0 + intercept))
+              const ty2 = Math.max(0, Math.min(100, slope * (n - 1) + intercept))
+              trendPath = `M ${xOf(0)} ${yOf(ty1)} L ${xOf(n - 1)} ${yOf(ty2)}`
+              if (slope > 0 && meanY < PASS) {
+                const stepsNeeded = (PASS - intercept) / slope
+                const msPerStep = n > 1
+                  ? (new Date(examSessions[n-1].submitted_at).getTime() - new Date(examSessions[0].submitted_at).getTime()) / (n - 1)
+                  : 14 * 86400000
+                const msUntilReady = (stepsNeeded - (n - 1)) * msPerStep
+                const readyDate = new Date(Date.now() + Math.max(0, msUntilReady))
+                projectedDate = readyDate.toLocaleDateString('en-US', {month:'long',day:'numeric',year:'numeric'})
+              }
+            }
+            const linePath = n > 1 ? 'M ' + scores.map((s: number, i: number) => `${xOf(i)} ${yOf(s)}`).join(' L ') : ''
+            const lastScore = scores[n - 1]
+            const bestScore = n > 0 ? Math.max(...scores) : 0
+            const avgScore = n > 0 ? Math.round(scores.reduce((a: number, b: number) => a + b, 0) / n) : 0
+
+            return (
+              <div style={{paddingTop:20}}>
+                <div style={{background:'white',border:'0.5px solid #e8dfc8',borderRadius:12,overflow:'hidden',marginBottom:24}}>
+                  <div style={{background:'#0d2340',padding:'14px 18px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                    <div style={{fontSize:14,fontWeight:600,color:'white'}}>My Progress — {results.examName}</div>
+                    <div style={{fontSize:12,color:'rgba(255,255,255,0.5)'}}>{n} attempt{n !== 1 ? 's' : ''}</div>
+                  </div>
+                  {n === 0 ? (
+                    <div style={{padding:'48px 24px',textAlign:'center',color:'#a89870',fontSize:14}}>No submitted attempts yet for this exam.</div>
+                  ) : (
+                    <div style={{padding:'20px 16px'}}>
+                      <svg viewBox={`0 0 ${W} ${H}`} style={{width:'100%',display:'block',marginBottom:16}}>
+                        {[0,25,50,65,75,100].map(pct => (
+                          <g key={pct}>
+                            <line x1={PL} y1={yOf(pct)} x2={W-PR} y2={yOf(pct)}
+                              stroke={pct===PASS?'#c9a84c':'#e8e0d0'} strokeWidth={pct===PASS?1.5:0.5}
+                              strokeDasharray={pct===PASS?'6,4':undefined}/>
+                            <text x={PL-6} y={yOf(pct)+4} textAnchor="end" fontSize={9} fill={pct===PASS?'#c9a84c':'#b0a080'}>{pct}%</text>
+                          </g>
+                        ))}
+                        <text x={W-PR+4} y={yOf(PASS)+4} fontSize={9} fill="#c9a84c">Pass</text>
+                        {linePath && <path d={linePath} stroke="#0d2340" strokeWidth={2} fill="none" strokeLinejoin="round"/>}
+                        {trendPath && <path d={trendPath} stroke="#c9a84c" strokeWidth={1.5} strokeDasharray="8,4" fill="none"/>}
+                        {scores.map((s: number, i: number) => {
+                          const cx = xOf(i), cy = yOf(s)
+                          const col = s >= 75 ? '#6b7c3a' : s >= 65 ? '#c9a84c' : '#c0574a'
+                          return (
+                            <g key={i}>
+                              <circle cx={cx} cy={cy} r={6} fill={col} stroke="white" strokeWidth={2}/>
+                              <text x={cx} y={cy - 12} textAnchor="middle" fontSize={10} fontWeight="bold" fill={col}>{s}%</text>
+                            </g>
+                          )
+                        })}
+                        {examSessions.map((s: {submitted_at:string}, i: number) => (
+                          <text key={i} x={xOf(i)} y={H - PB + 16} textAnchor="middle" fontSize={9} fill="#8a7d6a">
+                            {new Date(s.submitted_at).toLocaleDateString('en-US',{month:'short',day:'numeric'})}
+                          </text>
+                        ))}
+                      </svg>
+                      <div style={{display:'flex',gap:16,marginBottom:20,flexWrap:'wrap' as const,fontSize:11,color:'#8a7d6a',alignItems:'center'}}>
+                        <div style={{display:'flex',alignItems:'center',gap:5}}>
+                          <svg width={20} height={8}><line x1={0} y1={4} x2={20} y2={4} stroke="#0d2340" strokeWidth={2}/></svg>
+                          Score history
+                        </div>
+                        <div style={{display:'flex',alignItems:'center',gap:5}}>
+                          <svg width={20} height={8}><line x1={0} y1={4} x2={20} y2={4} stroke="#c9a84c" strokeWidth={1.5} strokeDasharray="5,3"/></svg>
+                          Trend line
+                        </div>
+                        <div style={{display:'flex',alignItems:'center',gap:5}}>
+                          <svg width={20} height={8}><line x1={0} y1={4} x2={20} y2={4} stroke="#c9a84c" strokeWidth={1.5} strokeDasharray="4,2"/></svg>
+                          Passing threshold (65%)
+                        </div>
+                      </div>
+                      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(120px,1fr))',gap:12,marginBottom:20}}>
+                        {([
+                          {label:'Current Score',value:`${lastScore}%`,color:lastScore>=65?'#6b7c3a':'#c0574a'},
+                          {label:'Best Score',value:`${bestScore}%`,color:'#6b7c3a'},
+                          {label:'Average Score',value:`${avgScore}%`,color:'#0d2340'},
+                          {label:'Attempts',value:`${n}`,color:'#0d2340'},
+                        ] as {label:string,value:string,color:string}[]).map(({label,value,color}) => (
+                          <div key={label} style={{background:'#f7f4ee',borderRadius:8,padding:'12px 14px'}}>
+                            <div style={{fontSize:11,color:'#8a7d6a',marginBottom:4}}>{label}</div>
+                            <div style={{fontSize:20,fontWeight:700,color,fontFamily:'Georgia,serif'}}>{value}</div>
+                          </div>
+                        ))}
+                      </div>
+                      <div style={{background:'#0d2340',borderRadius:10,padding:'16px 20px'}}>
+                        <div style={{fontSize:13,fontWeight:700,color:'#c9a84c',marginBottom:8}}>Score Predictor</div>
+                        {lastScore >= 65 ? (
+                          <div style={{color:'#a0c870',fontSize:13,lineHeight:1.6}}>
+                            You are already scoring above the passing threshold. Keep practicing to build a strong buffer before test day!
+                          </div>
+                        ) : projectedDate ? (
+                          <div style={{color:'rgba(255,255,255,0.85)',fontSize:13,lineHeight:1.6}}>
+                            Based on your improvement trend, you are on track to reach passing scores by approximately{' '}
+                            <span style={{color:'#c9a84c',fontWeight:700}}>{projectedDate}</span>. Keep up the pace!
+                          </div>
+                        ) : n < 2 ? (
+                          <div style={{color:'rgba(255,255,255,0.6)',fontSize:13,lineHeight:1.6}}>
+                            Complete at least 2 attempts to unlock your personalized score projection.
+                          </div>
+                        ) : (
+                          <div style={{color:'#f0a880',fontSize:13,lineHeight:1.6}}>
+                            Your scores are trending downward. Focus on your priority topics in the Weakness Map and reach out to your mentor.
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <div style={{display:'flex',gap:12,maxWidth:500}}>
+                  <button onClick={() => { revokePdfBlob(); setView('list'); setActiveSession(null); setActiveSheet(null); setResults(null) }}
+                    style={{flex:1,height:46,background:'white',border:'1px solid #e8dfc8',borderRadius:10,color:'#0d2340',fontFamily:'Sora,sans-serif',fontSize:14,fontWeight:600,cursor:'pointer'}}>
+                    ← Back to exams
+                  </button>
+                  <button onClick={() => router.push('/dashboard/nbme')}
+                    style={{flex:1,height:46,background:'#0d2340',border:'none',borderRadius:10,color:'#c9a84c',fontFamily:'Sora,sans-serif',fontSize:14,fontWeight:600,cursor:'pointer'}}>
+                    NBME tracker →
+                  </button>
+                </div>
+              </div>
+            )
+          })()}
         </div>
       </main>
     )
