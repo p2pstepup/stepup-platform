@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '../../../utils/supabase'
 import { Document, Page, pdfjs } from 'react-pdf'
 
@@ -266,6 +266,8 @@ export default function ExamCenter() {
   const [focusLinks, setFocusLinks] = useState<Record<string,string>>(() => {
     try { const s = localStorage.getItem('stepup_focus_links'); return s ? JSON.parse(s) : {} } catch { return {} }
   })
+  const [isAdminView, setIsAdminView] = useState(false)
+  const searchParams = useSearchParams()
   const [editingLink, setEditingLink] = useState<string|null>(null)
   const [editLinkVal, setEditLinkVal] = useState('')
   const [currentSection, setCurrentSection] = useState(1)
@@ -301,6 +303,8 @@ export default function ExamCenter() {
   const submitSectionRef = useRef<() => void>(() => {})
   const pdfBlobUrlRef = useRef<string|null>(null)
   const sectionSubmittingRef = useRef(false)
+  const pendingAdminSessionRef = useRef<Record<string,unknown>|null>(null)
+  const viewSessionReportRef = useRef<((s: Record<string,unknown>) => void)|null>(null)
   const router = useRouter()
   const supabase = createClient()
 
@@ -340,6 +344,21 @@ export default function ExamCenter() {
         ])
         setExams(examData || [])
         setPastSessions(sessionData || [])
+
+        // Admin/tutor: if ?session=<id> in URL, load that student's report directly
+        const targetSessionId = searchParams.get('session')
+        if (targetSessionId && (profileData?.role === 'admin' || profileData?.role === 'tutor')) {
+          const { data: targetSession } = await supabase
+            .from('exam_sessions')
+            .select('*, answer_sheets(*)')
+            .eq('id', targetSessionId)
+            .single()
+          if (targetSession) {
+            setIsAdminView(true)
+            // viewSessionReport is defined below; call it after state settles
+            pendingAdminSessionRef.current = targetSession
+          }
+        }
       } catch (e) {
         console.error('init error:', e)
       } finally {
@@ -368,6 +387,15 @@ export default function ExamCenter() {
       setPdfWidth(pdfContainerRef.current.clientWidth - 32)
     }
   }, [view])
+
+  // Admin/tutor: once loading finishes, auto-load the pending student session report
+  useEffect(() => {
+    if (!loading && pendingAdminSessionRef.current) {
+      const session = pendingAdminSessionRef.current
+      pendingAdminSessionRef.current = null
+      viewSessionReportRef.current?.(session)
+    }
+  }, [loading])
 
 
   const parseTimeLimit = (timeStr: string) => {
@@ -802,7 +830,7 @@ export default function ExamCenter() {
 
       const logRows = questionDetails
         .filter(q => q.system || q.topic || q.discipline)
-        .map(q => ({ student_id: user.id, exam_session_id: session.id, question_number: q.qNum, system: q.system || null, topic: q.topic || null, discipline: q.discipline || null, correct: q.correct }))
+        .map(q => ({ student_id: (session.student_id as string) || user?.id, exam_session_id: session.id, question_number: q.qNum, system: q.system || null, topic: q.topic || null, discipline: q.discipline || null, correct: q.correct }))
       console.log('[examLogs] rows to write:', logRows.length)
       if (logRows.length > 0) {
         const { error: delErr } = await supabase.from('exam_question_logs').delete().eq('exam_session_id', session.id)
@@ -823,6 +851,8 @@ export default function ExamCenter() {
       setSubmitting(false)
     }
   }
+  // Keep ref in sync after every render (declared after viewSessionReport to avoid forward-reference)
+  useEffect(() => { viewSessionReportRef.current = viewSessionReport })
 
   const calcInput = (digit: string) => {
     if (calcFresh) { setCalcDisplay(digit === '.' ? '0.' : digit); setCalcFresh(false) }
@@ -1517,9 +1547,9 @@ export default function ExamCenter() {
 
               {/* Actions */}
               <div style={{display:'flex',gap:12,maxWidth:500,marginTop:28}}>
-                <button onClick={() => { revokePdfBlob(); setView('list'); setActiveSession(null); setActiveSheet(null); setResults(null) }}
+                <button onClick={() => { revokePdfBlob(); if (isAdminView) { router.push('/admin') } else { setView('list'); setActiveSession(null); setActiveSheet(null); setResults(null) } }}
                   style={{flex:1,height:46,background:'white',border:'1px solid #e8dfc8',borderRadius:10,color:'#0d2340',fontFamily:'Sora,sans-serif',fontSize:14,fontWeight:600,cursor:'pointer'}}>
-                  ← Back to exams
+                  {isAdminView ? '← Back to admin' : '← Back to exams'}
                 </button>
                 <button onClick={() => router.push('/dashboard/nbme')}
                   style={{flex:1,height:46,background:'#0d2340',border:'none',borderRadius:10,color:'#c9a84c',fontFamily:'Sora,sans-serif',fontSize:14,fontWeight:600,cursor:'pointer'}}>
@@ -1713,9 +1743,9 @@ export default function ExamCenter() {
                 <WeaknessSection title="Subjects / Disciplines — Weakest to Strongest" rows={disciplineRows} subtopicMap={disciplineTopics} prefix="disc"/>
 
                 <div style={{display:'flex',gap:12,maxWidth:500,marginTop:8}}>
-                  <button onClick={() => { revokePdfBlob(); setView('list'); setActiveSession(null); setActiveSheet(null); setResults(null) }}
+                  <button onClick={() => { revokePdfBlob(); if (isAdminView) { router.push('/admin') } else { setView('list'); setActiveSession(null); setActiveSheet(null); setResults(null) } }}
                     style={{flex:1,height:46,background:'white',border:'1px solid #e8dfc8',borderRadius:10,color:'#0d2340',fontFamily:'Sora,sans-serif',fontSize:14,fontWeight:600,cursor:'pointer'}}>
-                    ← Back to exams
+                    {isAdminView ? '← Back to admin' : '← Back to exams'}
                   </button>
                   <button onClick={() => router.push('/dashboard/nbme')}
                     style={{flex:1,height:46,background:'#0d2340',border:'none',borderRadius:10,color:'#c9a84c',fontFamily:'Sora,sans-serif',fontSize:14,fontWeight:600,cursor:'pointer'}}>
@@ -1834,9 +1864,9 @@ export default function ExamCenter() {
                 )}
               </div>
               <div style={{display:'flex',gap:12,maxWidth:500}}>
-                <button onClick={() => { revokePdfBlob(); setView('list'); setActiveSession(null); setActiveSheet(null); setResults(null) }}
+                <button onClick={() => { revokePdfBlob(); if (isAdminView) { router.push('/admin') } else { setView('list'); setActiveSession(null); setActiveSheet(null); setResults(null) } }}
                   style={{flex:1,height:46,background:'white',border:'1px solid #e8dfc8',borderRadius:10,color:'#0d2340',fontFamily:'Sora,sans-serif',fontSize:14,fontWeight:600,cursor:'pointer'}}>
-                  ← Back to exams
+                  {isAdminView ? '← Back to admin' : '← Back to exams'}
                 </button>
                 <button onClick={() => router.push('/dashboard/nbme')}
                   style={{flex:1,height:46,background:'#0d2340',border:'none',borderRadius:10,color:'#c9a84c',fontFamily:'Sora,sans-serif',fontSize:14,fontWeight:600,cursor:'pointer'}}>
@@ -1979,9 +2009,9 @@ export default function ExamCenter() {
                   )}
                 </div>
                 <div style={{display:'flex',gap:12,maxWidth:500}}>
-                  <button onClick={() => { revokePdfBlob(); setView('list'); setActiveSession(null); setActiveSheet(null); setResults(null) }}
+                  <button onClick={() => { revokePdfBlob(); if (isAdminView) { router.push('/admin') } else { setView('list'); setActiveSession(null); setActiveSheet(null); setResults(null) } }}
                     style={{flex:1,height:46,background:'white',border:'1px solid #e8dfc8',borderRadius:10,color:'#0d2340',fontFamily:'Sora,sans-serif',fontSize:14,fontWeight:600,cursor:'pointer'}}>
-                    ← Back to exams
+                    {isAdminView ? '← Back to admin' : '← Back to exams'}
                   </button>
                   <button onClick={() => router.push('/dashboard/nbme')}
                     style={{flex:1,height:46,background:'#0d2340',border:'none',borderRadius:10,color:'#c9a84c',fontFamily:'Sora,sans-serif',fontSize:14,fontWeight:600,cursor:'pointer'}}>

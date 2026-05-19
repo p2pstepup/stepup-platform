@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
 export function StudentProfiles({ supabase, students, onSuccess }: any) {
   const [profiles, setProfiles] = useState<any[]>([])
@@ -1354,6 +1355,7 @@ export function CourseDocsManager({ supabase, onSuccess }: any) {
 }
 
 export function ExamReports({ supabase, students }: any) {
+  const router = useRouter()
   const [sessions, setSessions] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedStudent, setSelectedStudent] = useState('all')
@@ -1425,12 +1427,20 @@ export function ExamReports({ supabase, students }: any) {
                       </span>
                     </td>
                     <td style={{padding: '12px 14px'}}>
-                      {sheet && answered > 0 && (
-                        <button onClick={() => setSelectedSession(selectedSession?.id === session.id ? null : session)}
-                          style={{padding: '4px 10px', background: '#0d2340', border: 'none', borderRadius: 6, fontSize: 11, color: '#c9a84c', cursor: 'pointer', fontFamily: 'Sora, sans-serif'}}>
-                          {selectedSession?.id === session.id ? 'Hide' : 'View'}
-                        </button>
-                      )}
+                      <div style={{display: 'flex', gap: 6}}>
+                        {sheet && answered > 0 && (
+                          <button onClick={() => setSelectedSession(selectedSession?.id === session.id ? null : session)}
+                            style={{padding: '4px 10px', background: '#0d2340', border: 'none', borderRadius: 6, fontSize: 11, color: '#c9a84c', cursor: 'pointer', fontFamily: 'Sora, sans-serif'}}>
+                            {selectedSession?.id === session.id ? 'Hide' : 'View'}
+                          </button>
+                        )}
+                        {session.status === 'submitted' && (
+                          <button onClick={() => router.push(`/dashboard/exams?session=${session.id}`)}
+                            style={{padding: '4px 10px', background: '#6b7c3a', border: 'none', borderRadius: 6, fontSize: 11, color: 'white', cursor: 'pointer', fontFamily: 'Sora, sans-serif'}}>
+                            Score Report
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 )
