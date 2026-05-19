@@ -1410,44 +1410,46 @@ export default function ExamCenter() {
     return (
       <main style={{minHeight:'100vh',display:'flex',background:'#f7f4ee',fontFamily:'Sora,sans-serif',fontSize:'17.6px'}}>
 
-        {/* Sidebar */}
-        <nav style={{width:220,flexShrink:0,background:'#0d2340',display:'flex',flexDirection:'column',height:'100vh',position:'sticky',top:0}}>
-          <div style={{padding:'20px 18px 16px',borderBottom:'0.5px solid rgba(201,168,76,0.2)'}}>
-            <div style={{display:'flex',alignItems:'center',gap:10}}>
-              <div style={{width:36,height:36,background:'#c9a84c',borderRadius:9,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-                <div style={{width:0,height:0,borderLeft:'6px solid transparent',borderRight:'6px solid transparent',borderBottom:'11px solid #0d2340'}}/>
+        {/* Sidebar — hidden in admin view (admin has their own nav) */}
+        {!isAdminView && (
+          <nav style={{width:220,flexShrink:0,background:'#0d2340',display:'flex',flexDirection:'column',height:'100vh',position:'sticky',top:0}}>
+            <div style={{padding:'20px 18px 16px',borderBottom:'0.5px solid rgba(201,168,76,0.2)'}}>
+              <div style={{display:'flex',alignItems:'center',gap:10}}>
+                <div style={{width:36,height:36,background:'#c9a84c',borderRadius:9,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                  <div style={{width:0,height:0,borderLeft:'6px solid transparent',borderRight:'6px solid transparent',borderBottom:'11px solid #0d2340'}}/>
+                </div>
+                <div style={{fontFamily:'Georgia,serif',fontSize:20,color:'white',fontWeight:600}}>StepUp</div>
               </div>
-              <div style={{fontFamily:'Georgia,serif',fontSize:20,color:'white',fontWeight:600}}>StepUp</div>
+              <div style={{fontSize:10,color:'#c9a84c',letterSpacing:'0.09em',textTransform:'uppercase',paddingLeft:46,marginTop:3}}>P2P Mentoring Program</div>
             </div>
-            <div style={{fontSize:10,color:'#c9a84c',letterSpacing:'0.09em',textTransform:'uppercase',paddingLeft:46,marginTop:3}}>P2P Mentoring Program</div>
-          </div>
-          <div style={{padding:'12px 10px',flex:1,overflowY:'auto'}}>
-            {navGroups.map(group => (
-              <div key={group.section}>
-                <div style={{fontSize:10,textTransform:'uppercase',letterSpacing:'0.12em',color:'rgba(255,255,255,0.28)',padding:'0 8px',margin:'12px 0 4px'}}>{group.section}</div>
-                {group.items.map((item:any) => (
-                  <div key={item.name} onClick={() => router.push(item.path)}
-                    style={{display:'flex',alignItems:'center',gap:8,padding:'8px 10px',borderRadius:7,color:item.active?'#c9a84c':'rgba(255,255,255,0.55)',fontSize:13.5,marginBottom:2,background:item.active?'rgba(255,255,255,0.09)':'transparent',cursor:'pointer'}}>
-                    <div style={{width:6,height:6,borderRadius:'50%',background:'currentColor',flexShrink:0}}/>{item.name}
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
-          <div style={{padding:'12px 14px',borderTop:'0.5px solid rgba(201,168,76,0.14)'}}>
-            <div style={{display:'flex',alignItems:'center',gap:8}}>
-              <div style={{width:30,height:30,borderRadius:'50%',background:'#c9a84c',color:'#0d2340',fontSize:12,fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-                {user?.email?.charAt(0).toUpperCase()}
-              </div>
-              <div style={{flex:1,minWidth:0}}>
-                <div style={{fontSize:13,color:'white',fontWeight:500,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{profile?.full_name||user?.email?.split('@')[0]}</div>
-                <div style={{fontSize:10,color:'rgba(255,255,255,0.35)'}}>Windsor SOM</div>
-              </div>
-              <div onClick={async()=>{await supabase.auth.signOut();router.push('/')}}
-                style={{fontSize:11,color:'rgba(255,255,255,0.35)',cursor:'pointer',padding:'4px 8px',borderRadius:4,border:'0.5px solid rgba(255,255,255,0.15)'}}>Sign out</div>
+            <div style={{padding:'12px 10px',flex:1,overflowY:'auto'}}>
+              {navGroups.map(group => (
+                <div key={group.section}>
+                  <div style={{fontSize:10,textTransform:'uppercase',letterSpacing:'0.12em',color:'rgba(255,255,255,0.28)',padding:'0 8px',margin:'12px 0 4px'}}>{group.section}</div>
+                  {group.items.map((item:any) => (
+                    <div key={item.name} onClick={() => router.push(item.path)}
+                      style={{display:'flex',alignItems:'center',gap:8,padding:'8px 10px',borderRadius:7,color:item.active?'#c9a84c':'rgba(255,255,255,0.55)',fontSize:13.5,marginBottom:2,background:item.active?'rgba(255,255,255,0.09)':'transparent',cursor:'pointer'}}>
+                      <div style={{width:6,height:6,borderRadius:'50%',background:'currentColor',flexShrink:0}}/>{item.name}
+                    </div>
+                  ))}
+                </div>
+              ))}
             </div>
-          </div>
-        </nav>
+            <div style={{padding:'12px 14px',borderTop:'0.5px solid rgba(201,168,76,0.14)'}}>
+              <div style={{display:'flex',alignItems:'center',gap:8}}>
+                <div style={{width:30,height:30,borderRadius:'50%',background:'#c9a84c',color:'#0d2340',fontSize:12,fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                  {user?.email?.charAt(0).toUpperCase()}
+                </div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:13,color:'white',fontWeight:500,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{profile?.full_name||user?.email?.split('@')[0]}</div>
+                  <div style={{fontSize:10,color:'rgba(255,255,255,0.35)'}}>Windsor SOM</div>
+                </div>
+                <div onClick={async()=>{await supabase.auth.signOut();router.push('/')}}
+                  style={{fontSize:11,color:'rgba(255,255,255,0.35)',cursor:'pointer',padding:'4px 8px',borderRadius:4,border:'0.5px solid rgba(255,255,255,0.15)'}}>Sign out</div>
+              </div>
+            </div>
+          </nav>
+        )}
 
         {/* Content */}
         <div style={{flex:1,minWidth:0,overflowY:'auto',padding:'32px 40px'}}>
@@ -1772,12 +1774,13 @@ export default function ExamCenter() {
                 )
               })()}
 
-              {/* ── ✅ Study Checklist (220Q Assessment only, collapsible) ── */}
-              {(results.examName || '').toLowerCase().includes('220q assessment') && (results.questionDetails || []).length > 0 && (() => {
+              {/* ── ✅ Study Checklist (collapsible, all exams with breakdown data) ── */}
+              {(results.questionDetails || []).some((qd: any) => !qd.correct) && (() => {
+                const is220Q = (results.examName || '').toLowerCase().includes('220q assessment')
                 const incorrectItems = (results.questionDetails as any[])
                   .filter(qd => !qd.correct)
                   .map(qd => {
-                    const mapped = Q220_SUBJECT_MAP[Number(qd.qNum)]
+                    const mapped = is220Q ? Q220_SUBJECT_MAP[Number(qd.qNum)] : null
                     return {
                       qNum: Number(qd.qNum),
                       subject: mapped?.subject || qd.discipline || qd.system || 'Other',
