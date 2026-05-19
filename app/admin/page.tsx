@@ -330,9 +330,12 @@ export default function AdminDashboard() {
           <div>
             <div style={{marginBottom: 24}}>
               <div style={{fontFamily: 'Georgia, serif', fontSize: 28, color: '#0d2340', letterSpacing: -0.5}}>AMBOSS Rescore</div>
-              <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>Re-grade all 200Q exam attempts using the corrected answer key (Q28, Q72, Q113, Q194 were omitted from the original)</div>
+              <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>Upload the correct PDF answer key to storage, then re-grade all 200Q exam attempts.</div>
             </div>
-            <AmbossRescore supabase={supabase} />
+            <FixAnswerKey />
+            <div style={{marginTop: 32}}>
+              <AmbossRescore supabase={supabase} />
+            </div>
           </div>
         )}
       </div>
@@ -1384,6 +1387,53 @@ export function QuestionBuilder({ supabase }: any) {
             </div>
           ))}
         </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Fix Answer Key ────────────────────────────────────────────────────────────
+
+function FixAnswerKey() {
+  const [status, setStatus] = React.useState<string | null>(null)
+  const [loading, setLoading] = React.useState(false)
+
+  const handleFix = async () => {
+    setLoading(true)
+    setStatus(null)
+    try {
+      const res = await fetch('/api/admin/fix-amboss-key', { method: 'POST' })
+      const json = await res.json()
+      if (!res.ok) {
+        setStatus('Error: ' + (json.error || res.statusText))
+      } else {
+        const lines = (json.results as Array<{examName:string,status:string,path?:string,error?:string}>)
+          .map(r => `${r.examName}: ${r.status}${r.error ? ' — ' + r.error : ''}`)
+          .join('\n')
+        setStatus(lines || 'Done')
+      }
+    } catch (e: unknown) {
+      setStatus('Network error: ' + String(e))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div style={{padding: '16px 20px', background: '#f7f4ef', borderRadius: 8, border: '1px solid #e8e2d8', maxWidth: 520}}>
+      <div style={{fontWeight: 600, marginBottom: 8, color: '#0d2340'}}>Step 1 — Upload Correct Answer Key</div>
+      <div style={{fontSize: 13, color: '#6b5f50', marginBottom: 14}}>
+        Replaces the wrong JSON in Supabase Storage with the authoritative PDF answer key (200 entries). After uploading, score reports will re-grade automatically from the correct key.
+      </div>
+      <button
+        onClick={handleFix}
+        disabled={loading}
+        style={{padding: '8px 20px', background: loading ? '#aaa' : '#0d2340', color: '#fff', border: 'none', borderRadius: 6, cursor: loading ? 'not-allowed' : 'pointer', fontWeight: 600}}
+      >
+        {loading ? 'Uploading…' : 'Upload Correct Answer Key'}
+      </button>
+      {status && (
+        <pre style={{marginTop: 12, fontSize: 12, color: status.startsWith('Error') ? '#c0392b' : '#27ae60', whiteSpace: 'pre-wrap'}}>{status}</pre>
       )}
     </div>
   )

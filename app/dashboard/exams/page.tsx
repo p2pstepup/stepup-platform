@@ -2,7 +2,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '../../../utils/supabase'
-import { is200QExam, gradeWith200QKey } from '../../../utils/amboss-rescore'
 import { Document, Page, pdfjs } from 'react-pdf'
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`
@@ -846,17 +845,7 @@ export default function ExamCenter() {
         if (isCorrect) bd[key].correct++
       }
 
-      if (is200QExam(activeSession.exam_name || '')) {
-        // Use corrected answer key for StepUp 200Q — original key had 4 omitted questions
-        for (const qd of gradeWith200QKey(allAnswers)) {
-          if (qd.correct) correct++
-          tally(systemBreakdown, qd.system, qd.correct)
-          tally(topicBreakdown, qd.topic, qd.correct)
-          tally(disciplineBreakdown, qd.discipline, qd.correct)
-          questionDetails.push({ qNum: qd.qNum, studentAnswer: qd.studentAnswer, correctAnswer: qd.correctAnswer, correct: qd.correct, system: qd.system, topic: qd.topic, discipline: qd.discipline })
-        }
-      } else {
-        for (let qNum = 1; qNum <= totalQ; qNum++) {
+      for (let qNum = 1; qNum <= totalQ; qNum++) {
           const sa = String(allAnswers[String(qNum)] ?? allAnswers[qNum] ?? '').toUpperCase() || ''
           const entry = answerKey[String(qNum)]
           if (!entry) continue
@@ -867,7 +856,6 @@ export default function ExamCenter() {
           tally(disciplineBreakdown, entry.discipline, isCorrect)
           questionDetails.push({ qNum, studentAnswer: sa || '—', correctAnswer: entry.answer, correct: isCorrect, system: entry.system, topic: entry.topic, concept: entry.concept, discipline: entry.discipline })
         }
-      }
 
       // 220Q Assessment: override system/discipline/topic with hardcoded map
       if ((activeSession.exam_name || '').toLowerCase().includes('220q assessment')) {
@@ -1056,17 +1044,7 @@ export default function ExamCenter() {
         bd[key].total++; if (isCorrect) bd[key].correct++
       }
 
-      if (is200QExam(session.exam_name || '')) {
-        // Use corrected answer key for StepUp 200Q — original key had 4 omitted questions
-        for (const qd of gradeWith200QKey(allAnswers)) {
-          if (qd.correct) freshCorrect++
-          tally(systemBreakdown, qd.system, qd.correct)
-          tally(topicBreakdown, qd.topic, qd.correct)
-          tally(disciplineBreakdown, qd.discipline, qd.correct)
-          questionDetails.push({ qNum: qd.qNum, studentAnswer: qd.studentAnswer, correctAnswer: qd.correctAnswer, correct: qd.correct, system: qd.system, topic: qd.topic, discipline: qd.discipline })
-        }
-      } else {
-        for (let qNum = 1; qNum <= totalQ; qNum++) {
+      for (let qNum = 1; qNum <= totalQ; qNum++) {
           const sa = String(allAnswers[String(qNum)] ?? allAnswers[qNum] ?? '').toUpperCase() || ''
           const entry = ak[String(qNum)]
           if (!entry) continue
@@ -1077,7 +1055,6 @@ export default function ExamCenter() {
           tally(disciplineBreakdown, entry.discipline, isCorrect)
           questionDetails.push({ qNum, studentAnswer: sa||'—', correctAnswer: entry.answer, correct: isCorrect, system: entry.system, topic: entry.topic, concept: entry.concept, discipline: entry.discipline })
         }
-      }
 
       // 220Q Assessment: override system/discipline/topic with hardcoded map
       if ((session.exam_name || '').toLowerCase().includes('220q assessment')) {
