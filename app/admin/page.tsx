@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '../../utils/supabase'
 import {
@@ -97,6 +97,9 @@ export default function AdminDashboard() {
       {name: 'Assign Tasks', tab: 'assignments'},
       {name: 'Study Schedules', tab: 'studyschedule'},
       {name: 'User Management', tab: 'usermanagement'},
+    ]},
+    {section: 'Tools', items: [
+      {name: 'AMBOSS Rescore', tab: 'ambossrescore'},
     ]},
   ]
 
@@ -320,6 +323,16 @@ export default function AdminDashboard() {
               <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>Create new student, tutor, or admin accounts directly from the platform</div>
             </div>
             <UserManagementAdmin onSuccess={flash} />
+          </div>
+        )}
+
+        {activeTab === 'ambossrescore' && (
+          <div>
+            <div style={{marginBottom: 24}}>
+              <div style={{fontFamily: 'Georgia, serif', fontSize: 28, color: '#0d2340', letterSpacing: -0.5}}>AMBOSS Rescore</div>
+              <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>Re-grade all 200Q exam attempts using the corrected answer key (Q28, Q72, Q113, Q194 were omitted from the original)</div>
+            </div>
+            <AmbossRescore supabase={supabase} />
           </div>
         )}
       </div>
@@ -1374,4 +1387,416 @@ export function QuestionBuilder({ supabase }: any) {
       )}
     </div>
   )
-} 
+}
+
+// ─── AMBOSS Rescore ────────────────────────────────────────────────────────────
+
+type GradingAction = 'GRADE_NORMALLY' | 'RESCORE_WITH_SHIFT' | 'AWARD_AUTO_CREDIT'
+interface RescoreEntry { q: number; ans: string; system: string; topic: string; action: GradingAction; orig: number | null }
+
+const RESCORING_MAP: RescoreEntry[] = [
+  {q:1,ans:"E",system:"Biochemistry & Genetics",topic:"X-linked recessive inheritance",action:"GRADE_NORMALLY",orig:1},
+  {q:2,ans:"B",system:"Biochemistry & Genetics",topic:"Pleiotropy — PKU",action:"GRADE_NORMALLY",orig:2},
+  {q:3,ans:"F",system:"Biochemistry & Genetics",topic:"Prader-Willi syndrome — genomic imprinting",action:"GRADE_NORMALLY",orig:3},
+  {q:4,ans:"C",system:"Biochemistry & Genetics",topic:"Fragile X — CGG repeat expansion",action:"GRADE_NORMALLY",orig:4},
+  {q:5,ans:"E",system:"Biochemistry & Genetics",topic:"Primary ciliary dyskinesia — dynein arm defect",action:"GRADE_NORMALLY",orig:5},
+  {q:6,ans:"A",system:"Biochemistry & Genetics",topic:"Trisomy 18 — Edwards syndrome",action:"GRADE_NORMALLY",orig:6},
+  {q:7,ans:"B",system:"Biochemistry & Genetics",topic:"Thiamine (B1) deficiency — Wernicke encephalopathy",action:"GRADE_NORMALLY",orig:7},
+  {q:8,ans:"A",system:"Biochemistry & Genetics",topic:"Pompe disease — lysosomal acid maltase deficiency",action:"GRADE_NORMALLY",orig:8},
+  {q:9,ans:"E",system:"Biochemistry & Genetics",topic:"Carcinoid syndrome — tryptophan hydroxylase",action:"GRADE_NORMALLY",orig:9},
+  {q:10,ans:"A",system:"Biochemistry & Genetics",topic:"Fluoroquinolone mechanism — DNA gyrase inhibition",action:"GRADE_NORMALLY",orig:10},
+  {q:11,ans:"F",system:"Biochemistry & Genetics",topic:"Gaucher disease — β-glucocerebrosidase deficiency",action:"GRADE_NORMALLY",orig:11},
+  {q:12,ans:"E",system:"Biochemistry & Genetics",topic:"Ehlers-Danlos — lysine/hydroxylysine cross-linking defect",action:"GRADE_NORMALLY",orig:12},
+  {q:13,ans:"B",system:"Biochemistry & Genetics",topic:"Insulin metabolic effects",action:"GRADE_NORMALLY",orig:13},
+  {q:14,ans:"E",system:"Biochemistry & Genetics",topic:"Vitamin B12 — methylmalonyl-CoA mutase cofactor",action:"GRADE_NORMALLY",orig:14},
+  {q:15,ans:"A",system:"Biochemistry & Genetics",topic:"Cystic fibrosis — vitamin D deficiency",action:"GRADE_NORMALLY",orig:15},
+  {q:16,ans:"G",system:"Biochemistry & Genetics",topic:"Pyridoxine (B6) — aminotransferase cofactor",action:"GRADE_NORMALLY",orig:16},
+  {q:17,ans:"B",system:"General Pathology",topic:"Apoptosis — intrinsic pathway",action:"GRADE_NORMALLY",orig:17},
+  {q:18,ans:"A",system:"General Pathology",topic:"Coagulative necrosis — splenic infarct",action:"GRADE_NORMALLY",orig:18},
+  {q:19,ans:"C",system:"General Pathology",topic:"Methemoglobinemia — dapsone-induced",action:"GRADE_NORMALLY",orig:19},
+  {q:20,ans:"F",system:"General Pathology",topic:"Alpha-1-antitrypsin deficiency — LTB4 chemotaxis",action:"GRADE_NORMALLY",orig:20},
+  {q:21,ans:"E",system:"General Pathology",topic:"Wound healing — myofibroblasts",action:"GRADE_NORMALLY",orig:21},
+  {q:22,ans:"E",system:"General Pathology",topic:"Vascular permeability — endothelial junction separation",action:"GRADE_NORMALLY",orig:22},
+  {q:23,ans:"B",system:"General Pathology",topic:"Tuberculosis — Langhans giant cells from macrophages",action:"GRADE_NORMALLY",orig:23},
+  {q:24,ans:"D",system:"General Pathology",topic:"IL-2 (aldesleukin) — activates NK cells and cytotoxic T cells",action:"GRADE_NORMALLY",orig:24},
+  {q:25,ans:"D",system:"General Pathology",topic:"TNM staging — mediastinal invasion (T4)",action:"GRADE_NORMALLY",orig:25},
+  {q:26,ans:"D",system:"General Pathology",topic:"Lynch syndrome — MLH1 mismatch repair mutation",action:"GRADE_NORMALLY",orig:26},
+  {q:27,ans:"C",system:"General Pathology",topic:"Li-Fraumeni syndrome — TP53 mutation",action:"GRADE_NORMALLY",orig:27},
+  {q:28,ans:"F",system:"General Pathology",topic:"Brain metastases — lung cancer most common source",action:"AWARD_AUTO_CREDIT",orig:null},
+  {q:29,ans:"A",system:"General Pathology",topic:"Prostate cancer — PSA, osteoblastic bone metastases",action:"RESCORE_WITH_SHIFT",orig:28},
+  {q:30,ans:"A",system:"General Pharmacology",topic:"Urge incontinence — muscarinic M3 antagonism",action:"RESCORE_WITH_SHIFT",orig:29},
+  {q:31,ans:"E",system:"General Pharmacology",topic:"Desmopressin — V2 receptor → adenylyl cyclase (Gs)",action:"RESCORE_WITH_SHIFT",orig:30},
+  {q:32,ans:"B",system:"General Pharmacology",topic:"Competitive antagonist — rightward shift of dose-response curve",action:"RESCORE_WITH_SHIFT",orig:31},
+  {q:33,ans:"B",system:"General Pharmacology",topic:"Enzyme kinetics — increased Vmax, unchanged Km",action:"RESCORE_WITH_SHIFT",orig:32},
+  {q:34,ans:"A",system:"General Pharmacology",topic:"High bioavailability — no difference in dose-corrected AUC",action:"RESCORE_WITH_SHIFT",orig:33},
+  {q:35,ans:"F",system:"General Pharmacology",topic:"Phase I clinical trial — safety, tolerability, PK/PD",action:"RESCORE_WITH_SHIFT",orig:34},
+  {q:36,ans:"F",system:"General Pharmacology",topic:"CYP450 inducer — griseofulvin decreases warfarin levels",action:"RESCORE_WITH_SHIFT",orig:35},
+  {q:37,ans:"C",system:"Microbiology",topic:"Chronic granulomatous disease — Serratia (catalase+)",action:"RESCORE_WITH_SHIFT",orig:36},
+  {q:38,ans:"E",system:"Microbiology",topic:"CAP — S. pneumoniae polysaccharide capsule",action:"RESCORE_WITH_SHIFT",orig:37},
+  {q:39,ans:"E",system:"Microbiology",topic:"Gram-negative sepsis — Lipid A causes hypotension",action:"RESCORE_WITH_SHIFT",orig:38},
+  {q:40,ans:"A",system:"Microbiology",topic:"Bordetella pertussis — pertussis toxin increases cAMP",action:"RESCORE_WITH_SHIFT",orig:39},
+  {q:41,ans:"D",system:"Microbiology",topic:"Mycoplasma pneumoniae — cold agglutinins, atypical pneumonia",action:"RESCORE_WITH_SHIFT",orig:40},
+  {q:42,ans:"F",system:"Microbiology",topic:"Bacillus cereus — preformed emetic toxin, reheated rice",action:"RESCORE_WITH_SHIFT",orig:41},
+  {q:43,ans:"A",system:"Microbiology",topic:"Primary syphilis — penicillin inhibits transpeptidase",action:"RESCORE_WITH_SHIFT",orig:42},
+  {q:44,ans:"C",system:"Microbiology",topic:"Hepatitis C — needlestick injury, porphyria cutanea tarda",action:"RESCORE_WITH_SHIFT",orig:43},
+  {q:45,ans:"B",system:"Microbiology",topic:"HIV entry — CCR5 coreceptor on macrophages",action:"RESCORE_WITH_SHIFT",orig:44},
+  {q:46,ans:"D",system:"Microbiology",topic:"HIV prophylaxis — TMP-SMX for PCP (CD4 <200)",action:"RESCORE_WITH_SHIFT",orig:45},
+  {q:47,ans:"D",system:"Microbiology",topic:"Zidovudine — NRTI, blocks viral DNA elongation",action:"RESCORE_WITH_SHIFT",orig:46},
+  {q:48,ans:"A",system:"Microbiology",topic:"Entamoeba histolytica — trophozoites ingesting RBCs",action:"RESCORE_WITH_SHIFT",orig:47},
+  {q:49,ans:"C",system:"Microbiology",topic:"Plasmodium falciparum — RBC inclusion bodies, chloroquine-resistant",action:"RESCORE_WITH_SHIFT",orig:48},
+  {q:50,ans:"F",system:"Microbiology",topic:"Cryptococcus neoformans — narrow-necked budding, mucicarmine stain",action:"RESCORE_WITH_SHIFT",orig:49},
+  {q:51,ans:"F",system:"Microbiology",topic:"Trichomonas vaginalis — motile flagellated protozoa",action:"RESCORE_WITH_SHIFT",orig:50},
+  {q:52,ans:"C",system:"Immune System",topic:"Aging — decreased vaccine responsiveness",action:"RESCORE_WITH_SHIFT",orig:51},
+  {q:53,ans:"C",system:"Immune System",topic:"Chronic mucocutaneous candidiasis — T cell defect",action:"RESCORE_WITH_SHIFT",orig:52},
+  {q:54,ans:"D",system:"Immune System",topic:"Goodpasture syndrome — type II hypersensitivity",action:"RESCORE_WITH_SHIFT",orig:53},
+  {q:55,ans:"C",system:"Immune System",topic:"Acute renal allograft rejection — T cell-mediated allorecognition",action:"RESCORE_WITH_SHIFT",orig:54},
+  {q:56,ans:"C",system:"Immune System",topic:"Tetanus vaccine — toxoid (denatured bacterial exotoxin)",action:"RESCORE_WITH_SHIFT",orig:55},
+  {q:57,ans:"B",system:"Immune System",topic:"Leukocyte adhesion deficiency — beta-2 integrin (CD18) defect",action:"RESCORE_WITH_SHIFT",orig:56},
+  {q:58,ans:"A",system:"Immune System",topic:"Terminal complement deficiency — recurrent Neisseria",action:"RESCORE_WITH_SHIFT",orig:57},
+  {q:59,ans:"D",system:"Immune System",topic:"EBV/mononucleosis — risk of Hodgkin lymphoma",action:"RESCORE_WITH_SHIFT",orig:58},
+  {q:60,ans:"D",system:"Immune System",topic:"Cyclosporine — calcineurin inhibitor",action:"RESCORE_WITH_SHIFT",orig:59},
+  {q:61,ans:"E",system:"Blood & Lymphoreticular System",topic:"Sideroblastic anemia — isoniazid/B6 deficiency",action:"RESCORE_WITH_SHIFT",orig:60},
+  {q:62,ans:"C",system:"Blood & Lymphoreticular System",topic:"Lead poisoning — ALA dehydratase inhibition",action:"RESCORE_WITH_SHIFT",orig:61},
+  {q:63,ans:"E",system:"Blood & Lymphoreticular System",topic:"Hemolytic disease of newborn — ABO incompatibility",action:"RESCORE_WITH_SHIFT",orig:62},
+  {q:64,ans:"C",system:"Blood & Lymphoreticular System",topic:"Alpha-thalassemia minor — cis deletion of alpha-globin genes",action:"RESCORE_WITH_SHIFT",orig:63},
+  {q:65,ans:"C",system:"Blood & Lymphoreticular System",topic:"Sickle cell anemia — Howell-Jolly bodies (functional asplenia)",action:"RESCORE_WITH_SHIFT",orig:64},
+  {q:66,ans:"E",system:"Blood & Lymphoreticular System",topic:"Polycythemia vera — JAK2 V617F mutation",action:"RESCORE_WITH_SHIFT",orig:65},
+  {q:67,ans:"A",system:"Blood & Lymphoreticular System",topic:"AML-M3 — myeloperoxidase, Auer rods, t(15;17)",action:"RESCORE_WITH_SHIFT",orig:66},
+  {q:68,ans:"A",system:"Blood & Lymphoreticular System",topic:"Multiple myeloma — osteoclast activating factors",action:"RESCORE_WITH_SHIFT",orig:67},
+  {q:69,ans:"A",system:"Blood & Lymphoreticular System",topic:"Hemolytic uremic syndrome — normal PT/PTT, low platelets",action:"RESCORE_WITH_SHIFT",orig:68},
+  {q:70,ans:"C",system:"Blood & Lymphoreticular System",topic:"Hemophilia — intrinsic pathway, impaired factor X conversion",action:"RESCORE_WITH_SHIFT",orig:69},
+  {q:71,ans:"C",system:"Blood & Lymphoreticular System",topic:"Warfarin — inhibits gamma-carboxylation of glutamate residues",action:"RESCORE_WITH_SHIFT",orig:70},
+  {q:72,ans:"F",system:"Blood & Lymphoreticular System",topic:"Anthracyclines — dilated cardiomyopathy",action:"AWARD_AUTO_CREDIT",orig:null},
+  {q:73,ans:"D",system:"Blood & Lymphoreticular System",topic:"Testicular cancer — para-aortic lymph node spread",action:"RESCORE_WITH_SHIFT",orig:71},
+  {q:74,ans:"E",system:"Cardiovascular System",topic:"Beta-1 antagonism — reduces renin/angiotensin II in CHF",action:"RESCORE_WITH_SHIFT",orig:72},
+  {q:75,ans:"C",system:"Cardiovascular System",topic:"Persistent truncus arteriosus — neural crest cell migration failure",action:"RESCORE_WITH_SHIFT",orig:73},
+  {q:76,ans:"A",system:"Cardiovascular System",topic:"Tetralogy of Fallot — right axis deviation, boot-shaped heart",action:"RESCORE_WITH_SHIFT",orig:74},
+  {q:77,ans:"F",system:"Cardiovascular System",topic:"Cor pulmonale — increased capillary hydrostatic pressure",action:"RESCORE_WITH_SHIFT",orig:75},
+  {q:78,ans:"D",system:"Cardiovascular System",topic:"Hypovolemic shock — hemodynamic profile",action:"RESCORE_WITH_SHIFT",orig:76},
+  {q:79,ans:"D",system:"Cardiovascular System",topic:"Restrictive cardiomyopathy — cardiac sarcoidosis",action:"RESCORE_WITH_SHIFT",orig:77},
+  {q:80,ans:"B",system:"Cardiovascular System",topic:"Mitral stenosis — loud S1 (mitral valve closure)",action:"RESCORE_WITH_SHIFT",orig:78},
+  {q:81,ans:"C",system:"Cardiovascular System",topic:"S3 heart sound — increased LV end-systolic volume",action:"RESCORE_WITH_SHIFT",orig:79},
+  {q:82,ans:"E",system:"Cardiovascular System",topic:"Dressler syndrome — post-MI autoimmune pericarditis",action:"RESCORE_WITH_SHIFT",orig:80},
+  {q:83,ans:"C",system:"Cardiovascular System",topic:"Infective endocarditis — antigen-antibody complex deposition in kidney",action:"RESCORE_WITH_SHIFT",orig:81},
+  {q:84,ans:"E",system:"Cardiovascular System",topic:"Wolff-Parkinson-White — delta wave, short PR interval",action:"RESCORE_WITH_SHIFT",orig:82},
+  {q:85,ans:"B",system:"Cardiovascular System",topic:"Polyarteritis nodosa — medium-vessel vasculitis, HBV association",action:"RESCORE_WITH_SHIFT",orig:83},
+  {q:86,ans:"A",system:"Cardiovascular System",topic:"Familial hyperchylomicronemia — acute pancreatitis risk",action:"RESCORE_WITH_SHIFT",orig:84},
+  {q:87,ans:"B",system:"Cardiovascular System",topic:"Statin adverse effects — elevated creatine kinase",action:"RESCORE_WITH_SHIFT",orig:85},
+  {q:88,ans:"B",system:"Cardiovascular System",topic:"Superior laryngeal nerve — voice pitch limitation",action:"RESCORE_WITH_SHIFT",orig:86},
+  {q:89,ans:"A",system:"Endocrine System",topic:"Graves disease — TSH receptor stimulating autoantibodies",action:"RESCORE_WITH_SHIFT",orig:87},
+  {q:90,ans:"B",system:"Endocrine System",topic:"Pregnancy thyroid — increased TBG, normal free T3/T4",action:"RESCORE_WITH_SHIFT",orig:88},
+  {q:91,ans:"A",system:"Endocrine System",topic:"Secondary hyperparathyroidism — CKD, rugger-jersey spine",action:"RESCORE_WITH_SHIFT",orig:89},
+  {q:92,ans:"B",system:"Endocrine System",topic:"Central diabetes insipidus — posterior pituitary damage",action:"RESCORE_WITH_SHIFT",orig:90},
+  {q:93,ans:"A",system:"Endocrine System",topic:"Neuroblastoma — Homer-Wright rosettes, HVA/VMA",action:"RESCORE_WITH_SHIFT",orig:91},
+  {q:94,ans:"D",system:"Endocrine System",topic:"Addison disease — primary adrenal insufficiency",action:"RESCORE_WITH_SHIFT",orig:92},
+  {q:95,ans:"F",system:"Endocrine System",topic:"Cushing syndrome — ectopic ACTH from small cell lung cancer",action:"RESCORE_WITH_SHIFT",orig:93},
+  {q:96,ans:"B",system:"Endocrine System",topic:"Type 2 diabetes — islet amyloid polypeptide accumulation",action:"RESCORE_WITH_SHIFT",orig:94},
+  {q:97,ans:"A",system:"Endocrine System",topic:"Glucagonoma — pancreatic alpha-cells, necrolytic migratory erythema",action:"RESCORE_WITH_SHIFT",orig:95},
+  {q:98,ans:"F",system:"Endocrine System",topic:"Hemochromatosis — defective HFE/transferrin receptor binding",action:"RESCORE_WITH_SHIFT",orig:96},
+  {q:99,ans:"D",system:"Endocrine System",topic:"MEN 2 — RET proto-oncogene gain-of-function mutation",action:"RESCORE_WITH_SHIFT",orig:97},
+  {q:100,ans:"A",system:"Endocrine System",topic:"TSH receptor — Gs and Gq coupled (TSH-secreting adenoma)",action:"RESCORE_WITH_SHIFT",orig:98},
+  {q:101,ans:"C",system:"Endocrine System",topic:"Sulfonylureas — ATP-sensitive K+ channel blockade",action:"RESCORE_WITH_SHIFT",orig:99},
+  {q:102,ans:"B",system:"Endocrine System",topic:"Chagas disease — myenteric plexus destruction",action:"RESCORE_WITH_SHIFT",orig:100},
+  {q:103,ans:"D",system:"Gastrointestinal System",topic:"Chagas disease — esophageal dysmotility",action:"RESCORE_WITH_SHIFT",orig:101},
+  {q:104,ans:"D",system:"Gastrointestinal System",topic:"Bulimia nervosa — Mallory-Weiss syndrome",action:"RESCORE_WITH_SHIFT",orig:102},
+  {q:105,ans:"E",system:"Gastrointestinal System",topic:"PUD — H. pylori strongest risk factor",action:"RESCORE_WITH_SHIFT",orig:103},
+  {q:106,ans:"E",system:"Gastrointestinal System",topic:"Whipple disease — Tropheryma whipplei, PAS-positive macrophages",action:"RESCORE_WITH_SHIFT",orig:104},
+  {q:107,ans:"G",system:"Gastrointestinal System",topic:"Hirschsprung disease — failure of neural crest cell migration",action:"RESCORE_WITH_SHIFT",orig:105},
+  {q:108,ans:"B",system:"Gastrointestinal System",topic:"Crohn disease — Th1/Th17 transmural inflammation",action:"RESCORE_WITH_SHIFT",orig:106},
+  {q:109,ans:"D",system:"Gastrointestinal System",topic:"Portal hypertension — superior epigastric vein (caput medusae)",action:"RESCORE_WITH_SHIFT",orig:107},
+  {q:110,ans:"E",system:"Gastrointestinal System",topic:"Hepatitis B serology — acute active infection",action:"RESCORE_WITH_SHIFT",orig:108},
+  {q:111,ans:"E",system:"Gastrointestinal System",topic:"Acute cholecystitis — cystic duct obstruction",action:"RESCORE_WITH_SHIFT",orig:109},
+  {q:112,ans:"E",system:"Gastrointestinal System",topic:"Pancreatic cancer — Courvoisier sign, ionizing radiation",action:"RESCORE_WITH_SHIFT",orig:110},
+  {q:113,ans:"C",system:"Skin & Musculoskeletal",topic:"Incus — 1st branchial arch derivative",action:"AWARD_AUTO_CREDIT",orig:null},
+  {q:114,ans:"A",system:"Skin & Musculoskeletal",topic:"Congenital rubella — postauricular lymphadenopathy",action:"RESCORE_WITH_SHIFT",orig:111},
+  {q:115,ans:"D",system:"Skin & Musculoskeletal",topic:"Tinea versicolor — Malassezia globosa overgrowth",action:"RESCORE_WITH_SHIFT",orig:112},
+  {q:116,ans:"E",system:"Skin & Musculoskeletal",topic:"Pemphigus vulgaris — IgG against desmoglein (desmosomes)",action:"RESCORE_WITH_SHIFT",orig:113},
+  {q:117,ans:"C",system:"Skin & Musculoskeletal",topic:"NMS — ryanodine receptor, dantrolene treatment",action:"RESCORE_WITH_SHIFT",orig:114},
+  {q:118,ans:"C",system:"Skin & Musculoskeletal",topic:"Myasthenia gravis — decreased end plate potential",action:"RESCORE_WITH_SHIFT",orig:115},
+  {q:119,ans:"D",system:"Skin & Musculoskeletal",topic:"Serotonin syndrome — sumatriptan + SSRI",action:"RESCORE_WITH_SHIFT",orig:116},
+  {q:120,ans:"B",system:"Skin & Musculoskeletal",topic:"Muscle contraction — troponin C binds calcium",action:"RESCORE_WITH_SHIFT",orig:117},
+  {q:121,ans:"F",system:"Skin & Musculoskeletal",topic:"SLE — anti-Sm (Smith) antibodies",action:"RESCORE_WITH_SHIFT",orig:118},
+  {q:122,ans:"F",system:"Skin & Musculoskeletal",topic:"Limited systemic sclerosis — telangiectasia (CREST)",action:"RESCORE_WITH_SHIFT",orig:119},
+  {q:123,ans:"C",system:"Skin & Musculoskeletal",topic:"Rheumatoid arthritis — synovial granulation tissue (pannus)",action:"RESCORE_WITH_SHIFT",orig:120},
+  {q:124,ans:"E",system:"Skin & Musculoskeletal",topic:"Reactive arthritis — HLA-B27 positive genotype",action:"RESCORE_WITH_SHIFT",orig:121},
+  {q:125,ans:"F",system:"Skin & Musculoskeletal",topic:"Dermatomyositis — ovarian adenocarcinoma association",action:"RESCORE_WITH_SHIFT",orig:122},
+  {q:126,ans:"E",system:"Skin & Musculoskeletal",topic:"Paget disease of bone — lamellar interspersed with woven bone",action:"RESCORE_WITH_SHIFT",orig:123},
+  {q:127,ans:"A",system:"Skin & Musculoskeletal",topic:"Visual pathway — Meyer loop (temporal lobe, superior field)",action:"RESCORE_WITH_SHIFT",orig:124},
+  {q:128,ans:"E",system:"Nervous System & Special Senses",topic:"Horner syndrome — Pancoast tumor, stellate ganglion compression",action:"RESCORE_WITH_SHIFT",orig:125},
+  {q:129,ans:"E",system:"Nervous System & Special Senses",topic:"CN III palsy — posterior communicating artery aneurysm",action:"RESCORE_WITH_SHIFT",orig:126},
+  {q:130,ans:"C",system:"Nervous System & Special Senses",topic:"Facial nerve (CN VII) — exits at cerebellopontine angle",action:"RESCORE_WITH_SHIFT",orig:127},
+  {q:131,ans:"D",system:"Nervous System & Special Senses",topic:"Vitamin B12 — subacute combined degeneration, dorsal columns",action:"RESCORE_WITH_SHIFT",orig:128},
+  {q:132,ans:"E",system:"Nervous System & Special Senses",topic:"Huntington disease — caudate nucleus (striatum) atrophy",action:"RESCORE_WITH_SHIFT",orig:129},
+  {q:133,ans:"F",system:"Nervous System & Special Senses",topic:"Epidural hematoma — arterial bleeding between dura and skull",action:"RESCORE_WITH_SHIFT",orig:130},
+  {q:134,ans:"E",system:"Nervous System & Special Senses",topic:"Left ACA stroke — contralateral leg weakness, transcortical motor aphasia",action:"RESCORE_WITH_SHIFT",orig:131},
+  {q:135,ans:"H",system:"Nervous System & Special Senses",topic:"Multiple sclerosis — Th1-mediated demyelination",action:"RESCORE_WITH_SHIFT",orig:132},
+  {q:136,ans:"C",system:"Nervous System & Special Senses",topic:"Neurofibromatosis type 2 — chromosome 22, merlin, meningioma",action:"RESCORE_WITH_SHIFT",orig:133},
+  {q:137,ans:"C",system:"Nervous System & Special Senses",topic:"Anterior cord syndrome — aortic surgery complication",action:"RESCORE_WITH_SHIFT",orig:134},
+  {q:138,ans:"B",system:"Nervous System & Special Senses",topic:"Narcolepsy — decreased orexin-A (hypocretin)",action:"RESCORE_WITH_SHIFT",orig:135},
+  {q:139,ans:"E",system:"Nervous System & Special Senses",topic:"Poliomyelitis — anterior horn cell destruction, LMN signs",action:"RESCORE_WITH_SHIFT",orig:136},
+  {q:140,ans:"B",system:"Nervous System & Special Senses",topic:"Guillain-Barré syndrome — Schwann cell autoimmune attack",action:"RESCORE_WITH_SHIFT",orig:137},
+  {q:141,ans:"C",system:"Nervous System & Special Senses",topic:"Alzheimer disease — extracellular amyloid plaques, trisomy 21",action:"RESCORE_WITH_SHIFT",orig:138},
+  {q:142,ans:"G",system:"Nervous System & Special Senses",topic:"Radial nerve palsy — midshaft humerus fracture",action:"RESCORE_WITH_SHIFT",orig:139},
+  {q:143,ans:"E",system:"Nervous System & Special Senses",topic:"Organophosphate poisoning — atropine (muscarinic antagonism)",action:"RESCORE_WITH_SHIFT",orig:140},
+  {q:144,ans:"E",system:"Nervous System & Special Senses",topic:"Behavioral change stages — contemplation",action:"RESCORE_WITH_SHIFT",orig:141},
+  {q:145,ans:"C",system:"Nervous System & Special Senses",topic:"Borderline personality disorder — splitting",action:"RESCORE_WITH_SHIFT",orig:142},
+  {q:146,ans:"E",system:"Behavioral Health",topic:"Schizophreniform disorder — 1 to 6 months",action:"RESCORE_WITH_SHIFT",orig:143},
+  {q:147,ans:"C",system:"Behavioral Health",topic:"Major depressive disorder — anhedonia ≥2 weeks",action:"RESCORE_WITH_SHIFT",orig:144},
+  {q:148,ans:"A",system:"Behavioral Health",topic:"Antisocial personality disorder — conduct disorder + ≥3 adult criteria",action:"RESCORE_WITH_SHIFT",orig:145},
+  {q:149,ans:"B",system:"Behavioral Health",topic:"Anorexia nervosa — osteoporosis, stress fractures",action:"RESCORE_WITH_SHIFT",orig:146},
+  {q:150,ans:"B",system:"Behavioral Health",topic:"Bipolar disorder — antidepressant monotherapy triggers mania",action:"RESCORE_WITH_SHIFT",orig:147},
+  {q:151,ans:"C",system:"Behavioral Health",topic:"Lithium monitoring — serum TSH (hypothyroidism)",action:"RESCORE_WITH_SHIFT",orig:148},
+  {q:152,ans:"D",system:"Behavioral Health",topic:"Chlorpromazine — low-potency antipsychotic, anticholinergic effects",action:"RESCORE_WITH_SHIFT",orig:149},
+  {q:153,ans:"A",system:"Behavioral Health",topic:"Alcohol withdrawal — benzodiazepines (lorazepam)",action:"RESCORE_WITH_SHIFT",orig:150},
+  {q:154,ans:"B",system:"Behavioral Health",topic:"MDMA intoxication — serotonin/dopamine/NE release, hyponatremia",action:"RESCORE_WITH_SHIFT",orig:151},
+  {q:155,ans:"D",system:"Behavioral Health",topic:"Delirium tremens — lorazepam (alcohol withdrawal)",action:"RESCORE_WITH_SHIFT",orig:152},
+  {q:156,ans:"B",system:"Behavioral Health",topic:"MDMA — serotonin syndrome risk, hyponatremia",action:"RESCORE_WITH_SHIFT",orig:153},
+  {q:157,ans:"E",system:"Renal & Urinary System",topic:"Acute tubular necrosis — muddy brown casts, basement membrane denudation",action:"RESCORE_WITH_SHIFT",orig:154},
+  {q:158,ans:"B",system:"Renal & Urinary System",topic:"Salicylate toxicity — mixed acid-base disorder",action:"RESCORE_WITH_SHIFT",orig:155},
+  {q:159,ans:"A",system:"Renal & Urinary System",topic:"Hypokalemia — increased H+/K+ antiporter in alpha-intercalated cells",action:"RESCORE_WITH_SHIFT",orig:156},
+  {q:160,ans:"A",system:"Renal & Urinary System",topic:"Prerenal AKI — volume depletion",action:"RESCORE_WITH_SHIFT",orig:157},
+  {q:161,ans:"E",system:"Renal & Urinary System",topic:"Poststreptococcal GN — granular IgG/IgM/C3, subepithelial humps",action:"RESCORE_WITH_SHIFT",orig:158},
+  {q:162,ans:"A",system:"Renal & Urinary System",topic:"Diabetic nephropathy — hyaline arteriolosclerosis",action:"RESCORE_WITH_SHIFT",orig:159},
+  {q:163,ans:"E",system:"Renal & Urinary System",topic:"Struvite kidney stones — magnesium ammonium phosphate (urease bacteria)",action:"RESCORE_WITH_SHIFT",orig:160},
+  {q:164,ans:"E",system:"Renal & Urinary System",topic:"Staphylococcus saprophyticus — novobiocin-resistant UTI",action:"RESCORE_WITH_SHIFT",orig:161},
+  {q:165,ans:"C",system:"Renal & Urinary System",topic:"Stress incontinence — urethral hypermobility, weakened pelvic floor",action:"RESCORE_WITH_SHIFT",orig:162},
+  {q:166,ans:"D",system:"Renal & Urinary System",topic:"Thiazide diuretics — distal convoluted tubule, Na+/Cl- cotransporter",action:"RESCORE_WITH_SHIFT",orig:163},
+  {q:167,ans:"B",system:"Pregnancy & Reproductive System",topic:"Carbamazepine teratogenicity — neural tube defects",action:"RESCORE_WITH_SHIFT",orig:164},
+  {q:168,ans:"F",system:"Pregnancy & Reproductive System",topic:"Congenital toxoplasmosis — chorioretinitis, hydrocephalus, calcifications",action:"RESCORE_WITH_SHIFT",orig:165},
+  {q:169,ans:"C",system:"Pregnancy & Reproductive System",topic:"Meckel diverticulum — patent vitelline duct",action:"RESCORE_WITH_SHIFT",orig:166},
+  {q:170,ans:"D",system:"Pregnancy & Reproductive System",topic:"Developmental milestones — 2-year-old",action:"RESCORE_WITH_SHIFT",orig:167},
+  {q:171,ans:"E",system:"Pregnancy & Reproductive System",topic:"PCOS — endometrial carcinoma from unopposed estrogen",action:"RESCORE_WITH_SHIFT",orig:168},
+  {q:172,ans:"F",system:"Pregnancy & Reproductive System",topic:"Menopause — increased FSH (most reliable marker)",action:"RESCORE_WITH_SHIFT",orig:169},
+  {q:173,ans:"C",system:"Pregnancy & Reproductive System",topic:"Turner syndrome — bicuspid aortic valve → aortic stenosis",action:"RESCORE_WITH_SHIFT",orig:170},
+  {q:174,ans:"A",system:"Pregnancy & Reproductive System",topic:"Aromatase deficiency — ambiguous genitalia in 46,XX females",action:"RESCORE_WITH_SHIFT",orig:171},
+  {q:175,ans:"B",system:"Pregnancy & Reproductive System",topic:"Adenomyosis — endometrial tissue within myometrium",action:"RESCORE_WITH_SHIFT",orig:172},
+  {q:176,ans:"F",system:"Pregnancy & Reproductive System",topic:"PID — ectopic pregnancy risk",action:"RESCORE_WITH_SHIFT",orig:173},
+  {q:177,ans:"E",system:"Pregnancy & Reproductive System",topic:"Communicating hydrocele — patent processus vaginalis",action:"RESCORE_WITH_SHIFT",orig:174},
+  {q:178,ans:"D",system:"Respiratory System",topic:"Post-influenza lung — type II pneumocyte proliferation",action:"RESCORE_WITH_SHIFT",orig:175},
+  {q:179,ans:"C",system:"Respiratory System",topic:"Opioid overdose — acute respiratory acidosis",action:"RESCORE_WITH_SHIFT",orig:176},
+  {q:180,ans:"E",system:"Respiratory System",topic:"Severe asthma — physical exam findings",action:"RESCORE_WITH_SHIFT",orig:177},
+  {q:181,ans:"E",system:"Respiratory System",topic:"Squamous cell carcinoma of lung — cigarette smoking, central cavitation",action:"RESCORE_WITH_SHIFT",orig:178},
+  {q:182,ans:"C",system:"Respiratory System",topic:"Emphysema — obstructive spirometry, reduced DLCO",action:"RESCORE_WITH_SHIFT",orig:179},
+  {q:183,ans:"B",system:"Respiratory System",topic:"Cystic fibrosis — congenital bilateral absence of vas deferens",action:"RESCORE_WITH_SHIFT",orig:180},
+  {q:184,ans:"D",system:"Respiratory System",topic:"Sarcoidosis — elevated CD4+ T cells in BAL",action:"RESCORE_WITH_SHIFT",orig:181},
+  {q:185,ans:"G",system:"Respiratory System",topic:"Pulmonary fibrosis — excess collagen deposition (amiodarone)",action:"RESCORE_WITH_SHIFT",orig:182},
+  {q:186,ans:"A",system:"Respiratory System",topic:"Pulmonary embolism — DVT from raloxifene (SERM)",action:"RESCORE_WITH_SHIFT",orig:183},
+  {q:187,ans:"B",system:"Respiratory System",topic:"Severe asthma — omalizumab downregulates FcεRI",action:"RESCORE_WITH_SHIFT",orig:184},
+  {q:188,ans:"C",system:"Biostatistics & Public Health Science",topic:"Relative risk — appropriate measure for cohort studies",action:"RESCORE_WITH_SHIFT",orig:185},
+  {q:189,ans:"A",system:"Biostatistics & Public Health Science",topic:"Lowering diagnostic cutoff — increases sensitivity and NPV",action:"RESCORE_WITH_SHIFT",orig:186},
+  {q:190,ans:"D",system:"Biostatistics & Public Health Science",topic:"Precision — interrater reliability (reproducibility)",action:"RESCORE_WITH_SHIFT",orig:187},
+  {q:191,ans:"A",system:"Biostatistics & Public Health Science",topic:"Case-control study — retrospective, starts with outcome",action:"RESCORE_WITH_SHIFT",orig:188},
+  {q:192,ans:"D",system:"Biostatistics & Public Health Science",topic:"Confidence intervals — p-value relationship",action:"RESCORE_WITH_SHIFT",orig:189},
+  {q:193,ans:"C",system:"Biostatistics & Public Health Science",topic:"Statistical power — decrease type II error rate",action:"RESCORE_WITH_SHIFT",orig:190},
+  {q:194,ans:"C",system:"Biostatistics & Public Health Science",topic:"Confounding",action:"AWARD_AUTO_CREDIT",orig:null},
+  {q:195,ans:"B",system:"Biostatistics & Public Health Science",topic:"Bladder cancer — transitional cell carcinoma, cigarette smoking",action:"RESCORE_WITH_SHIFT",orig:191},
+  {q:196,ans:"B",system:"Biostatistics & Public Health Science",topic:"Demographic transition — childhood immunization",action:"RESCORE_WITH_SHIFT",orig:192},
+  {q:197,ans:"E",system:"Biostatistics & Public Health Science",topic:"Pediatric informed consent — address parental concern empathetically",action:"RESCORE_WITH_SHIFT",orig:193},
+  {q:198,ans:"C",system:"Biostatistics & Public Health Science",topic:"Patient confidentiality — HIPAA, no disclosure without consent",action:"RESCORE_WITH_SHIFT",orig:194},
+  {q:199,ans:"E",system:"Biostatistics & Public Health Science",topic:"Language barriers — remote medical interpreter",action:"RESCORE_WITH_SHIFT",orig:195},
+  {q:200,ans:"F",system:"Biostatistics & Public Health Science",topic:"Shaken baby syndrome — subdural hematoma (bridging vein tear)",action:"RESCORE_WITH_SHIFT",orig:196},
+]
+
+function rescoreAnswers(answers: Record<string, string>) {
+  let correctedScore = 0
+  const questionResults: Array<{
+    correctedQ: number; originalQ: number | null; action: string
+    correctAnswer: string; studentAnswer: string; correct: boolean
+    system: string; topic: string
+  }> = []
+  for (const entry of RESCORING_MAP) {
+    let studentAnswer = ''
+    let correct = false
+    if (entry.action === 'AWARD_AUTO_CREDIT') {
+      correct = true; studentAnswer = '(auto-credit)'; correctedScore++
+    } else {
+      studentAnswer = (answers[String(entry.orig!)] || '').toUpperCase().trim()
+      correct = studentAnswer === entry.ans
+      if (correct) correctedScore++
+    }
+    questionResults.push({ correctedQ: entry.q, originalQ: entry.orig, action: entry.action, correctAnswer: entry.ans, studentAnswer, correct, system: entry.system, topic: entry.topic })
+  }
+  return { correctedScore, questionResults }
+}
+
+interface RescoreResult {
+  sessionId: string; studentName: string; examName: string; examDate: string
+  originalScore: number; originalPct: number; correctedScore: number; correctedPct: number
+  delta: number; hasSheet: boolean; answersCount: number
+  questionResults: Array<{correctedQ:number;originalQ:number|null;action:string;correctAnswer:string;studentAnswer:string;correct:boolean;system:string;topic:string}>
+  incorrectAfter: Array<{correctedQ:number;originalQ:number|null;action:string;correctAnswer:string;studentAnswer:string;correct:boolean;system:string;topic:string}>
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function AmbossRescore({ supabase }: { supabase: unknown }) {
+  const [loading, setLoading] = useState(false)
+  const [results, setResults] = useState<RescoreResult[]>([])
+  const [error, setError] = useState('')
+  const [expandedStudent, setExpandedStudent] = useState<string | null>(null)
+
+  const run = async () => {
+    setLoading(true); setError(''); setResults([])
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: sessions, error: sessErr } = await (supabase as any)
+      .from('exam_sessions')
+      .select('id, exam_name, student_id, score, created_at, answer_sheets(*), profiles(full_name, email)')
+      .order('created_at', { ascending: false })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (sessErr) { setError((sessErr as any).message); setLoading(false); return }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const amboss = ((sessions as any[]) || []).filter((s: {exam_name?: string}) => {
+      const name = (s.exam_name || '').toLowerCase()
+      return name.includes('200q') || name.includes('amboss')
+    })
+    if (amboss.length === 0) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const allNames = [...new Set(((sessions as any[]) || []).map((s: {exam_name?: string}) => s.exam_name))]
+      setError(`No 200Q/AMBOSS sessions found. All exam names in database: ${allNames.join(', ')}`)
+      setLoading(false); return
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const processed: RescoreResult[] = amboss.map((session: any) => {
+      const sheet = Array.isArray(session.answer_sheets) ? session.answer_sheets[0] : session.answer_sheets
+      const answers: Record<string, string> = sheet?.answers || {}
+      const studentName = session.profiles?.full_name || session.profiles?.email?.split('@')[0] || 'Unknown'
+      const originalScore = session.score ?? 0
+      const { correctedScore, questionResults } = rescoreAnswers(answers)
+      return {
+        sessionId: session.id, studentName,
+        examName: session.exam_name,
+        examDate: session.created_at?.split('T')[0] || '',
+        originalScore, originalPct: Math.round((originalScore / 200) * 1000) / 10,
+        correctedScore, correctedPct: Math.round((correctedScore / 200) * 1000) / 10,
+        delta: correctedScore - originalScore,
+        hasSheet: !!sheet, answersCount: Object.keys(answers).length,
+        questionResults,
+        incorrectAfter: questionResults.filter((r: any) => !r.correct),
+      }
+    })
+    setResults(processed); setLoading(false)
+  }
+
+  const downloadCSV = () => {
+    const rows: string[][] = [['Student','Exam Date','Original Score','Original %','Corrected Score','Corrected %','Delta']]
+    for (const r of results)
+      rows.push([r.studentName, r.examDate, String(r.originalScore), String(r.originalPct), String(r.correctedScore), String(r.correctedPct), r.delta >= 0 ? `+${r.delta}` : String(r.delta)])
+    const blob = new Blob([rows.map(r => r.join(',')).join('\n')], { type: 'text/csv' })
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'amboss_rescoring_summary.csv'; a.click()
+  }
+
+  const downloadDetailedCSV = () => {
+    const rows: string[][] = [['Student','Exam Date','Corrected Q#','Original Q#','Action','System','Topic','Correct Answer','Student Answer','Correct After Rescore']]
+    for (const r of results)
+      for (const q of r.questionResults)
+        rows.push([r.studentName, r.examDate, String(q.correctedQ), q.originalQ != null ? String(q.originalQ) : 'N/A', q.action, q.system, q.topic, q.correctAnswer, q.studentAnswer, q.correct ? 'YES' : 'NO'])
+    const csv = rows.map(r => r.map(c => `"${c.replace(/"/g,'""')}"`).join(',')).join('\n')
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'amboss_rescoring_detailed.csv'; a.click()
+  }
+
+  const cell: React.CSSProperties = {padding:'10px 14px', fontSize:13, color:'#0d2340', borderBottom:'0.5px solid #f0e8d8'}
+  const hcell: React.CSSProperties = {padding:'10px 14px', fontSize:11, textTransform:'uppercase', letterSpacing:'0.07em', color:'rgba(255,255,255,0.6)', textAlign:'left'}
+
+  return (
+    <div>
+      <div style={{background:'white', border:'0.5px solid #e8dfc8', borderRadius:12, padding:24, marginBottom:20}}>
+        <div style={{fontSize:14, color:'#4a3f2f', marginBottom:16, lineHeight:1.6}}>
+          The original 200Q answer key was missing Q28, Q72, Q113, and Q194, causing a cumulative shift that misgraded 173 of 200 questions for every student. This tool re-grades every submitted answer sheet against the corrected key and produces individual corrected scores.
+        </div>
+        <div style={{display:'flex', gap:12, flexWrap:'wrap'}}>
+          <button onClick={run} disabled={loading}
+            style={{padding:'10px 24px', background:'#0d2340', color:'white', border:'none', borderRadius:8, fontSize:13, fontWeight:600, cursor:loading?'not-allowed':'pointer', opacity:loading?0.6:1}}>
+            {loading ? 'Running rescoring...' : 'Run Rescoring'}
+          </button>
+          {results.length > 0 && <>
+            <button onClick={downloadCSV} style={{padding:'10px 18px', background:'#6b7c3a', color:'white', border:'none', borderRadius:8, fontSize:13, cursor:'pointer'}}>
+              Download Summary CSV
+            </button>
+            <button onClick={downloadDetailedCSV} style={{padding:'10px 18px', background:'#1a3a5a', color:'white', border:'none', borderRadius:8, fontSize:13, cursor:'pointer'}}>
+              Download Full Breakdown CSV
+            </button>
+          </>}
+        </div>
+        {error && <div style={{marginTop:14, padding:'10px 14px', background:'#fef0f0', border:'1px solid #f5c2c2', borderRadius:8, fontSize:13, color:'#8b2020'}}>{error}</div>}
+      </div>
+
+      {results.length > 0 && (
+        <>
+          <div style={{display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:14, marginBottom:20}}>
+            {[
+              {label:'Sessions Rescored', value: String(results.length)},
+              {label:'Avg Score Change', value:`+${(results.reduce((s,r)=>s+r.delta,0)/results.length).toFixed(1)} pts`},
+              {label:'Highest Gain', value:`+${Math.max(...results.map(r=>r.delta))} pts`},
+              {label:'Auto-Credit Qs', value:'4 (Q28, Q72, Q113, Q194)'},
+            ].map(stat => (
+              <div key={stat.label} style={{background:'white', border:'0.5px solid #e8dfc8', borderRadius:10, padding:'16px 18px'}}>
+                <div style={{fontSize:11, textTransform:'uppercase', letterSpacing:'0.07em', color:'#8a7d6a', marginBottom:6}}>{stat.label}</div>
+                <div style={{fontSize:22, fontWeight:700, color:'#0d2340', fontFamily:'Georgia,serif'}}>{stat.value}</div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{background:'white', border:'0.5px solid #e8dfc8', borderRadius:12, overflow:'hidden'}}>
+            <table style={{width:'100%', borderCollapse:'collapse'}}>
+              <thead>
+                <tr style={{background:'#0d2340'}}>
+                  {['Student','Date','Original','Corrected','Change','Answers','Details'].map(h => (
+                    <th key={h} style={hcell}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {results.map((r) => (
+                  <React.Fragment key={r.sessionId}>
+                    <tr style={{background: expandedStudent === r.sessionId ? '#f7f9f4' : 'white'}}>
+                      <td style={cell}><strong>{r.studentName}</strong></td>
+                      <td style={cell}>{r.examDate}</td>
+                      <td style={cell}>{r.originalScore}/200 ({r.originalPct}%)</td>
+                      <td style={{...cell, color:'#2d6a4f', fontWeight:600}}>{r.correctedScore}/200 ({r.correctedPct}%)</td>
+                      <td style={{...cell, color: r.delta > 0 ? '#2d6a4f' : r.delta < 0 ? '#8b2020' : '#666', fontWeight:600}}>
+                        {r.delta > 0 ? '+' : ''}{r.delta} pts
+                      </td>
+                      <td style={cell}>{!r.hasSheet ? <span style={{color:'#c0574a',fontSize:12}}>No sheet</span> : `${r.answersCount}`}</td>
+                      <td style={cell}>
+                        <button onClick={() => setExpandedStudent(expandedStudent === r.sessionId ? null : r.sessionId)}
+                          style={{fontSize:12, color:'#0d2340', background:'none', border:'0.5px solid #c0b8a8', borderRadius:6, padding:'4px 10px', cursor:'pointer'}}>
+                          {expandedStudent === r.sessionId ? 'Hide' : 'View'} breakdown
+                        </button>
+                      </td>
+                    </tr>
+                    {expandedStudent === r.sessionId && (
+                      <tr>
+                        <td colSpan={7} style={{padding:0, background:'#f7f9f4'}}>
+                          <div style={{padding:'16px 20px'}}>
+                            <div style={{fontSize:13, fontWeight:600, color:'#0d2340', marginBottom:10}}>
+                              Incorrect after rescoring: {r.incorrectAfter.length}/200
+                            </div>
+                            <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(300px,1fr))', gap:8}}>
+                              {r.incorrectAfter.map((q: any) => (
+                                <div key={q.correctedQ} style={{background:'white', border:'0.5px solid #e8dfc8', borderRadius:8, padding:'8px 12px', fontSize:12}}>
+                                  <div style={{display:'flex', justifyContent:'space-between', marginBottom:3}}>
+                                    <strong style={{color:'#0d2340'}}>Q{q.correctedQ}</strong>
+                                    <span style={{color:'#8a7d6a', fontSize:11}}>{q.system}</span>
+                                  </div>
+                                  <div style={{color:'#4a3f2f', marginBottom:4, lineHeight:1.4}}>{q.topic}</div>
+                                  <div style={{display:'flex', gap:12, fontSize:11}}>
+                                    <span style={{color:'#c0574a'}}>Student: <strong>{q.studentAnswer || '—'}</strong></span>
+                                    <span style={{color:'#2d6a4f'}}>Correct: <strong>{q.correctAnswer}</strong></span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
