@@ -18,15 +18,14 @@ export default function AdminDashboard() {
   const [students, setStudents] = useState<any[]>([])
   const [tutors, setTutors] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState('overview')
+  const [activeTab, setActiveTab] = useState<string>(() => {
+    if (typeof window === 'undefined') return 'overview'
+    const params = new URLSearchParams(window.location.search)
+    return params.get('tab') || sessionStorage.getItem('admin_activeTab') || 'overview'
+  })
   const [success, setSuccess] = useState('')
   const router = useRouter()
   const supabase = createClient()
-
-  useEffect(() => {
-    const saved = sessionStorage.getItem('admin_activeTab')
-    if (saved) setActiveTab(saved)
-  }, [])
 
   const navTo = (tab: string) => {
     setActiveTab(tab)
@@ -197,7 +196,7 @@ export default function AdminDashboard() {
               <div style={{fontFamily: 'Georgia, serif', fontSize: 28, color: '#0d2340', letterSpacing: -0.5}}>Exam Performance</div>
               <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>All student exam sessions and answer sheets</div>
             </div>
-            <ExamReports supabase={supabase} students={students} />
+            <ExamReports supabase={supabase} students={students} returnPath="/admin?tab=examperformance" />
           </div>
         )}
 

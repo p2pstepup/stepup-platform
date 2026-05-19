@@ -411,7 +411,10 @@ export default function ExamCenter() {
 
   const handleBackFromResults = () => {
     revokePdfBlob()
-    if (isAdminView) { router.back() } else { setView('list'); setActiveSession(null); setActiveSheet(null); setResults(null) }
+    if (isAdminView) {
+      const ret = searchParams.get('return')
+      router.push(ret ? decodeURIComponent(ret) : profile?.role === 'tutor' ? '/tutor' : '/admin?tab=examperformance')
+    } else { setView('list'); setActiveSession(null); setActiveSheet(null); setResults(null) }
   }
 
   const fetchPdfAsBlob = async (signedUrl: string | null, onProgress: (pct: number) => void): Promise<string | null> => {

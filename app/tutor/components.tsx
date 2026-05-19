@@ -1354,12 +1354,13 @@ export function CourseDocsManager({ supabase, onSuccess }: any) {
   )
 }
 
-export function ExamReports({ supabase, students }: any) {
+export function ExamReports({ supabase, students, returnPath }: any) {
   const router = useRouter()
   const [sessions, setSessions] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedStudent, setSelectedStudent] = useState('all')
   const [selectedSession, setSelectedSession] = useState<any>(null)
+  const [deleting, setDeleting] = useState<string | null>(null)
 
   useEffect(() => { load() }, [])
 
@@ -1367,6 +1368,18 @@ export function ExamReports({ supabase, students }: any) {
     const { data } = await supabase.from('exam_sessions').select('*, answer_sheets(*), profiles(full_name, email)').order('created_at', {ascending: false})
     setSessions(data || [])
     setLoading(false)
+  }
+
+  const deleteSession = async (session: any) => {
+    const name = session.profiles?.full_name || session.profiles?.email?.split('@')[0] || 'this student'
+    if (!confirm(`Delete this exam attempt for ${name} (${session.exam_name})? This cannot be undone.`)) return
+    setDeleting(session.id)
+    await supabase.from('exam_question_logs').delete().eq('exam_session_id', session.id)
+    await supabase.from('answer_sheets').delete().eq('exam_session_id', session.id)
+    await supabase.from('exam_sessions').delete().eq('id', session.id)
+    if (selectedSession?.id === session.id) setSelectedSession(null)
+    setSessions(prev => prev.filter(s => s.id !== session.id))
+    setDeleting(null)
   }
 
   const formatDuration = (minutes: number) => {
@@ -1437,11 +1450,18 @@ export function ExamReports({ supabase, students }: any) {
                             </button>
                           )}
                           {session.status === 'submitted' && (
-                            <button onClick={() => router.push(`/dashboard/exams?session=${session.id}`)}
+                            <button onClick={() => {
+                              const url = `/dashboard/exams?session=${session.id}${returnPath ? `&return=${encodeURIComponent(returnPath)}` : ''}`
+                              router.push(url)
+                            }}
                               style={{padding: '4px 10px', background: '#6b7c3a', border: 'none', borderRadius: 6, fontSize: 11, color: 'white', cursor: 'pointer', fontFamily: 'Sora, sans-serif'}}>
                               Score Report
                             </button>
                           )}
+                          <button onClick={() => deleteSession(session)} disabled={deleting === session.id}
+                            style={{padding: '4px 10px', background: deleting === session.id ? '#e8dfc8' : 'none', border: '0.5px solid #e8dfc8', borderRadius: 6, fontSize: 11, color: deleting === session.id ? '#a89870' : '#c0574a', cursor: 'pointer', fontFamily: 'Sora, sans-serif'}}>
+                            {deleting === session.id ? '...' : 'Delete'}
+                          </button>
                         </div>
                       </td>
                     </tr>
