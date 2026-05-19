@@ -432,15 +432,15 @@ export default function ExamCenter() {
     const toEntry = (v: any): AKEntry => ({
       answer: v.answer != null ? String(v.answer).toUpperCase() : '',
       system: v.system,
-      discipline: v.subject ?? v.discipline,
+      discipline: v.subject ?? v.discipline ?? v.system,
       topic: v.topic,
-      concept: v.concept,
+      concept: v.concept ?? v.description,
       options: v.options ? Number(v.options) : undefined,
     })
     if (Array.isArray(data)) {
       const out: Record<string, AKEntry> = {}
       data.forEach((item: any) => {
-        const q = item.question_number ?? item.question ?? item.q ?? item.num
+        const q = item.question_number ?? item.question ?? item.q ?? item.num ?? item.number
         if (q != null) out[String(q)] = toEntry(item)
       })
       return out
