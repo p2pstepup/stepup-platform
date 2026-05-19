@@ -190,6 +190,209 @@ const STEP1_CONTENT_PCT: Record<string, number> = {
   'Pharmacology': 10, 'Pathology': 10, 'Microbiology': 10, 'Physiology': 10, 'Biostatistics': 8,
 }
 
+const Q220_SUBJECT_MAP: Record<number, {subject: string, subtopic: string}> = {
+  1:{subject:'GENETICS',subtopic:'X-linked recessive inheritance'},
+  2:{subject:'GENETICS',subtopic:'Pleiotropy (PKU)'},
+  3:{subject:'GENETICS',subtopic:'Genomic imprinting — Prader-Willi syndrome'},
+  4:{subject:'GENETICS',subtopic:'Fragile X syndrome (CGG repeat expansion)'},
+  6:{subject:'GENETICS',subtopic:'Trisomy 18 (Edwards syndrome)'},
+  26:{subject:'GENETICS',subtopic:'Lynch syndrome — microsatellite instability'},
+  7:{subject:'BIOCHEMISTRY',subtopic:'Thiamine (B1) — Wernicke encephalopathy'},
+  8:{subject:'BIOCHEMISTRY',subtopic:'Pompe disease (acid maltase deficiency)'},
+  9:{subject:'BIOCHEMISTRY',subtopic:'Carcinoid tumor — tryptophan hydroxylase'},
+  10:{subject:'BIOCHEMISTRY',subtopic:'DNA replication — fluoroquinolone mechanism'},
+  11:{subject:'BIOCHEMISTRY',subtopic:'Gaucher disease (glucocerebrosidase deficiency)'},
+  12:{subject:'BIOCHEMISTRY',subtopic:'Ehlers-Danlos syndrome — lysine/hydroxylysine cross-linking'},
+  13:{subject:'BIOCHEMISTRY',subtopic:'Insulin — metabolic effects'},
+  14:{subject:'BIOCHEMISTRY',subtopic:'Vitamin B12 deficiency — methylmalonyl-CoA mutase'},
+  15:{subject:'BIOCHEMISTRY',subtopic:'Vitamin D deficiency — rickets'},
+  16:{subject:'BIOCHEMISTRY',subtopic:'Pyridoxine (B6) — aminotransferase cofactor'},
+  19:{subject:'BIOCHEMISTRY',subtopic:'Methemoglobinemia (dapsone-induced)'},
+  32:{subject:'BIOCHEMISTRY',subtopic:'Enzyme kinetics — increased enzyme concentration'},
+  5:{subject:'CELL BIOLOGY',subtopic:'Primary ciliary dyskinesia — dynein arm defect'},
+  17:{subject:'CELL BIOLOGY',subtopic:'Apoptosis — intrinsic pathway (cytochrome c)'},
+  18:{subject:'PATHOLOGY',subtopic:'Coagulative necrosis'},
+  20:{subject:'PATHOLOGY',subtopic:'Acute inflammation — leukotriene B4 (chemotaxis)'},
+  21:{subject:'PATHOLOGY',subtopic:'Wound healing — myofibroblasts'},
+  22:{subject:'PATHOLOGY',subtopic:'Vascular permeability — endothelial junction separation'},
+  23:{subject:'PATHOLOGY',subtopic:'Tuberculosis — granuloma (macrophages/Langhans cells)'},
+  24:{subject:'IMMUNOLOGY',subtopic:'IL-2 — activates NK and cytotoxic T cells'},
+  36:{subject:'IMMUNOLOGY',subtopic:'Chronic granulomatous disease — Serratia marcescens'},
+  44:{subject:'IMMUNOLOGY',subtopic:'HIV — CCR5 coreceptor'},
+  45:{subject:'IMMUNOLOGY',subtopic:'HIV opportunistic infections — PCP prophylaxis'},
+  51:{subject:'IMMUNOLOGY',subtopic:'Aging — decreased vaccine responsiveness'},
+  52:{subject:'IMMUNOLOGY',subtopic:'Chronic mucocutaneous candidiasis — T cell defect'},
+  53:{subject:'IMMUNOLOGY',subtopic:'Goodpasture syndrome — type II hypersensitivity'},
+  54:{subject:'IMMUNOLOGY',subtopic:'Acute cellular graft rejection'},
+  55:{subject:'IMMUNOLOGY',subtopic:'Tetanus vaccine — denatured bacterial product'},
+  56:{subject:'IMMUNOLOGY',subtopic:'Leukocyte adhesion deficiency (LAD) — β2-integrin'},
+  57:{subject:'IMMUNOLOGY',subtopic:'Terminal complement deficiency — Neisseria infections'},
+  59:{subject:'IMMUNOLOGY',subtopic:'Cyclosporine — mechanism of action'},
+  120:{subject:'IMMUNOLOGY',subtopic:'SLE — anti-Sm antibodies'},
+  37:{subject:'MICROBIOLOGY',subtopic:'S. pneumoniae — polysaccharide capsule'},
+  38:{subject:'MICROBIOLOGY',subtopic:'Pseudomonas aeruginosa — Lipid A (endotoxin)'},
+  39:{subject:'MICROBIOLOGY',subtopic:'Bordetella pertussis — increases intracellular cAMP'},
+  40:{subject:'MICROBIOLOGY',subtopic:'Mycoplasma pneumoniae — atypical walking pneumonia'},
+  41:{subject:'MICROBIOLOGY',subtopic:'Bacillus cereus — preformed emetic toxin'},
+  42:{subject:'MICROBIOLOGY',subtopic:'Syphilis — transpeptidase (penicillin mechanism)'},
+  43:{subject:'MICROBIOLOGY',subtopic:'Hepatitis C — needlestick transmission'},
+  47:{subject:'MICROBIOLOGY',subtopic:'Amebiasis — Entamoeba histolytica'},
+  48:{subject:'MICROBIOLOGY',subtopic:'Malaria — Plasmodium falciparum'},
+  49:{subject:'MICROBIOLOGY',subtopic:'Cryptococcus neoformans'},
+  50:{subject:'MICROBIOLOGY',subtopic:'Trichomonas vaginalis'},
+  58:{subject:'MICROBIOLOGY',subtopic:'EBV — Hodgkin lymphoma'},
+  112:{subject:'MICROBIOLOGY',subtopic:'Congenital rubella'},
+  162:{subject:'MICROBIOLOGY',subtopic:'UTI — Staphylococcus saprophyticus'},
+  166:{subject:'MICROBIOLOGY',subtopic:'Congenital toxoplasmosis'},
+  25:{subject:'ONCOLOGY',subtopic:'TNM staging — mediastinal invasion (T4)'},
+  27:{subject:'ONCOLOGY',subtopic:'Li-Fraumeni syndrome — TP53 mutation'},
+  28:{subject:'ONCOLOGY',subtopic:'Prostate cancer — PSA tumor marker'},
+  71:{subject:'ONCOLOGY',subtopic:'Testicular cancer — para-aortic lymph nodes'},
+  93:{subject:'ONCOLOGY',subtopic:'Neuroblastoma — Homer-Wright rosettes'},
+  137:{subject:'ONCOLOGY',subtopic:'Meningioma — arachnoid cap cells'},
+  180:{subject:'ONCOLOGY',subtopic:'Lung cancer — cigarette smoking'},
+  195:{subject:'ONCOLOGY',subtopic:'Bladder cancer — cigarette smoking'},
+  29:{subject:'PHARMACOLOGY',subtopic:'Urge incontinence — muscarinic M3 antagonism'},
+  30:{subject:'PHARMACOLOGY',subtopic:'Signal transduction — adenylyl cyclase (Gs)'},
+  31:{subject:'PHARMACOLOGY',subtopic:'Dose-response — competitive antagonist'},
+  33:{subject:'PHARMACOLOGY',subtopic:'Pharmacokinetics — bioavailability'},
+  34:{subject:'PHARMACOLOGY',subtopic:'Clinical trials — Phase I'},
+  35:{subject:'PHARMACOLOGY',subtopic:'CYP450 — griseofulvin as inducer'},
+  46:{subject:'PHARMACOLOGY',subtopic:'HIV antiretrovirals — zidovudine (NRTI)'},
+  116:{subject:'PHARMACOLOGY',subtopic:'Neuroleptic malignant syndrome — dantrolene'},
+  118:{subject:'PHARMACOLOGY',subtopic:'Serotonin syndrome — sumatriptan'},
+  143:{subject:'PHARMACOLOGY',subtopic:'Organophosphate poisoning — muscarinic antagonism'},
+  151:{subject:'PHARMACOLOGY',subtopic:'Lithium monitoring — serum TSH'},
+  152:{subject:'PHARMACOLOGY',subtopic:'Antipsychotics — chlorpromazine (low-potency)'},
+  153:{subject:'PHARMACOLOGY',subtopic:'Alcohol withdrawal — lorazepam'},
+  154:{subject:'PHARMACOLOGY',subtopic:'MDMA intoxication'},
+  164:{subject:'PHARMACOLOGY',subtopic:'Thiazide diuretics — distal convoluted tubule'},
+  165:{subject:'PHARMACOLOGY',subtopic:'Carbamazepine teratogenicity — neural tube defects'},
+  60:{subject:'HEMATOLOGY',subtopic:'Sideroblastic anemia — isoniazid adverse effect'},
+  61:{subject:'HEMATOLOGY',subtopic:'Lead poisoning — ALA dehydratase inhibition'},
+  62:{subject:'HEMATOLOGY',subtopic:'Hemolytic disease of newborn — ABO incompatibility'},
+  63:{subject:'HEMATOLOGY',subtopic:'Alpha thalassemia — cis deletion'},
+  64:{subject:'HEMATOLOGY',subtopic:'Sickle cell anemia — Howell-Jolly bodies'},
+  65:{subject:'HEMATOLOGY',subtopic:'Polycythemia vera — JAK2 mutation'},
+  66:{subject:'HEMATOLOGY',subtopic:'AML — myeloperoxidase (MPO)'},
+  67:{subject:'HEMATOLOGY',subtopic:'Multiple myeloma — osteoclast activating factors'},
+  68:{subject:'HEMATOLOGY',subtopic:'Hemolytic uremic syndrome — lab findings'},
+  69:{subject:'HEMATOLOGY',subtopic:'Hemophilia — conversion of factor X'},
+  70:{subject:'HEMATOLOGY',subtopic:'Warfarin — γ-carboxylation of glutamate residues'},
+  72:{subject:'CARDIOVASCULAR',subtopic:'Beta-1 adrenoreceptor antagonism'},
+  75:{subject:'CARDIOVASCULAR',subtopic:'Tetralogy of Fallot — right axis deviation'},
+  76:{subject:'CARDIOVASCULAR',subtopic:'Eisenmenger syndrome — right ventricular hypertrophy'},
+  77:{subject:'CARDIOVASCULAR',subtopic:'Cor pulmonale — increased capillary hydrostatic pressure'},
+  78:{subject:'CARDIOVASCULAR',subtopic:'Hypovolemic shock — hemodynamic findings'},
+  79:{subject:'CARDIOVASCULAR',subtopic:'Restrictive cardiomyopathy — cardiac sarcoidosis'},
+  80:{subject:'CARDIOVASCULAR',subtopic:'Heart sounds — S1 (mitral valve closure)'},
+  81:{subject:'CARDIOVASCULAR',subtopic:'S3 heart sound — increased LV end-systolic volume'},
+  82:{subject:'CARDIOVASCULAR',subtopic:'Post-MI complication — Dressler syndrome'},
+  83:{subject:'CARDIOVASCULAR',subtopic:'Infective endocarditis — antigen-antibody complex deposition'},
+  84:{subject:'CARDIOVASCULAR',subtopic:'Wolff-Parkinson-White — slurred upstroke of QRS'},
+  85:{subject:'CARDIOVASCULAR',subtopic:'Polyarteritis nodosa'},
+  86:{subject:'CARDIOVASCULAR',subtopic:'Familial hyperchylomicronemia — acute pancreatitis'},
+  87:{subject:'CARDIOVASCULAR',subtopic:'Statins — elevated creatine kinase'},
+  73:{subject:'EMBRYOLOGY',subtopic:'Branchial arch derivatives — incus (1st arch)'},
+  74:{subject:'EMBRYOLOGY',subtopic:'Persistent truncus arteriosus — neural crest failure'},
+  167:{subject:'EMBRYOLOGY',subtopic:'Vitelline duct — Meckel diverticulum'},
+  88:{subject:'HEAD & NECK',subtopic:'Superior laryngeal nerve — voice pitch limitation'},
+  89:{subject:'ENDOCRINOLOGY',subtopic:'Graves disease — TSH receptor autoantibodies'},
+  90:{subject:'ENDOCRINOLOGY',subtopic:'Thyroid-binding globulin in pregnancy'},
+  91:{subject:'ENDOCRINOLOGY',subtopic:'Secondary hyperparathyroidism (CKD)'},
+  92:{subject:'ENDOCRINOLOGY',subtopic:'Diabetes insipidus — posterior pituitary'},
+  94:{subject:'ENDOCRINOLOGY',subtopic:'Primary adrenal insufficiency (Addison disease)'},
+  95:{subject:'ENDOCRINOLOGY',subtopic:'Glucagonoma — pancreatic α-cells'},
+  96:{subject:'ENDOCRINOLOGY',subtopic:'Type 2 diabetes — islet amyloid polypeptide (amylin)'},
+  97:{subject:'ENDOCRINOLOGY',subtopic:'Cushing syndrome — small cell lung cancer (ectopic ACTH)'},
+  99:{subject:'ENDOCRINOLOGY',subtopic:'MEN 2 — RET proto-oncogene mutation'},
+  100:{subject:'ENDOCRINOLOGY',subtopic:'G protein-coupled receptors (TSH receptor)'},
+  101:{subject:'ENDOCRINOLOGY',subtopic:'Sulfonylureas — ATP-sensitive K+ channels'},
+  98:{subject:'GASTROENTEROLOGY',subtopic:'Hemochromatosis — defective transferrin receptor binding'},
+  102:{subject:'GASTROENTEROLOGY',subtopic:'Chagas disease — absence of myenteric plexus neurons'},
+  103:{subject:'GASTROENTEROLOGY',subtopic:'Mallory-Weiss syndrome'},
+  104:{subject:'GASTROENTEROLOGY',subtopic:'Peptic ulcer disease — H. pylori'},
+  105:{subject:'GASTROENTEROLOGY',subtopic:'Whipple disease — intracellular gram-positive bacilli'},
+  106:{subject:'GASTROENTEROLOGY',subtopic:'Hirschsprung disease — impaired neural crest migration'},
+  107:{subject:'GASTROENTEROLOGY',subtopic:'Crohn disease — Th1 cell-mediated inflammation'},
+  108:{subject:'GASTROENTEROLOGY',subtopic:'Portal hypertension — superior epigastric vein (caput medusae)'},
+  109:{subject:'GASTROENTEROLOGY',subtopic:'Hepatitis B serology — chronic active infection'},
+  110:{subject:'GASTROENTEROLOGY',subtopic:'Acute cholecystitis — cystic duct obstruction'},
+  111:{subject:'GASTROENTEROLOGY',subtopic:'Pancreatic cancer — biliary obstruction/neoplasia'},
+  113:{subject:'DERMATOLOGY',subtopic:'Tinea versicolor — Malassezia globosa'},
+  114:{subject:'DERMATOLOGY',subtopic:'Pemphigus vulgaris — desmosomes'},
+  115:{subject:'DERMATOLOGY',subtopic:'Basal cell carcinoma'},
+  117:{subject:'NEUROLOGY',subtopic:'Myasthenia gravis — decreased end plate potential'},
+  126:{subject:'NEUROLOGY',subtopic:'Visual pathway — Meyer loop (temporal lobe)'},
+  127:{subject:'NEUROLOGY',subtopic:'Horner syndrome — Pancoast tumor'},
+  128:{subject:'NEUROLOGY',subtopic:'CN III palsy — posterior communicating artery aneurysm'},
+  129:{subject:'NEUROLOGY',subtopic:'Facial nerve (CN VII) — Bell palsy/schwannoma'},
+  130:{subject:'NEUROLOGY',subtopic:'Dorsal column tract — vitamin B12 deficiency'},
+  131:{subject:'NEUROLOGY',subtopic:'Huntington disease — caudate nucleus atrophy'},
+  132:{subject:'NEUROLOGY',subtopic:'Epidural hematoma'},
+  133:{subject:'NEUROLOGY',subtopic:'Stroke — left anterior cerebral artery'},
+  134:{subject:'NEUROLOGY',subtopic:'Multiple sclerosis — Th1 cell-mediated demyelination'},
+  135:{subject:'NEUROLOGY',subtopic:'Neurofibromatosis type 2 — meningioma'},
+  136:{subject:'NEUROLOGY',subtopic:'Anterior cord syndrome'},
+  138:{subject:'NEUROLOGY',subtopic:'Narcolepsy — decreased orexin-A'},
+  139:{subject:'NEUROLOGY',subtopic:'Poliomyelitis — hyporeflexia (LMN signs)'},
+  140:{subject:'NEUROLOGY',subtopic:'Guillain-Barré syndrome — Schwann cells'},
+  141:{subject:'NEUROLOGY',subtopic:'Alzheimer disease — extracellular amyloid plaques'},
+  142:{subject:'NEUROLOGY',subtopic:'Radial nerve palsy — mid-shaft humerus fracture'},
+  119:{subject:'PHYSIOLOGY',subtopic:'Muscle contraction — troponin C'},
+  121:{subject:'RHEUMATOLOGY',subtopic:'Systemic sclerosis — telangiectasias (CREST)'},
+  122:{subject:'RHEUMATOLOGY',subtopic:'Rheumatoid arthritis — granulation tissue (pannus)'},
+  123:{subject:'RHEUMATOLOGY',subtopic:'Reactive arthritis — HLA-B27'},
+  124:{subject:'RHEUMATOLOGY',subtopic:'Dermatomyositis — malignancy association'},
+  125:{subject:'MUSCULOSKELETAL',subtopic:'Paget disease of bone'},
+  169:{subject:'GYNECOLOGY',subtopic:'PCOS — endometrial carcinoma risk'},
+  170:{subject:'GYNECOLOGY',subtopic:'Menopause — increased FSH'},
+  171:{subject:'GYNECOLOGY',subtopic:'Turner syndrome — aortic stenosis'},
+  172:{subject:'GYNECOLOGY',subtopic:'Turner syndrome — aortic stenosis (variant)'},
+  173:{subject:'GYNECOLOGY',subtopic:'Aromatase deficiency'},
+  174:{subject:'GYNECOLOGY',subtopic:'Adenomyosis — endometrial tissue in uterine wall'},
+  175:{subject:'GYNECOLOGY',subtopic:'PID — ectopic pregnancy'},
+  163:{subject:'UROLOGY',subtopic:'Stress urinary incontinence — urethral hypermobility'},
+  176:{subject:'UROLOGY',subtopic:'Communicating hydrocele — patent processus vaginalis'},
+  177:{subject:'PULMONOLOGY',subtopic:'Influenza pneumonia — type II pneumocytes'},
+  178:{subject:'PULMONOLOGY',subtopic:'ABG interpretation — acute respiratory acidosis'},
+  179:{subject:'PULMONOLOGY',subtopic:'Severe asthma — physical exam and CXR findings'},
+  181:{subject:'PULMONOLOGY',subtopic:'COPD — emphysema'},
+  182:{subject:'PULMONOLOGY',subtopic:'Cystic fibrosis — absence of vas deferens'},
+  183:{subject:'PULMONOLOGY',subtopic:'Cystic fibrosis — infertility (repeated)'},
+  184:{subject:'PULMONOLOGY',subtopic:'Sarcoidosis — elevated CD4+ T cells in BAL'},
+  185:{subject:'PULMONOLOGY',subtopic:'Pulmonary fibrosis — excess collagen deposition'},
+  186:{subject:'PULMONOLOGY',subtopic:'Pulmonary fibrosis — collagen deposition (variant)'},
+  187:{subject:'PULMONOLOGY',subtopic:'Pulmonary embolism — DVT'},
+  188:{subject:'PULMONOLOGY',subtopic:'Severe asthma — omalizumab mechanism'},
+  144:{subject:'PSYCHIATRY',subtopic:'Stages of behavioral change — contemplation'},
+  145:{subject:'PSYCHIATRY',subtopic:'Borderline personality disorder — splitting'},
+  146:{subject:'PSYCHIATRY',subtopic:'Schizophreniform disorder'},
+  147:{subject:'PSYCHIATRY',subtopic:'Major depressive disorder'},
+  148:{subject:'PSYCHIATRY',subtopic:'Antisocial personality disorder'},
+  149:{subject:'PSYCHIATRY',subtopic:'Anorexia nervosa — fractures/osteoporosis'},
+  150:{subject:'PSYCHIATRY',subtopic:'Bipolar disorder — venlafaxine risk'},
+  155:{subject:'RENAL',subtopic:'Acute tubular necrosis — tubular basement membrane'},
+  156:{subject:'RENAL',subtopic:'Salicylate toxicity — mixed acid-base disorder'},
+  157:{subject:'RENAL',subtopic:'Renal tubular physiology — H+/K+ antiporter'},
+  158:{subject:'RENAL',subtopic:'Prerenal AKI — volume depletion'},
+  159:{subject:'RENAL',subtopic:'Poststreptococcal GN — granular immune deposits'},
+  160:{subject:'RENAL',subtopic:'Diabetic nephropathy — hyaline arteriolosclerosis'},
+  161:{subject:'RENAL',subtopic:'Struvite stones — magnesium ammonium phosphate'},
+  168:{subject:'PEDIATRICS',subtopic:'Developmental milestones — 2-year-old'},
+  189:{subject:'EPIDEMIOLOGY',subtopic:'Measures of association — relative risk'},
+  190:{subject:'EPIDEMIOLOGY',subtopic:'Diagnostic testing — lowering threshold increases NPV'},
+  191:{subject:'EPIDEMIOLOGY',subtopic:'Precision — interrater reliability'},
+  192:{subject:'EPIDEMIOLOGY',subtopic:'Case-control study design'},
+  193:{subject:'EPIDEMIOLOGY',subtopic:'Confidence intervals and p-values'},
+  194:{subject:'EPIDEMIOLOGY',subtopic:'Statistical power — decrease type II error'},
+  196:{subject:'PUBLIC HEALTH',subtopic:'Demographic transition — childhood immunization'},
+  197:{subject:'MEDICAL ETHICS',subtopic:'Informed consent — parental refusal/pediatric pain'},
+  198:{subject:'MEDICAL ETHICS',subtopic:'Confidentiality — HIPAA/disclosing to family'},
+  199:{subject:'MEDICAL ETHICS',subtopic:'Language barriers — professional interpreter'},
+  200:{subject:'CHILD ABUSE',subtopic:'Shaken baby syndrome — subdural hematoma'},
+}
+
 function NBMEBreakdownTable({ title, data, avgLookup }: { title: string, data: Record<string, {correct:number,total:number}>, avgLookup?: Record<string, number> }) {
   const rows = Object.entries(data).sort(([,a],[,b]) => {
     const pctA = a.total > 0 ? a.correct / a.total : 0
@@ -205,12 +408,14 @@ function NBMEBreakdownTable({ title, data, avgLookup }: { title: string, data: R
       <table style={{width:'100%',borderCollapse:'collapse',background:'white'}}>
         <thead>
           <tr style={{borderBottom:'1px solid #e0dbd0',background:'#fafaf8'}}>
-            <th style={{padding:'6px 16px',textAlign:'left',fontSize:11,color:'#6b6050',fontWeight:400,width:'42%'}}></th>
-            <th style={{padding:'6px 10px',textAlign:'center',fontSize:11,color:'#6b6050',fontWeight:500,width:'13%'}}>Your Score</th>
+            <th style={{padding:'6px 16px',textAlign:'left',fontSize:11,color:'#6b6050',fontWeight:400,width:'35%'}}></th>
+            <th style={{padding:'6px 10px',textAlign:'center',fontSize:11,color:'#6b6050',fontWeight:500,width:'11%'}}>Your Score</th>
+            <th style={{padding:'6px 10px',textAlign:'center',fontSize:10,color:'#6b6050',fontWeight:500,borderLeft:'1px solid #e8e4dc',width:'8%'}}>Correct</th>
+            <th style={{padding:'6px 10px',textAlign:'center',fontSize:10,color:'#6b6050',fontWeight:500,width:'7%'}}>Total</th>
+            <th style={{padding:'6px 10px',textAlign:'center',fontSize:10,color:'#6b6050',fontWeight:500,borderLeft:'1px solid #e8e4dc',width:'9%'}}>Priority</th>
             <th style={{padding:'6px 10px',textAlign:'center',fontSize:10,color:'#6b6050',fontWeight:500,borderLeft:'1px solid #e8e4dc',width:'10%'}}>Lower</th>
             <th style={{padding:'6px 10px',textAlign:'center',fontSize:10,color:'#6b6050',fontWeight:500,width:'10%'}}>Same</th>
             <th style={{padding:'6px 10px',textAlign:'center',fontSize:10,color:'#6b6050',fontWeight:500,width:'10%'}}>Higher</th>
-            <th style={{padding:'6px 10px',textAlign:'right',fontSize:10,color:'#6b6050',fontWeight:400,borderLeft:'1px solid #e8e4dc',width:'15%'}}>Questions</th>
           </tr>
         </thead>
         <tbody>
@@ -219,10 +424,17 @@ function NBMEBreakdownTable({ title, data, avgLookup }: { title: string, data: R
             const nationalAvg = avgLookup?.[name] ?? 70
             const diff = pct - nationalAvg
             const col = diff > 5 ? 'higher' : diff < -5 ? 'lower' : 'same'
+            const priorityDot = pct < 65 ? '🔴' : pct < 85 ? '🟡' : '🟢'
+            const priorityLabel = pct < 65 ? 'HIGH' : pct < 85 ? 'MOD' : 'STR'
             return (
               <tr key={name} style={{borderBottom:'0.5px solid #f0ece0'}}>
                 <td style={{padding:'9px 16px',fontSize:13,color:'#1a1008'}}>{name}</td>
                 <td style={{padding:'9px 10px',textAlign:'center',fontSize:13,fontWeight:700,color:scoreColor(pct)}}>{pct}%</td>
+                <td style={{padding:'9px 10px',textAlign:'center',fontSize:12,fontWeight:600,color:scoreColor(pct),borderLeft:'1px solid #f0ece0'}}>{s.correct}</td>
+                <td style={{padding:'9px 10px',textAlign:'center',fontSize:12,color:'#8a7d6a'}}>{s.total}</td>
+                <td style={{padding:'9px 10px',textAlign:'center',borderLeft:'1px solid #f0ece0'}}>
+                  <span title={priorityLabel} style={{fontSize:14}}>{priorityDot}</span>
+                </td>
                 <td style={{padding:'9px 10px',textAlign:'center',borderLeft:'1px solid #f0ece0'}}>
                   {col === 'lower' && <div style={{width:18,height:18,background:'#2a8f8a',borderRadius:3,margin:'0 auto'}}/>}
                 </td>
@@ -232,7 +444,6 @@ function NBMEBreakdownTable({ title, data, avgLookup }: { title: string, data: R
                 <td style={{padding:'9px 10px',textAlign:'center'}}>
                   {col === 'higher' && <div style={{width:18,height:18,background:'#2a8f8a',borderRadius:3,margin:'0 auto'}}/>}
                 </td>
-                <td style={{padding:'9px 10px',textAlign:'right',fontSize:12,color:'#8a7d6a',borderLeft:'1px solid #f0ece0'}}>{s.correct}/{s.total}</td>
               </tr>
             )
           })}
@@ -262,6 +473,7 @@ export default function ExamCenter() {
   const [resultsFilter, setResultsFilter] = useState<'all'|'correct'|'incorrect'>('all')
   const [resultsTab, setResultsTab] = useState<'report'|'weakness'|'questions'|'progress'>('report')
   const [expandedWeaknessRows, setExpandedWeaknessRows] = useState<Set<string>>(new Set())
+  const [expandedQ220Subjects, setExpandedQ220Subjects] = useState<Set<string>>(new Set())
   const [qReviewGrouped, setQReviewGrouped] = useState(true)
   const [focusLinks, setFocusLinks] = useState<Record<string,string>>(() => {
     try { const s = localStorage.getItem('stepup_focus_links'); return s ? JSON.parse(s) : {} } catch { return {} }
@@ -638,6 +850,20 @@ export default function ExamCenter() {
         questionDetails.push({ qNum, studentAnswer: sa || '—', correctAnswer: entry.answer, correct: isCorrect, system: entry.system, topic: entry.topic, concept: entry.concept, discipline: entry.discipline })
       }
 
+      // 220Q Assessment: override system/discipline/topic with hardcoded map
+      if ((activeSession.exam_name || '').toLowerCase().includes('220q assessment')) {
+        for (const k of Object.keys(systemBreakdown)) delete systemBreakdown[k]
+        for (const k of Object.keys(topicBreakdown)) delete topicBreakdown[k]
+        for (const k of Object.keys(disciplineBreakdown)) delete disciplineBreakdown[k]
+        for (const qd of questionDetails) {
+          const mapped = Q220_SUBJECT_MAP[qd.qNum]
+          if (mapped) { qd.system = mapped.subject; qd.discipline = mapped.subject; qd.topic = mapped.subtopic }
+          tally(systemBreakdown, qd.system, qd.correct)
+          tally(topicBreakdown, qd.topic, qd.correct)
+          tally(disciplineBreakdown, qd.discipline, qd.correct)
+        }
+      }
+
       const wrongCount = totalQ - correct
       const percentCorrect = Math.round((correct / totalQ) * 100)
       const predictedStep1 = calcStep1Score(activeSession.exam_name, wrongCount, percentCorrect)
@@ -821,6 +1047,20 @@ export default function ExamCenter() {
         tally(topicBreakdown, entry.topic, isCorrect)
         tally(disciplineBreakdown, entry.discipline, isCorrect)
         questionDetails.push({ qNum, studentAnswer: sa||'—', correctAnswer: entry.answer, correct: isCorrect, system: entry.system, topic: entry.topic, concept: entry.concept, discipline: entry.discipline })
+      }
+
+      // 220Q Assessment: override system/discipline/topic with hardcoded map
+      if ((session.exam_name || '').toLowerCase().includes('220q assessment')) {
+        for (const k of Object.keys(systemBreakdown)) delete systemBreakdown[k]
+        for (const k of Object.keys(topicBreakdown)) delete topicBreakdown[k]
+        for (const k of Object.keys(disciplineBreakdown)) delete disciplineBreakdown[k]
+        for (const qd of questionDetails) {
+          const mapped = Q220_SUBJECT_MAP[qd.qNum]
+          if (mapped) { qd.system = mapped.subject; qd.discipline = mapped.subject; qd.topic = mapped.subtopic }
+          tally(systemBreakdown, qd.system, qd.correct)
+          tally(topicBreakdown, qd.topic, qd.correct)
+          tally(disciplineBreakdown, qd.discipline, qd.correct)
+        }
       }
 
       // Use freshly computed scores (saved values were wrong — answer key wasn't loaded at submission)
@@ -1557,6 +1797,89 @@ export default function ExamCenter() {
                   {hasTopic && <NBMEBreakdownTable title="Performance by Topic" data={results.topicBreakdown}/>}
                 </>
               )}
+
+              {/* ── 220Q Assessment: Performance by Topic Accordion ── */}
+              {(results.examName || '').toLowerCase().includes('220q assessment') && (results.questionDetails || []).length > 0 && (() => {
+                type Q220Item = {qNum: number, subtopic: string, studentAnswer: string, correctAnswer: string}
+                const subjectGroups: Record<string, {correct: Q220Item[], incorrect: Q220Item[]}> = {}
+                for (const qd of (results.questionDetails as any[])) {
+                  const mapped = Q220_SUBJECT_MAP[qd.qNum as number]
+                  if (!mapped) continue
+                  const subj = mapped.subject
+                  if (!subjectGroups[subj]) subjectGroups[subj] = {correct: [], incorrect: []}
+                  const item: Q220Item = {qNum: qd.qNum, subtopic: mapped.subtopic, studentAnswer: qd.studentAnswer, correctAnswer: qd.correctAnswer || '—'}
+                  if (qd.correct) subjectGroups[subj].correct.push(item)
+                  else subjectGroups[subj].incorrect.push(item)
+                }
+                const sorted = Object.entries(subjectGroups).sort(([,a],[,b]) => {
+                  const pctA = a.correct.length / (a.correct.length + a.incorrect.length || 1)
+                  const pctB = b.correct.length / (b.correct.length + b.incorrect.length || 1)
+                  return pctA - pctB
+                })
+                if (sorted.length === 0) return null
+                const toggleSubject = (subj: string) => setExpandedQ220Subjects(prev => {
+                  const next = new Set(prev)
+                  if (next.has(subj)) next.delete(subj); else next.add(subj)
+                  return next
+                })
+                return (
+                  <div style={{marginBottom:20}}>
+                    <div style={{fontFamily:'Georgia,serif',fontSize:18,color:'#0d2340',marginBottom:4}}>Performance by Topic — Full Breakdown</div>
+                    <div style={{fontSize:12,color:'#8a7d6a',marginBottom:12}}>Sorted worst → best · click + to expand each subject</div>
+                    {sorted.map(([subj, {correct: cList, incorrect: iList}]) => {
+                      const total = cList.length + iList.length
+                      const pct = total > 0 ? Math.round((cList.length / total) * 100) : 0
+                      const priorityDot = pct < 65 ? '🔴' : pct < 85 ? '🟡' : '🟢'
+                      const priorityLabel = pct < 65 ? 'HIGH' : pct < 85 ? 'MODERATE' : 'STRONG'
+                      const isExpanded = expandedQ220Subjects.has(subj)
+                      const headerBg = pct < 65 ? '#fdf0ee' : pct < 85 ? '#fdfaee' : '#f0f5eb'
+                      const headerBorder = pct < 65 ? '#f0ccc8' : pct < 85 ? '#e8dfc8' : '#c8dcc0'
+                      return (
+                        <div key={subj} style={{border:`1px solid ${headerBorder}`,borderRadius:8,marginBottom:6,overflow:'hidden'}}>
+                          <div style={{background:headerBg,padding:'10px 16px',display:'flex',alignItems:'center',gap:12}}>
+                            <div style={{flex:1,display:'flex',alignItems:'center',gap:10,flexWrap:'wrap' as const}}>
+                              <span style={{fontWeight:700,fontSize:13,color:'#0d2340'}}>{subj}</span>
+                              <span style={{fontSize:12,color:'#6b6050'}}>{cList.length}/{total} correct ({pct}%)</span>
+                              <span style={{fontSize:12}}>{priorityDot} <span style={{fontSize:11,fontWeight:600,color:pct<65?'#c0574a':pct<85?'#c07040':'#6b7c3a'}}>{priorityLabel}</span></span>
+                            </div>
+                            <button onClick={() => toggleSubject(subj)}
+                              style={{width:26,height:26,borderRadius:6,border:'1.5px solid #c9a84c',background:'white',color:'#c9a84c',fontSize:18,fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',lineHeight:1,flexShrink:0,padding:0}}>
+                              {isExpanded ? '−' : '+'}
+                            </button>
+                          </div>
+                          {isExpanded && (
+                            <div style={{background:'white',padding:'10px 16px'}}>
+                              {iList.length > 0 && (
+                                <div style={{marginBottom: cList.length > 0 ? 12 : 0}}>
+                                  <div style={{fontSize:11,fontWeight:700,color:'#c0574a',marginBottom:5,textTransform:'uppercase' as const,letterSpacing:'0.06em'}}>✗ INCORRECT ({iList.length})</div>
+                                  {iList.sort((a,b)=>a.qNum-b.qNum).map(item => (
+                                    <div key={item.qNum} style={{display:'flex',alignItems:'baseline',gap:8,padding:'4px 8px',borderBottom:'0.5px solid #f5f0e8',fontSize:12}}>
+                                      <span style={{fontWeight:700,color:'#c0574a',minWidth:34,flexShrink:0}}>Q{item.qNum}</span>
+                                      <span style={{flex:1,color:'#1a1008'}}>{item.subtopic}</span>
+                                      <span style={{fontSize:11,color:'#a89870',flexShrink:0,whiteSpace:'nowrap' as const}}>Answered {item.studentAnswer} → {item.correctAnswer}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                              {cList.length > 0 && (
+                                <div>
+                                  <div style={{fontSize:11,fontWeight:700,color:'#6b7c3a',marginBottom:5,textTransform:'uppercase' as const,letterSpacing:'0.06em'}}>✓ CORRECT ({cList.length})</div>
+                                  {cList.sort((a,b)=>a.qNum-b.qNum).map(item => (
+                                    <div key={item.qNum} style={{display:'flex',alignItems:'baseline',gap:8,padding:'4px 8px',borderBottom:'0.5px solid #f5f0e8',fontSize:12}}>
+                                      <span style={{fontWeight:700,color:'#6b7c3a',minWidth:34,flexShrink:0}}>Q{item.qNum}</span>
+                                      <span style={{flex:1,color:'#1a1008'}}>{item.subtopic}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                )
+              })()}
 
               {/* Actions */}
               <div style={{display:'flex',gap:12,maxWidth:500,marginTop:28}}>
