@@ -15,8 +15,8 @@ export async function POST() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
-  const { data: profile } = await supabase.from('users').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'admin' && profile?.role !== 'tutor') {
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  if (!profile || !['admin', 'tutor'].includes(profile.role)) {
     return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
   }
 
