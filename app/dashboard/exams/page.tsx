@@ -474,6 +474,9 @@ export default function ExamCenter() {
   const [resultsTab, setResultsTab] = useState<'report'|'weakness'|'questions'|'progress'>('report')
   const [expandedWeaknessRows, setExpandedWeaknessRows] = useState<Set<string>>(new Set())
   const [expandedQ220Subjects, setExpandedQ220Subjects] = useState<Set<string>>(new Set())
+  const [showPriorityList, setShowPriorityList] = useState(false)
+  const [showStudyChecklist, setShowStudyChecklist] = useState(false)
+  const [checkedQuestions, setCheckedQuestions] = useState<Set<number>>(new Set())
   const [qReviewGrouped, setQReviewGrouped] = useState(true)
   const [focusLinks, setFocusLinks] = useState<Record<string,string>>(() => {
     try { const s = localStorage.getItem('stepup_focus_links'); return s ? JSON.parse(s) : {} } catch { return {} }
@@ -1797,6 +1800,120 @@ export default function ExamCenter() {
                   {hasTopic && <NBMEBreakdownTable title="Performance by Topic" data={results.topicBreakdown}/>}
                 </>
               )}
+
+              {/* ── Priority Study List ── */}
+              {Object.keys(results.systemBreakdown || {}).length > 0 && (() => {
+                const rows = Object.entries(results.systemBreakdown as Record<string,{correct:number,total:number}>)
+                  .map(([name, s]) => ({
+                    name,
+                    correct: s.correct,
+                    total: s.total,
+                    wrong: s.total - s.correct,
+                    pct: s.total > 0 ? Math.round((s.correct / s.total) * 100) : 0,
+                  }))
+                  .sort((a,b) => a.pct - b.pct)
+                const dot = (pct: number) => pct < 65 ? '🔴 HIGH' : pct < 85 ? '🟡 MODERATE' : '🟢 STRONG'
+                return (
+                  <div style={{border:'1px solid #e0dbd0',borderRadius:8,marginBottom:10,overflow:'hidden'}}>
+                    <div onClick={() => setShowPriorityList(v => !v)}
+                      style={{background:'#0d2340',padding:'11px 18px',display:'flex',alignItems:'center',justifyContent:'space-between',cursor:'pointer'}}>
+                      <div style={{fontSize:13,fontWeight:700,color:'white'}}>📋 Priority Study List</div>
+                      <div style={{display:'flex',alignItems:'center',gap:12}}>
+                        <span style={{fontSize:11,color:'rgba(255,255,255,0.5)'}}>All systems ranked worst → best</span>
+                        <span style={{color:'#c9a84c',fontSize:18,fontWeight:700,lineHeight:1}}>{showPriorityList ? '−' : '+'}</span>
+                      </div>
+                    </div>
+                    {showPriorityList && (
+                      <div style={{background:'white',overflowX:'auto'}}>
+                        <table style={{width:'100%',borderCollapse:'collapse'}}>
+                          <thead>
+                            <tr style={{background:'#f5f2eb',borderBottom:'1px solid #e0dbd0'}}>
+                              <th style={{padding:'7px 14px',textAlign:'left',fontSize:10,color:'#8a7d6a',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.06em',width:50}}>Rank</th>
+                              <th style={{padding:'7px 14px',textAlign:'left',fontSize:10,color:'#8a7d6a',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.06em'}}>System / Subject</th>
+                              <th style={{padding:'7px 14px',textAlign:'center',fontSize:10,color:'#8a7d6a',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.06em',width:80}}>Score</th>
+                              <th style={{padding:'7px 14px',textAlign:'center',fontSize:10,color:'#8a7d6a',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.06em',width:80}}>Wrong</th>
+                              <th style={{padding:'7px 14px',textAlign:'center',fontSize:10,color:'#8a7d6a',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.06em',width:140}}>Priority</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {rows.map((r, i) => (
+                              <tr key={r.name} style={{borderBottom:'0.5px solid #f5f0e8',background:i%2===0?'white':'#fdfcfa'}}>
+                                <td style={{padding:'8px 14px',fontSize:13,color:'#a89870',textAlign:'center',fontWeight:600}}>{i+1}</td>
+                                <td style={{padding:'8px 14px',fontSize:13,color:'#0d2340',fontWeight:500}}>{r.name}</td>
+                                <td style={{padding:'8px 14px',fontSize:13,fontWeight:700,color:scoreColor(r.pct),textAlign:'center'}}>{r.pct}%</td>
+                                <td style={{padding:'8px 14px',fontSize:13,color:'#c0574a',fontWeight:600,textAlign:'center'}}>{r.wrong}</td>
+                                <td style={{padding:'8px 14px',fontSize:12,textAlign:'center'}}>{dot(r.pct)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                )
+              })()}
+
+              {/* ── Study Checklist (220Q Assessment only) ── */}
+              {(results.examName || '').toLowerCase().includes('220q assessment') && (results.questionDetails || []).length > 0 && (() => {
+                const incorrectItems = (results.questionDetails as any[])
+                  .filter(qd => !qd.correct)
+                  .map(qd => {
+                    const mapped = Q220_SUBJECT_MAP[qd.qNum as number]
+                    return {
+                      qNum: qd.qNum as number,
+                      subject: mapped?.subject || qd.discipline || qd.system || 'Other',
+                      subtopic: mapped?.subtopic || qd.topic || '—',
+                    }
+                  })
+                  .sort((a,b) => a.qNum - b.qNum)
+                if (incorrectItems.length === 0) return null
+                const toggleCheck = (qNum: number) => setCheckedQuestions(prev => {
+                  const next = new Set(prev)
+                  if (next.has(qNum)) next.delete(qNum); else next.add(qNum)
+                  return next
+                })
+                const doneCount = incorrectItems.filter(i => checkedQuestions.has(i.qNum)).length
+                return (
+                  <div style={{border:'1px solid #e0dbd0',borderRadius:8,marginBottom:10,overflow:'hidden'}}>
+                    <div onClick={() => setShowStudyChecklist(v => !v)}
+                      style={{background:'#1a3a5a',padding:'11px 18px',display:'flex',alignItems:'center',justifyContent:'space-between',cursor:'pointer'}}>
+                      <div style={{fontSize:13,fontWeight:700,color:'white'}}>✅ Study Checklist — All Incorrect Topics</div>
+                      <div style={{display:'flex',alignItems:'center',gap:12}}>
+                        <span style={{fontSize:11,color:'rgba(255,255,255,0.5)'}}>{doneCount}/{incorrectItems.length} reviewed</span>
+                        <span style={{color:'#c9a84c',fontSize:18,fontWeight:700,lineHeight:1}}>{showStudyChecklist ? '−' : '+'}</span>
+                      </div>
+                    </div>
+                    {showStudyChecklist && (
+                      <div style={{background:'white'}}>
+                        {doneCount > 0 && (
+                          <div style={{padding:'8px 14px',borderBottom:'0.5px solid #f0ece0',display:'flex',alignItems:'center',gap:10}}>
+                            <div style={{flex:1,height:6,background:'#e8e4dc',borderRadius:3,overflow:'hidden'}}>
+                              <div style={{height:'100%',width:`${Math.round((doneCount/incorrectItems.length)*100)}%`,background:'#6b7c3a',borderRadius:3,transition:'width 0.3s'}}/>
+                            </div>
+                            <span style={{fontSize:11,color:'#6b7c3a',fontWeight:600,whiteSpace:'nowrap'}}>{Math.round((doneCount/incorrectItems.length)*100)}% reviewed</span>
+                            <button onClick={e => { e.stopPropagation(); setCheckedQuestions(new Set()) }}
+                              style={{fontSize:10,color:'#a89870',background:'none',border:'none',cursor:'pointer',padding:'2px 6px',textDecoration:'underline'}}>Reset</button>
+                          </div>
+                        )}
+                        <div style={{maxHeight:480,overflowY:'auto'}}>
+                          {incorrectItems.map(item => {
+                            const done = checkedQuestions.has(item.qNum)
+                            return (
+                              <div key={item.qNum} onClick={() => toggleCheck(item.qNum)}
+                                style={{display:'flex',alignItems:'baseline',gap:10,padding:'7px 14px',borderBottom:'0.5px solid #f5f0e8',cursor:'pointer',background:done?'#f3f8ef':'white',transition:'background 0.15s'}}>
+                                <span style={{fontSize:14,color:done?'#6b7c3a':'#ccc8be',flexShrink:0,marginTop:1}}>{done ? '☑' : '☐'}</span>
+                                <span style={{fontWeight:700,color:done?'#6b7c3a':'#0d2340',minWidth:42,flexShrink:0,fontSize:12}}>Q{item.qNum}</span>
+                                <span style={{fontSize:11,color:'#a89870',minWidth:110,flexShrink:0,whiteSpace:'nowrap'}}>{item.subject}</span>
+                                <span style={{fontSize:12,color:done?'#8aaa80':'#1a1008',textDecoration:done?'line-through':'none'}}>{item.subtopic}</span>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )
+              })()}
 
               {/* ── 220Q Assessment: Performance by Topic Accordion ── */}
               {(results.examName || '').toLowerCase().includes('220q assessment') && (results.questionDetails || []).length > 0 && (() => {
