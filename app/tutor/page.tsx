@@ -79,33 +79,33 @@ export default function TutorDashboard() {
   )
 
   const navGroups = [
-    {section: 'Home', items: [{name: 'Overview', tab: 'overview'}]},
-    {section: 'Students', items: [
+    {section: 'Home', items: [
+      {name: 'Overview', tab: 'overview'},
+    ]},
+    {section: 'My Students', items: [
+      {name: 'My Students', tab: 'students'},
       {name: 'Calendar', tab: 'calendar'},
-    {name: 'My Students', tab: 'students'},
-      {name: 'Send Notifications', tab: 'notifications'},
-      {name: 'Log Meetings', tab: 'meetings'},
+      {name: 'Study Schedules', tab: 'studyschedule'},
+      {name: 'Assign Tasks', tab: 'assignments'},
       {name: 'Student Feedback', tab: 'feedback'},
     ]},
-    {section: 'Communication', items: [
+    {section: 'Communicate', items: [
+      {name: 'Notifications', tab: 'notifications'},
       {name: 'Announcements', tab: 'announcements'},
     ]},
-    {section: 'Content', items: [
-      {name: 'Manage Slides', tab: 'slides'},
-      {name: 'Manage Recordings', tab: 'recordings'},
-      {name: 'Manage HY Notes', tab: 'notes'},
-      {name: 'Manage Resources', tab: 'resources'},
-      {name: 'Manage Schedule', tab: 'schedule'},
-    ]},
-    {section: 'Academics', items: [
-      {name: 'Assign Tasks', tab: 'assignments'},
-      {name: 'Study Schedules', tab: 'studyschedule'},
+    {section: 'Logs & Reports', items: [
+      {name: 'Mentor Meeting Logs', tab: 'meetings'},
+      {name: 'Log Attendance', tab: 'attendance'},
       {name: 'Exam Reports', tab: 'examreports'},
       {name: 'Student Performance', tab: 'studentperformance'},
-    ]},
-    {section: 'Reporting', items: [
-      {name: 'Log Attendance', tab: 'attendance'},
       {name: 'Student Progress Report', tab: 'accountability'},
+    ]},
+    {section: 'Content', items: [
+      {name: 'Slides', tab: 'slides'},
+      {name: 'Recordings', tab: 'recordings'},
+      {name: 'HY Notes', tab: 'notes'},
+      {name: 'Resources', tab: 'resources'},
+      {name: 'Schedule', tab: 'schedule'},
     ]},
   ]
 
