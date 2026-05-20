@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '../../../utils/supabase'
-import { is200QExam, gradeWith200QKey } from '../../../utils/amboss-rescore'
+import { is200QExam, gradeWith200QKey, PDF_200Q_CONCEPTS } from '../../../utils/amboss-rescore'
 import { Document, Page, pdfjs } from 'react-pdf'
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`
@@ -852,7 +852,8 @@ export default function ExamCenter() {
           tally(systemBreakdown, qd.system, qd.correct)
           tally(topicBreakdown, qd.topic, qd.correct)
           tally(disciplineBreakdown, qd.discipline, qd.correct)
-          questionDetails.push({ qNum: qd.qNum, studentAnswer: qd.studentAnswer, correctAnswer: qd.correctAnswer, correct: qd.correct, system: qd.system, topic: qd.topic, discipline: qd.discipline })
+          const concept = answerKey[String(qd.qNum)]?.concept || qd.concept
+          questionDetails.push({ qNum: qd.qNum, studentAnswer: qd.studentAnswer, correctAnswer: qd.correctAnswer, correct: qd.correct, system: qd.system, topic: qd.topic, concept, discipline: qd.discipline })
         }
       } else {
         for (let qNum = 1; qNum <= totalQ; qNum++) {
@@ -1062,7 +1063,8 @@ export default function ExamCenter() {
           tally(systemBreakdown, qd.system, qd.correct)
           tally(topicBreakdown, qd.topic, qd.correct)
           tally(disciplineBreakdown, qd.discipline, qd.correct)
-          questionDetails.push({ qNum: qd.qNum, studentAnswer: qd.studentAnswer, correctAnswer: qd.correctAnswer, correct: qd.correct, system: qd.system, topic: qd.topic, discipline: qd.discipline })
+          const concept = ak[String(qd.qNum)]?.concept || qd.concept
+          questionDetails.push({ qNum: qd.qNum, studentAnswer: qd.studentAnswer, correctAnswer: qd.correctAnswer, correct: qd.correct, system: qd.system, topic: qd.topic, concept, discipline: qd.discipline })
         }
       } else {
         for (let qNum = 1; qNum <= totalQ; qNum++) {
@@ -2369,7 +2371,7 @@ export default function ExamCenter() {
                                     <td style={{padding:'8px 14px',fontSize:13,color:'#0d2340',fontWeight:600,width:40}}>{q.qNum}</td>
                                     <td style={{padding:'8px 14px',fontSize:12,color:'#3d3020',whiteSpace:'nowrap'}}>{q.discipline||'—'}</td>
                                     <td style={{padding:'8px 14px',fontSize:12,color:'#3d3020'}}>{q.topic||'—'}</td>
-                                    <td style={{padding:'8px 14px',fontSize:11,color:'#8a7d6a',maxWidth:200}}>{q.concept||'—'}</td>
+                                    <td style={{padding:'8px 14px',fontSize:11,color:'#8a7d6a',maxWidth:200}}>{q.concept||PDF_200Q_CONCEPTS[String(q.qNum)]||'—'}</td>
                                     <td style={{padding:'8px 14px',fontSize:13,fontWeight:700,color:q.correct?'#6b7c3a':'#c0574a',textAlign:'center',width:56}}>{q.studentAnswer}</td>
                                     <td style={{padding:'8px 14px',fontSize:13,fontWeight:700,color:'#0d2340',textAlign:'center',width:56}}>{q.correctAnswer||'—'}</td>
                                     <td style={{padding:'8px 14px',textAlign:'center',width:44}}>
@@ -2401,7 +2403,7 @@ export default function ExamCenter() {
                             <td style={{padding:'9px 14px',fontSize:12,color:'#3d3020',whiteSpace:'nowrap'}}>{q.system||'—'}</td>
                             <td style={{padding:'9px 14px',fontSize:12,color:'#3d3020',whiteSpace:'nowrap'}}>{q.discipline||'—'}</td>
                             <td style={{padding:'9px 14px',fontSize:12,color:'#3d3020'}}>{q.topic||'—'}</td>
-                            <td style={{padding:'9px 14px',fontSize:11,color:'#8a7d6a',maxWidth:220}}>{q.concept||'—'}</td>
+                            <td style={{padding:'9px 14px',fontSize:11,color:'#8a7d6a',maxWidth:220}}>{q.concept||PDF_200Q_CONCEPTS[String(q.qNum)]||'—'}</td>
                             <td style={{padding:'9px 14px',fontSize:13,fontWeight:700,color:q.correct?'#6b7c3a':'#c0574a',textAlign:'center',width:56}}>{q.studentAnswer}</td>
                             <td style={{padding:'9px 14px',fontSize:13,fontWeight:700,color:'#0d2340',textAlign:'center',width:56}}>{q.correctAnswer||'—'}</td>
                             <td style={{padding:'9px 14px',textAlign:'center',width:44}}>
