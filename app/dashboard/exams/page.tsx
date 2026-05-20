@@ -1549,12 +1549,6 @@ export default function ExamCenter() {
                   <div style={{marginTop:20,paddingTop:20,borderTop:'1px solid #f0ece0',fontSize:14,color:'#1a1008',lineHeight:1.7}}>
                     Based on your performance, your predicted Step 1 score is{' '}
                     <strong style={{fontFamily:'Georgia,serif',fontSize:18,color:step1Color}}>{results.predictedStep1}</strong>
-                    {passProb && (
-                      <span style={{color:'#6b6050'}}>
-                        {' '}· estimated probability of passing Step 1:{' '}
-                        <strong style={{color:step1Color}}>{passProb}%</strong>
-                      </span>
-                    )}
                   </div>
                 )}
               </div>
