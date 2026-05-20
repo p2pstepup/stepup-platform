@@ -621,6 +621,19 @@ export default function ExamCenter() {
   }, [loading])
 
 
+  const syncNbmeScore = async (studentId: string, examName: string, predictedStep1: number | null, percentCorrect: number, examDate: string) => {
+    const name = examName.toLowerCase()
+    const isNbme = Object.keys(SCORE_FORMULAS).some(k => name.includes(k.toLowerCase()))
+    if (!isNbme || !predictedStep1) return
+    await supabase.from('nbme_scores').insert({
+      student_id: studentId,
+      exam_name: examName,
+      score: predictedStep1,
+      percent_correct: percentCorrect,
+      exam_date: examDate,
+    })
+  }
+
   const parseTimeLimit = (timeStr: string) => {
     if (!timeStr) return 240
     const match = timeStr.match(/(\d+\.?\d*)\s*hr/)
@@ -898,6 +911,8 @@ export default function ExamCenter() {
         percent_correct: percentCorrect, predicted_step1: predictedStep1,
       }).eq('id', activeSession.id)
 
+      await syncNbmeScore(user.id, activeSession.exam_name, predictedStep1, percentCorrect, submittedAt.toISOString().split('T')[0])
+
       const logRows = questionDetails
         .filter(q => q.system || q.topic || q.discipline)
         .map(q => ({ student_id: user.id, exam_session_id: activeSession.id, question_number: q.qNum, system: q.system || null, topic: q.topic || null, discipline: q.discipline || null, correct: q.correct }))
@@ -1112,6 +1127,8 @@ export default function ExamCenter() {
       }).eq('id', session.id)
 
       const studentId = (session.student_id as string) || user?.id
+      const examDate = (session.submitted_at || session.started_at || new Date().toISOString()).split('T')[0]
+      await syncNbmeScore(studentId, session.exam_name, predictedStep1, percentCorrect, examDate)
       const { data: freshSessions } = await supabase.from('exam_sessions')
         .select('*').eq('student_id', studentId).order('created_at', {ascending: false})
       if (freshSessions) setPastSessions(freshSessions)
