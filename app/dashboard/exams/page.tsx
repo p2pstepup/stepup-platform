@@ -625,12 +625,10 @@ export default function ExamCenter() {
     const name = examName.toLowerCase()
     const isNbme = Object.keys(SCORE_FORMULAS).some(k => name.includes(k.toLowerCase()))
     if (!isNbme || !predictedStep1) return
-    await supabase.from('nbme_scores').insert({
-      student_id: studentId,
-      exam_name: examName,
-      score: predictedStep1,
-      percent_correct: percentCorrect,
-      exam_date: examDate,
+    await fetch('/api/admin/sync-nbme-score', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ studentId, examName, score: predictedStep1, percentCorrect, examDate }),
     })
   }
 
