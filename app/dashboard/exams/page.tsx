@@ -20,21 +20,24 @@ const SCORE_FORMULAS: Record<string, {base: number, multiplier: number}> = {
 }
 
 const AMBOSS_CORRELATION = [
-  {pct: 25, score: 180},
-  {pct: 30, score: 185},
-  {pct: 40, score: 202},
-  {pct: 50, score: 212},
-  {pct: 60, score: 222},
-  {pct: 70, score: 232},
-  {pct: 80, score: 245},
+  {pct: 25, score: 155},
+  {pct: 30, score: 162},
+  {pct: 40, score: 175},
+  {pct: 50, score: 188},
+  {pct: 55, score: 193},
+  {pct: 60, score: 196},
+  {pct: 65, score: 210},
+  {pct: 70, score: 222},
+  {pct: 75, score: 232},
+  {pct: 80, score: 242},
 ]
 
 const calcStep1Score = (examName: string, wrongCount: number, pctCorrect?: number): number | null => {
   const name = examName.toLowerCase()
   if (name.includes('200q') || name.includes('amboss')) {
     const pct = pctCorrect ?? 0
-    if (pct <= 25) return 180
-    if (pct >= 80) return 245
+    if (pct <= 25) return 155
+    if (pct >= 80) return 242
     for (let i = 0; i < AMBOSS_CORRELATION.length - 1; i++) {
       const lo = AMBOSS_CORRELATION[i], hi = AMBOSS_CORRELATION[i + 1]
       if (pct >= lo.pct && pct < hi.pct) {
