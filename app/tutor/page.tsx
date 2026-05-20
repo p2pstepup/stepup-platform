@@ -83,8 +83,9 @@ export default function TutorDashboard() {
       {name: 'Overview', tab: 'overview'},
     ]},
     {section: 'My Students', items: [
-      {name: 'My Students', tab: 'students'},
+      {name: 'My Student Profiles', tab: 'students'},
       {name: 'Calendar', tab: 'calendar'},
+      {name: 'Student Plans', tab: 'studentplans'},
       {name: 'Study Schedules', tab: 'studyschedule'},
       {name: 'Assign Tasks', tab: 'assignments'},
       {name: 'Student Feedback', tab: 'feedback'},
@@ -457,6 +458,16 @@ export default function TutorDashboard() {
           </div>
         )}
 
+        {activeTab === 'studentplans' && (
+          <div>
+            <div style={{marginBottom: 24}}>
+              <div style={{fontFamily: 'Georgia, serif', fontSize: 28, color: '#0d2340', letterSpacing: -0.5}}>Student Plans</div>
+              <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>Study schedules you have built for each student</div>
+            </div>
+            <StudentPlansView supabase={supabase} students={students} />
+          </div>
+        )}
+
         {activeTab === 'assignments' && (
           <div>
             <div style={{marginBottom: 24}}>
@@ -794,4 +805,76 @@ function AccountabilityReport({ supabase, students, tutorId, onSuccess }: any) {
   )
 }
 
+function StudentPlansView({ supabase, students }: any) {
+  const [plans, setPlans] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [filterStudent, setFilterStudent] = useState('all')
+  const [expanded, setExpanded] = useState<string | null>(null)
+
+  useEffect(() => {
+    supabase.from('study_schedule').select('*, profiles!assigned_by(full_name, email)').order('schedule_date', { ascending: false }).limit(200)
+      .then(({ data }: any) => { setPlans(data || []); setLoading(false) })
+  }, [])
+
+  const sName = (id: string) => {
+    const s = students.find((x: any) => x.id === id)
+    return s ? (s.full_name || s.email.split('@')[0]) : 'Unknown'
+  }
+
+  const sortedStudents = [...students].sort((a: any, b: any) =>
+    (a.full_name || a.email).localeCompare(b.full_name || b.email))
+
+  const filtered = filterStudent === 'all' ? plans : plans.filter((p: any) => p.student_id === filterStudent)
+
+  if (loading) return <div style={{fontSize: 14, color: '#8a7d6a'}}>Loading student plans...</div>
+
+  return (
+    <div style={{display: 'flex', flexDirection: 'column', gap: 16}}>
+      <select value={filterStudent} onChange={e => setFilterStudent(e.target.value)}
+        style={{width: 240, height: 38, borderRadius: 8, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 12px', color: '#1a1008', outline: 'none'}}>
+        <option value="all">All students</option>
+        {sortedStudents.map((s: any) => <option key={s.id} value={s.id}>{s.full_name || s.email.split('@')[0]}</option>)}
+      </select>
+      {filtered.length === 0 ? (
+        <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, padding: '40px', textAlign: 'center', fontSize: 14, color: '#8a7d6a', fontStyle: 'italic'}}>No study plans found</div>
+      ) : (
+        <div style={{display: 'flex', flexDirection: 'column', gap: 8}}>
+          {filtered.map((p: any) => (
+            <div key={p.id} style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, overflow: 'hidden'}}>
+              <div onClick={() => setExpanded(expanded === p.id ? null : p.id)}
+                style={{padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer'}}>
+                <div style={{flex: 1}}>
+                  <div style={{fontSize: 14, fontWeight: 600, color: '#0d2340'}}>{sName(p.student_id)}</div>
+                  <div style={{fontSize: 12, color: '#8a7d6a', marginTop: 2}}>
+                    {new Date(p.schedule_date).toLocaleDateString('en-US', {weekday: 'short', month: 'short', day: 'numeric'})}
+                    {p.profiles && ` · Built by ${p.profiles.full_name || p.profiles.email?.split('@')[0]}`}
+                  </div>
+                </div>
+                <div style={{fontSize: 12, color: '#8a7d6a'}}>{(p.tasks || []).length} task{(p.tasks || []).length !== 1 ? 's' : ''}</div>
+                <div style={{fontSize: 11, color: '#a89870'}}>{expanded === p.id ? '▲' : '▼'}</div>
+              </div>
+              {expanded === p.id && (
+                <div style={{borderTop: '0.5px solid #f5f0e8', padding: '14px 20px'}}>
+                  {p.notes && <div style={{fontSize: 13, color: '#5c4f35', marginBottom: 12, fontStyle: 'italic'}}>{p.notes}</div>}
+                  <div style={{display: 'flex', flexDirection: 'column', gap: 8}}>
+                    {(p.tasks || []).map((task: any, i: number) => (
+                      <div key={i} style={{display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 12px', background: '#f7f4ee', borderRadius: 8}}>
+                        <span style={{fontSize: 11, padding: '2px 8px', borderRadius: 6, background: '#0d2340', color: '#c9a84c', flexShrink: 0}}>{task.tag}</span>
+                        <div style={{flex: 1}}>
+                          <div style={{fontSize: 13, color: '#0d2340', fontWeight: 500}}>{task.title}</div>
+                          {task.description && <div style={{fontSize: 12, color: '#8a7d6a', marginTop: 2}}>{task.description}</div>}
+                        </div>
+                        {task.duration && <div style={{fontSize: 12, color: '#a89870', flexShrink: 0}}>{task.duration}</div>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
