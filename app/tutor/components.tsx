@@ -1374,11 +1374,14 @@ export function ExamReports({ supabase, students, returnPath }: any) {
     const name = session.profiles?.full_name || session.profiles?.email?.split('@')[0] || 'this student'
     if (!confirm(`Delete this exam attempt for ${name} (${session.exam_name})? This cannot be undone.`)) return
     setDeleting(session.id)
-    await supabase.from('exam_question_logs').delete().eq('exam_session_id', session.id)
-    await supabase.from('answer_sheets').delete().eq('exam_session_id', session.id)
-    const { error } = await supabase.from('exam_sessions').delete().eq('id', session.id)
-    if (error) {
-      alert(`Failed to delete: ${error.message}`)
+    const res = await fetch('/api/admin/delete-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId: session.id }),
+    })
+    const json = await res.json()
+    if (!res.ok) {
+      alert(`Failed to delete: ${json.error}`)
       setDeleting(null)
       return
     }
