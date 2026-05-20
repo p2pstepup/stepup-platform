@@ -1397,7 +1397,12 @@ export function ExamReports({ supabase, students, returnPath }: any) {
     return `${m}m`
   }
 
-  const filtered = selectedStudent === 'all' ? sessions : sessions.filter(s => s.student_id === selectedStudent)
+  const filtered = (selectedStudent === 'all' ? sessions : sessions.filter(s => s.student_id === selectedStudent))
+    .slice()
+    .sort((a: any, b: any) => {
+      const name = (s: any) => (s.profiles?.full_name || s.profiles?.email?.split('@')[0] || '').toLowerCase()
+      return name(a).localeCompare(name(b))
+    })
 
   const sortedStudents = [...students].sort((a: any, b: any) => {
     const lastName = (s: any) => {
