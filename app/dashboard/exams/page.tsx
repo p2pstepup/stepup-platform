@@ -1430,10 +1430,21 @@ export default function ExamCenter() {
     const hasDiscipline = Object.keys(results.disciplineBreakdown || {}).length > 0
     const hasBreakdown = hasSystem || hasDiscipline || hasTopic
 
-    const passProb = results.predictedStep1
-      ? results.predictedStep1 >= 245 ? 99 : results.predictedStep1 >= 235 ? 95 : results.predictedStep1 >= 225 ? 85
-        : results.predictedStep1 >= 215 ? 70 : results.predictedStep1 >= 205 ? 55 : results.predictedStep1 >= 196 ? 40 : 20
-      : null
+    const passProb = (() => {
+      const s = results.predictedStep1
+      if (!s) return null
+      if (s >= 235) return 99
+      if (s >= 225) return 95
+      if (s >= 215) return 88
+      if (s >= 210) return 80
+      if (s >= 205) return 70
+      if (s >= 200) return 62
+      if (s >= 196) return 52
+      if (s >= 190) return 35
+      if (s >= 183) return 20
+      if (s >= 175) return 10
+      return 5
+    })()
 
     return (
       <main style={{minHeight:'100vh',display:'flex',background:'#f7f4ee',fontFamily:'Sora,sans-serif',fontSize:'17.6px'}}>
