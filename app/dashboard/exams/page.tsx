@@ -1438,7 +1438,7 @@ export default function ExamCenter() {
       if (s >= 215) return 88
       if (s >= 210) return 80
       if (s >= 205) return 70
-      if (s >= 200) return 62
+      if (s >= 200) return 65
       if (s >= 196) return 52
       if (s >= 190) return 35
       if (s >= 183) return 20
