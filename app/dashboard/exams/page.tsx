@@ -1528,7 +1528,7 @@ export default function ExamCenter() {
           </div>
 
           {/* Tab bar */}
-          <div style={{display:'flex',gap:0,margin:'20px 0 0',borderBottom:'2px solid #e8dfc8'}}>
+          <div style={{display:'flex',gap:0,margin:'20px 0 0',borderBottom:'2px solid #e8dfc8',alignItems:'center'}} className="no-print">
             {([
               {key:'report', label:'Score Report'},
               {key:'weakness', label:'Weakness Map'},
@@ -1542,7 +1542,19 @@ export default function ExamCenter() {
                 {t.label}
               </button>
             ))}
+            <button onClick={() => window.print()}
+              style={{marginLeft:'auto',padding:'6px 16px',border:'1px solid #e8dfc8',borderRadius:8,background:'white',fontSize:12,fontWeight:600,color:'#0d2340',cursor:'pointer',fontFamily:'Sora,sans-serif',display:'flex',alignItems:'center',gap:6}}>
+              ⬇ Download PDF
+            </button>
           </div>
+          <style>{`
+            @media print {
+              .no-print { display: none !important; }
+              nav { display: none !important; }
+              body { background: white !important; }
+              * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            }
+          `}</style>
 
           {/* ── SCORE REPORT TAB ── */}
           {resultsTab === 'report' && (
@@ -2122,7 +2134,7 @@ export default function ExamCenter() {
               })()}
 
               {/* Actions */}
-              <div style={{display:'flex',gap:12,maxWidth:500,marginTop:28}}>
+              <div className="no-print" style={{display:'flex',gap:12,maxWidth:500,marginTop:28}}>
                 <button onClick={handleBackFromResults}
                   style={{flex:1,height:46,background:'white',border:'1px solid #e8dfc8',borderRadius:10,color:'#0d2340',fontFamily:'Sora,sans-serif',fontSize:14,fontWeight:600,cursor:'pointer'}}>
                   {isAdminView ? '← Back' : '← Back to exams'}
@@ -2318,7 +2330,7 @@ export default function ExamCenter() {
                 <WeaknessSection title="Organ Systems — Weakest to Strongest" rows={systemRows} subtopicMap={systemTopics} prefix="sys"/>
                 <WeaknessSection title="Subjects / Disciplines — Weakest to Strongest" rows={disciplineRows} subtopicMap={disciplineTopics} prefix="disc"/>
 
-                <div style={{display:'flex',gap:12,maxWidth:500,marginTop:8}}>
+                <div className="no-print" style={{display:'flex',gap:12,maxWidth:500,marginTop:8}}>
                   <button onClick={handleBackFromResults}
                     style={{flex:1,height:46,background:'white',border:'1px solid #e8dfc8',borderRadius:10,color:'#0d2340',fontFamily:'Sora,sans-serif',fontSize:14,fontWeight:600,cursor:'pointer'}}>
                     {isAdminView ? '← Back' : '← Back to exams'}
@@ -2439,7 +2451,7 @@ export default function ExamCenter() {
                   </div>
                 )}
               </div>
-              <div style={{display:'flex',gap:12,maxWidth:500}}>
+              <div className="no-print" style={{display:'flex',gap:12,maxWidth:500}}>
                 <button onClick={handleBackFromResults}
                   style={{flex:1,height:46,background:'white',border:'1px solid #e8dfc8',borderRadius:10,color:'#0d2340',fontFamily:'Sora,sans-serif',fontSize:14,fontWeight:600,cursor:'pointer'}}>
                   {isAdminView ? '← Back' : '← Back to exams'}
@@ -2584,7 +2596,7 @@ export default function ExamCenter() {
                     </div>
                   )}
                 </div>
-                <div style={{display:'flex',gap:12,maxWidth:500}}>
+                <div className="no-print" style={{display:'flex',gap:12,maxWidth:500}}>
                   <button onClick={handleBackFromResults}
                     style={{flex:1,height:46,background:'white',border:'1px solid #e8dfc8',borderRadius:10,color:'#0d2340',fontFamily:'Sora,sans-serif',fontSize:14,fontWeight:600,cursor:'pointer'}}>
                     {isAdminView ? '← Back' : '← Back to exams'}
