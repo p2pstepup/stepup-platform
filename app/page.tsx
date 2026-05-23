@@ -137,6 +137,9 @@ export default function HomePage() {
         .sign-btn:not(:disabled):hover { background: #1a3457 !important; box-shadow: 0 10px 30px rgba(11,30,53,.4) !important; }
 
         input:focus { outline: none; border-color: #0b1e35 !important; box-shadow: 0 0 0 3px rgba(11,30,53,.09) !important; }
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover,
+        input:-webkit-autofill:focus { -webkit-box-shadow: 0 0 0 1000px #f7f8fa inset !important; -webkit-text-fill-color: #0d1f38 !important; caret-color: #0d1f38; }
 
         .feat-pill { display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.13); border-radius:10px; padding:9px 14px; cursor:default; }
       `}</style>
@@ -369,7 +372,7 @@ export default function HomePage() {
                         </span>
                         <input type="email" value={email} onChange={e=>setEmail(e.target.value)}
                           placeholder="you@university.edu" autoFocus
-                          style={{width:'100%',height:50,borderRadius:11,border:'1.5px solid #e8dfc8',background:'#fdf8ed',fontFamily:'inherit',fontSize:14.5,paddingLeft:44,paddingRight:16,color:'#0d1f38',transition:'border-color .15s,box-shadow .15s'}}
+                          style={{width:'100%',height:50,borderRadius:11,border:'1.5px solid #e2e6ed',background:'#f7f8fa',fontFamily:'inherit',fontSize:14.5,paddingLeft:44,paddingRight:16,color:'#0d1f38',transition:'border-color .15s,box-shadow .15s'}}
                         />
                       </div>
                     </div>
@@ -383,7 +386,7 @@ export default function HomePage() {
                         </span>
                         <input type={showPass?'text':'password'} value={password} onChange={e=>setPassword(e.target.value)}
                           placeholder="••••••••••" onKeyDown={e=>e.key==='Enter'&&handleLogin()}
-                          style={{width:'100%',height:50,borderRadius:11,border:'1.5px solid #e8dfc8',background:'#fdf8ed',fontFamily:'inherit',fontSize:14.5,paddingLeft:44,paddingRight:46,color:'#0d1f38',transition:'border-color .15s,box-shadow .15s'}}
+                          style={{width:'100%',height:50,borderRadius:11,border:'1.5px solid #e2e6ed',background:'#f7f8fa',fontFamily:'inherit',fontSize:14.5,paddingLeft:44,paddingRight:46,color:'#0d1f38',transition:'border-color .15s,box-shadow .15s'}}
                         />
                         <button onClick={()=>setShowPass(!showPass)}
                           style={{all:'unset',position:'absolute',right:14,top:'50%',transform:'translateY(-50%)',color:'#b0bac6',cursor:'pointer'}}>
@@ -430,7 +433,7 @@ export default function HomePage() {
                       </>) : (<>
                         <input type="email" value={forgotEmail} onChange={e=>setForgotEmail(e.target.value)}
                           placeholder="your@email.com"
-                          style={{width:'100%',height:48,borderRadius:10,border:'1.5px solid #e8dfc8',background:'#fdf8ed',fontFamily:'inherit',fontSize:14,padding:'0 14px',color:'#0d1f38',marginBottom:10}}/>
+                          style={{width:'100%',height:48,borderRadius:10,border:'1.5px solid #e2e6ed',background:'#f7f8fa',fontFamily:'inherit',fontSize:14,padding:'0 14px',color:'#0d1f38',marginBottom:10}}/>
                         {forgotError && <div style={{fontSize:13,color:'#cf1322',marginBottom:10}}>{forgotError}</div>}
                         <div style={{display:'flex',gap:8}}>
                           <button onClick={handleForgotPassword} disabled={forgotLoading}
