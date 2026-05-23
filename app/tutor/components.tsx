@@ -234,6 +234,8 @@ export function FeedbackTab({ supabase, students }: any) {
 export function SlidesManager({ supabase, onSuccess }: any) {
   const [slides, setSlides] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [adding, setAdding] = useState(false)
+  const [newSlide, setNewSlide] = useState({week_number: '1', session_date: '', topic: '', link: '', available: false})
 
   useEffect(() => { load() }, [])
 
@@ -249,9 +251,56 @@ export function SlidesManager({ supabase, onSuccess }: any) {
     onSuccess('Slide updated!')
   }
 
+  const addSlide = async () => {
+    if (!newSlide.session_date || !newSlide.topic) return
+    setAdding(true)
+    const maxOrder = Math.max(...slides.map(s => s.sort_order || 0), 0)
+    await supabase.from('slides').insert({...newSlide, week_number: parseInt(newSlide.week_number), sort_order: maxOrder + 1})
+    setNewSlide({week_number: '1', session_date: '', topic: '', link: '', available: false})
+    await load()
+    setAdding(false)
+    onSuccess('Slide added!')
+  }
+
+  const deleteSlide = async (id: string) => {
+    await supabase.from('slides').delete().eq('id', id)
+    await load()
+    onSuccess('Slide removed!')
+  }
+
   if (loading) return <div style={{fontSize: 14, color: '#8a7d6a'}}>Loading...</div>
 
   return (
+    <div style={{display: 'flex', flexDirection: 'column', gap: 20}}>
+      <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, padding: '20px 24px'}}>
+        <div style={{fontSize: 16, fontWeight: 600, color: '#0d2340', marginBottom: 18}}>Add new slide session</div>
+        <div style={{display: 'grid', gridTemplateColumns: '80px 160px 1fr 1fr auto', gap: 10, alignItems: 'end'}}>
+          <div>
+            <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Week</label>
+            <input type="number" value={newSlide.week_number} onChange={e => setNewSlide(p => ({...p, week_number: e.target.value}))} min="1"
+              style={{width: '100%', height: 36, borderRadius: 6, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', outline: 'none', boxSizing: 'border-box'}}/>
+          </div>
+          <div>
+            <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Date</label>
+            <input type="date" value={newSlide.session_date} onChange={e => setNewSlide(p => ({...p, session_date: e.target.value}))}
+              style={{width: '100%', height: 36, borderRadius: 6, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', outline: 'none', boxSizing: 'border-box'}}/>
+          </div>
+          <div>
+            <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Topic</label>
+            <input type="text" value={newSlide.topic} onChange={e => setNewSlide(p => ({...p, topic: e.target.value}))} placeholder="e.g. Cardiology — HY concepts"
+              style={{width: '100%', height: 36, borderRadius: 6, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', outline: 'none', boxSizing: 'border-box'}}/>
+          </div>
+          <div>
+            <label style={{fontSize: 11, fontWeight: 500, color: '#5c4f35', display: 'block', marginBottom: 5, textTransform: 'uppercase'}}>Google Drive link</label>
+            <input type="text" value={newSlide.link} onChange={e => setNewSlide(p => ({...p, link: e.target.value}))} placeholder="Paste link..."
+              style={{width: '100%', height: 36, borderRadius: 6, border: '1px solid #e8dfc8', fontFamily: 'Sora, sans-serif', fontSize: 13, padding: '0 8px', outline: 'none', boxSizing: 'border-box'}}/>
+          </div>
+          <button onClick={addSlide} disabled={adding || !newSlide.session_date || !newSlide.topic}
+            style={{height: 36, padding: '0 18px', background: adding ? '#e8dfc8' : '#0d2340', border: 'none', borderRadius: 6, color: '#c9a84c', fontFamily: 'Sora, sans-serif', fontSize: 13, fontWeight: 600, cursor: adding ? 'default' : 'pointer', whiteSpace: 'nowrap'}}>
+            {adding ? 'Adding...' : '+ Add'}
+          </button>
+        </div>
+      </div>
     <div style={{background: 'white', border: '0.5px solid #e8dfc8', borderRadius: 12, overflow: 'hidden'}}>
       <div style={{background: '#0d2340', padding: '12px 20px'}}>
         <div style={{fontSize: 14, fontWeight: 600, color: 'white'}}>All sessions ({slides.length})</div>
@@ -279,8 +328,13 @@ export function SlidesManager({ supabase, onSuccess }: any) {
             </div>
             <span style={{fontSize: 11, color: slide.available ? '#6b7c3a' : '#a89870'}}>{slide.available ? 'Live' : 'Hidden'}</span>
           </div>
+          <button onClick={() => { if (confirm('Delete this slide entry?')) deleteSlide(slide.id) }}
+            style={{padding: '4px 10px', background: 'none', border: '0.5px solid #e8dfc8', borderRadius: 6, fontSize: 11, color: '#c0574a', cursor: 'pointer', fontFamily: 'Sora, sans-serif'}}>
+            Delete
+          </button>
         </div>
       ))}
+    </div>
     </div>
   )
 }
