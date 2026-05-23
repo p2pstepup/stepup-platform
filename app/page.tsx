@@ -163,7 +163,7 @@ export default function HomePage() {
                   <div style={{width:0,height:0,borderLeft:'5.5px solid transparent',borderRight:'5.5px solid transparent',borderBottom:'10px solid rgba(6,15,30,.88)'}}/>
                 </div>
                 <div>
-                  <div style={{fontSize:18,color:'white',fontWeight:800,letterSpacing:-0.5,lineHeight:1}}>StepUp</div>
+                  <div style={{fontSize:18,color:'white',fontWeight:600,letterSpacing:-0.5,lineHeight:1}}>StepUp</div>
                   <div style={{fontSize:9,color:'rgba(201,168,76,.45)',letterSpacing:'0.16em',textTransform:'uppercase',marginTop:3}}>P2P Mentoring · Windsor SOM</div>
                 </div>
               </div>
@@ -179,12 +179,26 @@ export default function HomePage() {
 
               {/* Hero */}
               <div style={{marginBottom:28}}>
-                <div style={{fontFamily:'Georgia,"Times New Roman",serif',fontSize:52,color:'white',fontWeight:700,lineHeight:1.03,letterSpacing:-1.5,marginBottom:14}}>
-                  Your path<br/>to <span style={{color:'#c9a84c',fontStyle:'italic'}}>passing.</span>
+                {/* Main headline */}
+                <div style={{fontFamily:'Georgia,"Times New Roman",serif',fontSize:48,color:'white',fontWeight:600,lineHeight:1.05,letterSpacing:-1.2,marginBottom:16}}>
+                  Where Strategy<br/>Meets <span style={{color:'#c9a84c',fontStyle:'italic'}}>Success.</span>
                 </div>
-                <div style={{fontSize:13.5,color:'rgba(255,255,255,.38)',lineHeight:1.75,marginBottom:20}}>
-                  Structured mentoring, high-yield content, and real-time performance tracking.
+
+                {/* Three pillars */}
+                <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:14,flexWrap:'wrap'}}>
+                  {['High-Yield Learning','Real Accountability','Proven Growth'].map((p,i,a) => (
+                    <span key={p} style={{display:'flex',alignItems:'center',gap:8}}>
+                      <span style={{fontSize:11,fontWeight:600,textTransform:'uppercase',letterSpacing:'0.08em',color:'rgba(201,168,76,0.75)'}}>{p}</span>
+                      {i < a.length-1 && <span style={{color:'rgba(255,255,255,0.2)',fontSize:12}}>·</span>}
+                    </span>
+                  ))}
                 </div>
+
+                {/* Supporting line */}
+                <div style={{fontSize:13,color:'rgba(255,255,255,.36)',lineHeight:1.75,marginBottom:20,maxWidth:380}}>
+                  Personalized mentorship, question-focused learning, and data-driven study systems designed to help medical students perform at their highest level.
+                </div>
+
                 {/* Feature pills */}
                 <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
                   {[
