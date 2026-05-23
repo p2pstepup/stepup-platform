@@ -95,27 +95,33 @@ export default function HomePage() {
         .glow-orb { animation: goldPulse 7s ease-in-out infinite; }
 
         .prog-card {
-          background: white;
+          background: rgba(255,255,255,0.10);
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
+          border: 1px solid rgba(255,255,255,0.14);
           border-radius: 14px;
           padding: 20px 18px 18px;
           cursor: pointer;
           position: relative;
-          box-shadow: 0 2px 16px rgba(0,0,0,0.18);
-          transition: transform .18s ease, box-shadow .18s ease;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+          transition: transform .18s ease, box-shadow .18s ease, background .18s ease, border-color .18s ease;
         }
-        .prog-card:hover { transform: translateY(-3px); box-shadow: 0 10px 32px rgba(0,0,0,0.28) !important; }
-        .prog-card.active { box-shadow: 0 8px 28px rgba(0,0,0,0.3) !important; transform: translateY(-2px); }
+        .prog-card:hover { transform: translateY(-3px); box-shadow: 0 10px 36px rgba(0,0,0,0.35) !important; background: rgba(255,255,255,0.15) !important; border-color: rgba(255,255,255,0.22) !important; }
+        .prog-card.active { background: rgba(255,255,255,0.16) !important; border-color: rgba(255,255,255,0.28) !important; box-shadow: 0 8px 32px rgba(0,0,0,0.3) !important; transform: translateY(-2px); }
 
         .nbme-card {
-          background: white;
+          background: rgba(255,255,255,0.10);
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
+          border: 1px solid rgba(255,255,255,0.14);
           border-radius: 14px;
           padding: 20px 20px 18px;
           cursor: pointer;
-          box-shadow: 0 2px 16px rgba(0,0,0,0.18);
-          transition: transform .18s ease, box-shadow .18s ease;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+          transition: transform .18s ease, box-shadow .18s ease, background .18s ease, border-color .18s ease;
         }
-        .nbme-card:hover { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(0,0,0,0.28) !important; }
-        .nbme-card.active { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.28) !important; }
+        .nbme-card:hover { transform: translateY(-2px); box-shadow: 0 10px 36px rgba(0,0,0,0.35) !important; background: rgba(255,255,255,0.15) !important; border-color: rgba(255,255,255,0.22) !important; }
+        .nbme-card.active { background: rgba(255,255,255,0.16) !important; border-color: rgba(255,255,255,0.28) !important; transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,0.28) !important; }
 
         .arrow-btn { transition: background .15s ease, transform .15s ease; }
         .prog-card:hover .arrow-btn, .nbme-card:hover .arrow-btn { transform: scale(1.08); }
@@ -218,9 +224,9 @@ export default function HomePage() {
                           {/* Type label */}
                           <div style={{fontSize:10.5,fontWeight:700,textTransform:'uppercase',letterSpacing:'0.1em',color:ac.color,marginBottom:8}}>{ac.label}</div>
                           {/* Title */}
-                          <div style={{fontFamily:'Georgia,serif',fontSize:16,color:'#0d1f38',fontWeight:700,lineHeight:1.3,marginBottom:6,letterSpacing:-0.2}}>{p.name}</div>
+                          <div style={{fontFamily:'Georgia,serif',fontSize:16,color:'white',fontWeight:700,lineHeight:1.3,marginBottom:6,letterSpacing:-0.2}}>{p.name}</div>
                           {/* Description */}
-                          <div style={{fontSize:12,color:'#6e7a8a',lineHeight:1.6,marginBottom:16}}>{p.description || ac.desc}</div>
+                          <div style={{fontSize:12,color:'rgba(255,255,255,0.5)',lineHeight:1.6,marginBottom:16}}>{p.description || ac.desc}</div>
                           {/* Arrow btn */}
                           <div style={{display:'flex',justifyContent:'flex-end'}}>
                             <div className="arrow-btn" style={{width:32,height:32,borderRadius:'50%',border:`1.5px solid ${ac.color}`,display:'flex',alignItems:'center',justifyContent:'center'}}>
@@ -241,12 +247,12 @@ export default function HomePage() {
                       <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:16}}>
                         <div style={{flex:1}}>
                           <div style={{fontSize:10.5,fontWeight:700,textTransform:'uppercase',letterSpacing:'0.1em',color:ACCENT.nbme.color,marginBottom:8}}>NBME Shelf Exams</div>
-                          <div style={{fontFamily:'Georgia,serif',fontSize:17,color:'#0d1f38',fontWeight:700,letterSpacing:-0.3,marginBottom:6}}>NBME Courses</div>
-                          <div style={{fontSize:12,color:'#6e7a8a',lineHeight:1.6,marginBottom:14}}>{ACCENT.nbme.desc}</div>
+                          <div style={{fontFamily:'Georgia,serif',fontSize:17,color:'white',fontWeight:700,letterSpacing:-0.3,marginBottom:6}}>NBME Courses</div>
+                          <div style={{fontSize:12,color:'rgba(255,255,255,0.5)',lineHeight:1.6,marginBottom:14}}>{ACCENT.nbme.desc}</div>
                           {/* Sub-program pills */}
                           <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
                             {nbmePrograms.map((p: any) => (
-                              <span key={p.id} className="nbme-pill" style={{fontSize:11.5,color:'#4a5568',background:'rgba(0,0,0,0.05)',border:'1px solid rgba(0,0,0,0.1)',padding:'3px 11px',borderRadius:20}}>
+                              <span key={p.id} className="nbme-pill" style={{fontSize:11.5,color:'rgba(255,255,255,0.7)',background:'rgba(255,255,255,0.1)',border:'1px solid rgba(255,255,255,0.15)',padding:'3px 11px',borderRadius:20}}>
                                 {p.name.replace(/^NBME\s*/i,'').trim() || p.name}
                               </span>
                             ))}
