@@ -149,7 +149,7 @@ export default function HomePage() {
         <div style={{width:'54%', minHeight:'100vh', position:'relative', display:'flex', flexDirection:'column', overflow:'hidden', flexShrink:0}}>
 
           {/* Bg layers */}
-          <div style={{position:'absolute',inset:0,background:'linear-gradient(150deg,#0f2244 0%,#080f20 55%,#040a18 100%)'}}/>
+          <div style={{position:'absolute',inset:0,background:'linear-gradient(160deg,#0d1e38 0%,#070e1c 45%,#03060f 100%)'}}/>
           <div className="glow-orb" style={{position:'absolute',top:'-18%',left:'-12%',width:'80%',height:'80%',background:'radial-gradient(ellipse,rgba(201,168,76,.32) 0%,rgba(201,168,76,.06) 45%,transparent 70%)',pointerEvents:'none'}}/>
           <div style={{position:'absolute',bottom:'-5%',right:'-5%',width:'55%',height:'55%',background:'radial-gradient(ellipse,rgba(20,80,160,.1) 0%,transparent 65%)',pointerEvents:'none'}}/>
           <div style={{position:'absolute',inset:0,backgroundImage:'radial-gradient(rgba(255,255,255,.026) 1px,transparent 1px)',backgroundSize:'28px 28px',pointerEvents:'none'}}/>
@@ -283,11 +283,9 @@ export default function HomePage() {
 
               {/* Quote */}
               <div style={{marginTop:28,paddingTop:20,borderTop:'1px solid rgba(255,255,255,.08)'}}>
-                <span style={{fontFamily:'Georgia,serif',fontSize:22,color:'rgba(201,168,76,.65)',lineHeight:1,display:'block',marginBottom:6}}>"</span>
-                <p style={{fontFamily:'Georgia,serif',fontSize:13,color:'rgba(255,255,255,.5)',fontStyle:'italic',lineHeight:1.75,marginBottom:6}}>
-                  Every question you do today is a point on your score tomorrow.
+                <p style={{fontFamily:'Georgia,serif',fontSize:13,color:'rgba(255,255,255,.5)',fontStyle:'italic',lineHeight:1.75'}}>
+                  <span style={{color:'rgba(201,168,76,.7)',fontSize:16,fontStyle:'normal'}}>"</span>Every question you do today is a point on your score tomorrow.<span style={{color:'rgba(201,168,76,.7)',fontSize:16,fontStyle:'normal'}}>"</span>
                 </p>
-                <span style={{fontFamily:'Georgia,serif',fontSize:22,color:'rgba(201,168,76,.65)',lineHeight:1,display:'block',textAlign:'right'}}>"</span>
               </div>
             </div>
           </div>
@@ -371,7 +369,7 @@ export default function HomePage() {
                         </span>
                         <input type="email" value={email} onChange={e=>setEmail(e.target.value)}
                           placeholder="you@university.edu" autoFocus
-                          style={{width:'100%',height:50,borderRadius:11,border:'1.5px solid #d4d9e3',background:'#eef1f6',fontFamily:'inherit',fontSize:14.5,paddingLeft:44,paddingRight:16,color:'#0d1f38',transition:'border-color .15s,box-shadow .15s'}}
+                          style={{width:'100%',height:50,borderRadius:11,border:'1.5px solid #e8dfc8',background:'#fdf8ed',fontFamily:'inherit',fontSize:14.5,paddingLeft:44,paddingRight:16,color:'#0d1f38',transition:'border-color .15s,box-shadow .15s'}}
                         />
                       </div>
                     </div>
@@ -385,7 +383,7 @@ export default function HomePage() {
                         </span>
                         <input type={showPass?'text':'password'} value={password} onChange={e=>setPassword(e.target.value)}
                           placeholder="••••••••••" onKeyDown={e=>e.key==='Enter'&&handleLogin()}
-                          style={{width:'100%',height:50,borderRadius:11,border:'1.5px solid #d4d9e3',background:'#eef1f6',fontFamily:'inherit',fontSize:14.5,paddingLeft:44,paddingRight:46,color:'#0d1f38',transition:'border-color .15s,box-shadow .15s'}}
+                          style={{width:'100%',height:50,borderRadius:11,border:'1.5px solid #e8dfc8',background:'#fdf8ed',fontFamily:'inherit',fontSize:14.5,paddingLeft:44,paddingRight:46,color:'#0d1f38',transition:'border-color .15s,box-shadow .15s'}}
                         />
                         <button onClick={()=>setShowPass(!showPass)}
                           style={{all:'unset',position:'absolute',right:14,top:'50%',transform:'translateY(-50%)',color:'#b0bac6',cursor:'pointer'}}>
@@ -432,7 +430,7 @@ export default function HomePage() {
                       </>) : (<>
                         <input type="email" value={forgotEmail} onChange={e=>setForgotEmail(e.target.value)}
                           placeholder="your@email.com"
-                          style={{width:'100%',height:48,borderRadius:10,border:'1.5px solid #d4d9e3',background:'#eef1f6',fontFamily:'inherit',fontSize:14,padding:'0 14px',color:'#0d1f38',marginBottom:10}}/>
+                          style={{width:'100%',height:48,borderRadius:10,border:'1.5px solid #e8dfc8',background:'#fdf8ed',fontFamily:'inherit',fontSize:14,padding:'0 14px',color:'#0d1f38',marginBottom:10}}/>
                         {forgotError && <div style={{fontSize:13,color:'#cf1322',marginBottom:10}}>{forgotError}</div>}
                         <div style={{display:'flex',gap:8}}>
                           <button onClick={handleForgotPassword} disabled={forgotLoading}
