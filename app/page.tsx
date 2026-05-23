@@ -8,11 +8,11 @@ type Step = 'idle' | 'nbme' | 'login'
 type Role = 'student' | 'tutor' | 'admin'
 
 const ACCENT: Record<string, { color: string; label: string; desc: string }> = {
-  step1:    { color: '#2ca89a', label: 'Step 1',           desc: 'Comprehensive preparation for USMLE Step 1 success.' },
-  step2:    { color: '#2b8fa8', label: 'Step 2',           desc: 'Clinical knowledge and application mastery.' },
-  osce:     { color: '#4aa86a', label: 'OSCE',             desc: 'Sharpen your clinical skills with realistic OSCE scenarios.' },
-  research: { color: '#8b6abf', label: 'Research',         desc: 'Build your research skills and strengthen your profile.' },
-  nbme:     { color: '#2b7fb8', label: 'NBME Shelf Exams', desc: 'Subject-wise mastery with NBME-aligned practice and assessments.' },
+  step1:    { color: '#2ca89a', label: 'Step 1',           desc: 'Structured USMLE Step 1 preparation with high-yield content, expert mentoring, and real-time performance tracking.' },
+  step2:    { color: '#2b8fa8', label: 'Step 2',           desc: 'Step 2 CK mastery through clinical reasoning, case-based learning, and targeted exam strategy.' },
+  osce:     { color: '#4aa86a', label: 'OSCE',             desc: 'Hands-on clinical skills training with scenario-based OSCE practice, structured feedback, and exam readiness.' },
+  research: { color: '#8b6abf', label: 'Research',         desc: 'Research fundamentals, academic writing, and scholarly development for aspiring medical professionals.' },
+  nbme:     { color: '#2b7fb8', label: 'NBME Shelf Exams', desc: 'Subject-specific shelf exam preparation with NBME-aligned practice, assessments, and performance tracking.' },
 }
 
 export default function HomePage() {
@@ -261,7 +261,7 @@ export default function HomePage() {
                       <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:16}}>
                         <div style={{flex:1}}>
                           <div style={{fontSize:10.5,fontWeight:700,textTransform:'uppercase',letterSpacing:'0.1em',color:ACCENT.nbme.color,marginBottom:8}}>NBME Shelf Exams</div>
-                          <div style={{fontFamily:'Georgia,serif',fontSize:17,color:'white',fontWeight:700,letterSpacing:-0.3,marginBottom:6}}>NBME Courses</div>
+                          <div style={{fontFamily:'Georgia,serif',fontSize:17,color:'white',fontWeight:700,letterSpacing:-0.3,marginBottom:6}}>StepUp Shelf Series</div>
                           <div style={{fontSize:12,color:'rgba(255,255,255,0.5)',lineHeight:1.6,marginBottom:14}}>{ACCENT.nbme.desc}</div>
                           {/* Sub-program pills */}
                           <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
