@@ -176,23 +176,41 @@ export default function HomePage() {
           <div style={{position: 'relative', zIndex: 1, flex: 1, display: 'flex', flexDirection: 'column', padding: '44px 50px 40px'}}>
 
             {/* Logo */}
-            <div style={{display: 'flex', alignItems: 'center', gap: 12, marginBottom: 52, paddingBottom: 24, borderBottom: '1px solid rgba(255,255,255,0.07)'}}>
-              <div style={{width: 40, height: 40, background: 'linear-gradient(135deg, #d9b84a 0%, #c9a84c 100%)', borderRadius: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 4px 18px rgba(201,168,76,0.38)'}}>
-                <div style={{width: 0, height: 0, borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderBottom: '11px solid rgba(6,15,30,0.9)'}} />
+            <div style={{display: 'flex', alignItems: 'center', gap: 11, marginBottom: 44}}>
+              <div style={{width: 38, height: 38, background: 'linear-gradient(145deg, #dbbe50 0%, #c9a84c 55%, #b8922a 100%)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 0 0 1px rgba(255,255,255,0.08), 0 4px 20px rgba(201,168,76,0.32)'}}>
+                <div style={{width: 0, height: 0, borderLeft: '5.5px solid transparent', borderRight: '5.5px solid transparent', borderBottom: '10px solid rgba(6,15,30,0.88)'}} />
               </div>
               <div>
-                <div style={{fontSize: 20, color: 'white', fontWeight: 800, letterSpacing: -0.5, lineHeight: 1}}>StepUp</div>
-                <div style={{fontSize: 9.5, color: 'rgba(201,168,76,0.5)', letterSpacing: '0.14em', textTransform: 'uppercase', marginTop: 3}}>P2P Mentoring · Windsor SOM</div>
+                <div style={{fontSize: 19, color: 'white', fontWeight: 800, letterSpacing: -0.5, lineHeight: 1}}>StepUp</div>
+                <div style={{fontSize: 9, color: 'rgba(201,168,76,0.45)', letterSpacing: '0.16em', textTransform: 'uppercase', marginTop: 3}}>P2P Mentoring · Windsor SOM</div>
               </div>
             </div>
 
             {/* Hero */}
-            <div style={{marginBottom: 40}}>
-              <div style={{fontFamily: 'Georgia, "Times New Roman", serif', fontSize: 44, color: 'white', fontWeight: 700, lineHeight: 1.08, letterSpacing: -1.1, marginBottom: 16}}>
-                Your path to<br/><span style={{color: '#c9a84c'}}>passing</span> starts<br/>here.
+            <div style={{marginBottom: 36}}>
+              {/* Eyebrow */}
+              <div style={{display: 'inline-flex', alignItems: 'center', gap: 7, background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.18)', borderRadius: 20, padding: '5px 13px', marginBottom: 22}}>
+                <div style={{width: 5, height: 5, borderRadius: '50%', background: '#c9a84c', boxShadow: '0 0 6px rgba(201,168,76,0.7)'}} />
+                <span style={{fontSize: 10.5, color: 'rgba(201,168,76,0.8)', letterSpacing: '0.05em', fontWeight: 500}}>Windsor SOM · Class of 2026</span>
               </div>
-              <div style={{fontSize: 13.5, color: 'rgba(255,255,255,0.36)', lineHeight: 1.75, maxWidth: 340}}>
-                Structured mentoring, high-yield content, and real-time tracking — built for Windsor SOM.
+
+              {/* Headline */}
+              <div style={{fontFamily: 'Georgia, "Times New Roman", serif', fontSize: 50, color: 'white', fontWeight: 700, lineHeight: 1.02, letterSpacing: -1.5, marginBottom: 20}}>
+                Your path<br/>to <span style={{color: '#c9a84c', fontStyle: 'italic'}}>passing.</span>
+              </div>
+
+              {/* Subtext */}
+              <div style={{fontSize: 13.5, color: 'rgba(255,255,255,0.38)', lineHeight: 1.75, maxWidth: 310, marginBottom: 22}}>
+                Structured mentoring, high-yield content, and real-time performance tracking.
+              </div>
+
+              {/* Feature pills */}
+              <div style={{display: 'flex', gap: 7, flexWrap: 'wrap'}}>
+                {['Score Reports', 'Live Sessions', 'NBME Tracking', 'Mentor Support'].map(f => (
+                  <span key={f} style={{fontSize: 11, color: 'rgba(255,255,255,0.32)', background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.09)', padding: '4px 11px', borderRadius: 20, letterSpacing: '0.01em'}}>
+                    {f}
+                  </span>
+                ))}
               </div>
             </div>
 
