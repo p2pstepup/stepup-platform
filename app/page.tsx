@@ -21,8 +21,8 @@ export default function HomePage() {
   const supabase = createClient()
 
   useEffect(() => {
-    supabase.from('programs').select('*').eq('is_active', true).order('sort_order').then(({ data }) => {
-      setPrograms(data || [])
+    fetch('/api/programs').then(r => r.json()).then(data => {
+      setPrograms(Array.isArray(data) ? data : [])
       setLoadingPrograms(false)
     })
   }, [])
