@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '../../utils/supabase'
+import { getActiveProgram } from '../../utils/program-context'
 import {
   AnnouncementForm, FeedbackTab, SlidesManager, RecordingsManager,
   NotesManager, ResourcesManager, ScheduleManager, AssignmentsManager,
@@ -19,6 +20,7 @@ export default function TutorDashboard() {
   const [meetingForm, setMeetingForm] = useState({student_id: '', meeting_date: new Date().toISOString().split('T')[0], duration_minutes: '30', notes: '', action_items: '', next_meeting: ''})
   const [sending, setSending] = useState(false)
   const [success, setSuccess] = useState('')
+  const [activeProgram] = useState<ReturnType<typeof getActiveProgram>>(() => getActiveProgram())
   const router = useRouter()
   const supabase = createClient()
 
@@ -122,6 +124,15 @@ export default function TutorDashboard() {
           </div>
           <div style={{fontSize: 10, color: '#c9a84c', letterSpacing: '0.09em', textTransform: 'uppercase', paddingLeft: 46, marginTop: 3}}>Tutor Dashboard</div>
         </div>
+        {activeProgram && (
+          <div style={{padding: '10px 14px', borderBottom: '0.5px solid rgba(201,168,76,0.15)', background: 'rgba(201,168,76,0.06)'}}>
+            <div style={{fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.3)', marginBottom: 4}}>Active Program</div>
+            <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6}}>
+              <div style={{fontSize: 12, color: 'white', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>{activeProgram.name}</div>
+              <div onClick={() => router.push('/programs')} style={{fontSize: 10, color: '#c9a84c', cursor: 'pointer', flexShrink: 0, padding: '2px 7px', border: '0.5px solid rgba(201,168,76,0.35)', borderRadius: 4}}>Switch</div>
+            </div>
+          </div>
+        )}
         <div style={{padding: '8px 10px', flex: 1, overflowY: 'auto'}}>
           {navGroups.map(group => (
             <div key={group.section}>

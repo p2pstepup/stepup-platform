@@ -38,10 +38,7 @@ export default function LoginPage() {
       setLoading(false)
       return
     }
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', data.user.id).single()
-    if (profile?.role === 'tutor') router.push('/tutor')
-    else if (profile?.role === 'admin') router.push('/admin')
-    else router.push('/dashboard')
+    router.push('/programs')
   }
 
   return (
