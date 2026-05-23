@@ -283,7 +283,7 @@ export default function HomePage() {
 
               {/* Quote */}
               <div style={{marginTop:28,paddingTop:20,borderTop:'1px solid rgba(255,255,255,.08)'}}>
-                <p style={{fontFamily:'Georgia,serif',fontSize:13,color:'rgba(255,255,255,.5)',fontStyle:'italic',lineHeight:1.75'}}>
+                <p style={{fontFamily:'Georgia,serif',fontSize:13,color:'rgba(255,255,255,.5)',fontStyle:'italic',lineHeight:1.75}}>
                   <span style={{color:'rgba(201,168,76,.7)',fontSize:16,fontStyle:'normal'}}>"</span>Every question you do today is a point on your score tomorrow.<span style={{color:'rgba(201,168,76,.7)',fontSize:16,fontStyle:'normal'}}>"</span>
                 </p>
               </div>
