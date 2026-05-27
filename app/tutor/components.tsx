@@ -1656,7 +1656,7 @@ export function AttendanceLogger({ supabase, students, tutorId }: any) {
           <option value="">Choose a session...</option>
           {sessions.map(s => (
             <option key={s.id} value={s.id}>
-              {s.session_date ? new Date(s.session_date).toLocaleDateString('en-US', {weekday: 'short', month: 'short', day: 'numeric'}) : s.day_of_week} — {s.topic} (Wk {s.week_number})
+              {s.session_date ? new Date(s.session_date + 'T12:00:00').toLocaleDateString('en-US', {weekday: 'short', month: 'short', day: 'numeric'}) : s.day_of_week} — {s.topic} (Wk {s.week_number})
             </option>
           ))}
         </select>

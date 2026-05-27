@@ -6,7 +6,7 @@ import { getActiveProgram } from '../../utils/program-context'
 import {
   StudentProfiles, AnnouncementForm, FeedbackTab, SlidesManager, RecordingsManager,
   NotesManager, ResourcesManager, ExamsManager, ScheduleManager, AssignmentsManager,
-  StudyScheduleManager, CourseDocsManager, ExamReports, StudentPerformance
+  StudyScheduleManager, CourseDocsManager, ExamReports, StudentPerformance, AttendanceLogger
 } from '../tutor/components'
 import ExamManager from './components/ExamManager'
 
@@ -69,6 +69,7 @@ export default function AdminDashboard() {
       {name: 'Student Performance', tab: 'studentperformance'},
       {name: 'Exam Performance', tab: 'examperformance'},
       {name: 'Attendance Report', tab: 'attendancereport'},
+      {name: 'Log Attendance', tab: 'logattendance'},
       {name: 'Assignment Progress', tab: 'assignmentprogress'},
     ]},
     {section: 'Monitor · Tutors', items: [
@@ -221,6 +222,16 @@ export default function AdminDashboard() {
               <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>Class attendance by student · Warning thresholds: 2 excused, 1 unexcused</div>
             </div>
             <AttendanceReportAdmin supabase={supabase} students={students} tutors={tutors} onSuccess={flash} />
+          </div>
+        )}
+
+        {activeTab === 'logattendance' && (
+          <div>
+            <div style={{marginBottom: 24}}>
+              <div style={{fontFamily: 'Georgia, serif', fontSize: 28, color: '#0d2340', letterSpacing: -0.5}}>Log Attendance</div>
+              <div style={{fontSize: 14, color: '#8a7d6a', marginTop: 5}}>Mark attendance for each session · Reported to admin</div>
+            </div>
+            <AttendanceLogger supabase={supabase} students={students} tutorId={user?.id} />
           </div>
         )}
 
