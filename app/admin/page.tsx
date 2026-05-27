@@ -568,8 +568,9 @@ function AttendanceReportAdmin({ supabase, students, tutors, onSuccess }: any) {
   useEffect(() => { loadRecords() }, [])
 
   async function loadRecords() {
-    const { data } = await supabase.from('attendance').select('*, schedule(topic, session_date, week_number)').order('created_at', {ascending: false})
-    setRecords(data || [])
+    const res = await fetch('/api/admin/attendance')
+    const data = await res.json()
+    setRecords(Array.isArray(data) ? data : [])
     setLoading(false)
   }
 
