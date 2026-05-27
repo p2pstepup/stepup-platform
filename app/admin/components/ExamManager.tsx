@@ -410,10 +410,29 @@ export default function ExamManager() {
 
     if (keyFile) {
       setKeyProgress(0);
+
+      let jsonFile: File = keyFile;
+
+      // If a PDF was uploaded instead of JSON, extract answers via API first
+      if (keyFile.name.toLowerCase().endsWith('.pdf')) {
+        setUploadMsg('⏳ Extracting answers from PDF…');
+        const fd = new FormData();
+        fd.append('file', keyFile);
+        const res = await fetch('/api/admin/extract-answer-key', { method: 'POST', body: fd });
+        const result = await res.json();
+        if (!res.ok || result.error) {
+          setUploadMsg(`❌ PDF extraction failed: ${result.error || 'Unknown error'}`);
+          return;
+        }
+        setUploadMsg(`⏳ Extracted ${result.count} answers — uploading key…`);
+        const jsonBlob = new Blob([JSON.stringify(result.answerKey)], { type: 'application/json' });
+        jsonFile = new File([jsonBlob], `answer_key_${ts}.json`, { type: 'application/json' });
+      }
+
       const url = await uploadFile(
         "exam-keys",
         `${selectedExam.id}/answer_key_${ts}.json`,
-        keyFile,
+        jsonFile,
         setKeyProgress
       );
       if (!url) {
@@ -939,12 +958,12 @@ export default function ExamManager() {
               <label style={{ ...S.label, marginBottom: 8 }}>
                 Answer Key / Competency Map{" "}
                 <span style={{ color: "#7a6f5e", fontWeight: 400 }}>
-                  (optional — overrides AI)
+                  (JSON or PDF — answers extracted automatically)
                 </span>
               </label>
               <UploadZone
-                label="Drop JSON key here"
-                accept=".json"
+                label="Drop JSON or PDF key here"
+                accept=".json,.pdf"
                 file={keyFile}
                 progress={keyProgress}
                 onFile={setKeyFile}
