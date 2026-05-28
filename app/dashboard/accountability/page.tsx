@@ -17,12 +17,12 @@ export default function MyProgressReports() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/'); return }
       setUser(user)
-      const [{ data: profileData }, { data: reportData }] = await Promise.all([
+      const [{ data: profileData }, reportsRes] = await Promise.all([
         supabase.from('profiles').select('*').eq('id', user.id).single(),
-        supabase.from('accountability_reports').select('*').eq('student_id', user.id).order('week_number', { ascending: true }),
+        fetch(`/api/dashboard/accountability?student_id=${user.id}`).then(r => r.json()),
       ])
       setProfile(profileData)
-      setReports(reportData || [])
+      setReports(Array.isArray(reportsRes) ? reportsRes : [])
       setLoading(false)
     }
     init()

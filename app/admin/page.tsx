@@ -939,8 +939,9 @@ function AccountabilityReportsAdmin({ supabase, students, tutors }: any) {
   useEffect(() => { load() }, [])
 
   async function load() {
-    const { data } = await supabase.from('accountability_reports').select('*').order('created_at', {ascending: false}).limit(200)
-    setReports(data || [])
+    const res = await fetch('/api/admin/accountability')
+    const data = await res.json()
+    setReports(Array.isArray(data) ? data : [])
     setLoading(false)
   }
 
