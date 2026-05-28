@@ -1002,20 +1002,43 @@ function AccountabilityReportsAdmin({ supabase, students, tutors }: any) {
             </div>
             {expanded === r.id && (
               <div style={{padding: '0 20px 18px', borderTop: '0.5px solid #f5f0e8'}}>
-                <div style={{display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, marginBottom: 12, paddingTop: 14}}>
-                  {[{l:'Attendance',v:r.attendance},{l:'Participation',v:`${r.participation}/5`},{l:'Submitted',v:new Date(r.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}].map(f => (
+                <div style={{display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10, marginBottom: 12, paddingTop: 14}}>
+                  {[
+                    {l:'Understanding',v:r.understanding != null ? `${r.understanding}/5` : '—'},
+                    {l:'Engagement',v:r.engagement != null ? `${r.engagement}/5` : '—'},
+                    {l:'Stress',v:r.stress_levels || '—'},
+                    {l:'Submitted',v:new Date(r.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})},
+                  ].map(f => (
                     <div key={f.l} style={{background: '#f7f4ee', borderRadius: 8, padding: '10px 14px'}}>
                       <div style={{fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#8a7d6a', marginBottom: 4}}>{f.l}</div>
-                      <div style={{fontSize: 14, color: '#0d2340', fontWeight: 500, textTransform: 'capitalize'}}>{f.v}</div>
+                      <div style={{fontSize: 14, color: '#0d2340', fontWeight: 500}}>{f.v}</div>
                     </div>
                   ))}
                 </div>
-                {[{l:'Performance notes',v:r.performance_notes},{l:'Action items completed',v:r.action_items_completed},{l:'New action items',v:r.new_action_items},{l:'Concerns',v:r.concerns}].filter(f=>f.v).map(f => (
+                {[
+                  {l:'Topics Covered',v:r.topics_covered},
+                  {l:'Areas of Difficulty',v:r.areas_of_difficulty},
+                  {l:'Next Steps',v:r.next_steps},
+                  {l:'Mentor Notes',v:r.mentor_notes},
+                ].filter(f=>f.v).map(f => (
                   <div key={f.l} style={{marginBottom: 10}}>
                     <div style={{fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#8a7d6a', marginBottom: 4}}>{f.l}</div>
                     <div style={{fontSize: 13, color: '#3d3020', lineHeight: 1.6}}>{f.v}</div>
                   </div>
                 ))}
+                <div style={{display: 'flex', gap: 8, flexWrap: 'wrap', paddingTop: 8, borderTop: '0.5px solid #f5f0e8'}}>
+                  <span style={{fontSize: 11, padding: '3px 10px', borderRadius: 8, background: r.completed_study_goals === 'Y' ? '#f0f7f2' : '#fdf0f0', color: r.completed_study_goals === 'Y' ? '#2d6a4f' : '#c0574a'}}>
+                    Goals: {r.completed_study_goals === 'Y' ? 'Completed ✓' : 'Incomplete'}
+                  </span>
+                  {r.took_practice_test && r.took_practice_test !== 'No' && r.took_practice_test !== 'Not Assigned' && (
+                    <span style={{fontSize: 11, padding: '3px 10px', borderRadius: 8, background: '#f7f4ee', color: '#5c4f35'}}>
+                      Practice test: {r.took_practice_test}{r.nbme_score ? ` · Score: ${r.nbme_score}` : ''}
+                    </span>
+                  )}
+                  {r.was_prepared && <span style={{fontSize: 11, padding: '3px 10px', borderRadius: 8, background: '#f7f4ee', color: '#5c4f35'}}>Prepared: {r.was_prepared}</span>}
+                  {r.follow_up_needed === 'Yes' && <span style={{fontSize: 11, padding: '3px 10px', borderRadius: 8, background: '#fff8e8', color: '#c07040', fontWeight: 600}}>⚠ Follow-up needed</span>}
+                  {r.mentor_name && <span style={{fontSize: 11, padding: '3px 10px', borderRadius: 8, background: '#f7f4ee', color: '#5c4f35'}}>Mentor: {r.mentor_name}</span>}
+                </div>
               </div>
             )}
           </div>

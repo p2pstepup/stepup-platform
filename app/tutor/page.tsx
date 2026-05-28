@@ -579,9 +579,16 @@ function AccountabilityReport({ supabase, students, tutorId, onSuccess }: any) {
   const submit = async () => {
     if (!form.student_id) return
     setSaving(true)
+    const u = parseInt(form.understanding), e = parseInt(form.engagement)
+    const avg = (u + e) / 2
+    const status = avg < 3 ? 'at_risk' : avg < 4 ? 'needs_attention' : 'on_track'
     const { error } = await supabase.from('accountability_reports').insert({
       ...form, tutor_id: tutorId, week_number: parseInt(form.week_number),
-      understanding: parseInt(form.understanding), engagement: parseInt(form.engagement)
+      understanding: u, engagement: e, status,
+      participation: e,
+      performance_notes: form.topics_covered,
+      new_action_items: form.next_steps,
+      concerns: form.areas_of_difficulty,
     })
     setSaving(false)
     if (error) { onSuccess('❌ Save failed: ' + error.message); return }
