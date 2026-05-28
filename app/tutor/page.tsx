@@ -579,13 +579,14 @@ function AccountabilityReport({ supabase, students, tutorId, onSuccess }: any) {
   const submit = async () => {
     if (!form.student_id) return
     setSaving(true)
-    await supabase.from('accountability_reports').insert({
+    const { error } = await supabase.from('accountability_reports').insert({
       ...form, tutor_id: tutorId, week_number: parseInt(form.week_number),
       understanding: parseInt(form.understanding), engagement: parseInt(form.engagement)
     })
+    setSaving(false)
+    if (error) { onSuccess('❌ Save failed: ' + error.message); return }
     setForm(blankForm)
     await load()
-    setSaving(false)
     onSuccess('Report submitted!')
   }
 
