@@ -49,6 +49,7 @@ export default function Assignments() {
       {name: 'Calendar', path: '/dashboard/calendar'},
       {name: 'Assignments', path: '/dashboard/assignments', active: true},
       {name: 'Mentor Meetings', path: '/dashboard/mentor'},
+      {name: 'My Progress Reports', path: '/dashboard/accountability'},
     ]},
     {section: 'Study Tools', items: [
       {name: 'Exam Center', path: '/dashboard/exams'},

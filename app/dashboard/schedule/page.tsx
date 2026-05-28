@@ -34,6 +34,7 @@ export default function DailySchedule() {
       {name: 'Calendar', path: '/dashboard/calendar'},
       {name: 'Assignments', path: '/dashboard/assignments'},
       {name: 'Mentor Meetings', path: '/dashboard/mentor'},
+      {name: 'My Progress Reports', path: '/dashboard/accountability'},
     ]},
     {section: 'Study Tools', items: [
       {name: 'Exam Center', path: '/dashboard/exams'},
