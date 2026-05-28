@@ -862,8 +862,9 @@ function MeetingNotesAdmin({ supabase, students, tutors }: any) {
   useEffect(() => { load() }, [])
 
   async function load() {
-    const { data } = await supabase.from('mentor_meetings').select('*').order('meeting_date', {ascending: false})
-    setMeetings(data || [])
+    const res = await fetch('/api/admin/mentor')
+    const data = await res.json()
+    setMeetings(Array.isArray(data) ? data : [])
     setLoading(false)
   }
 

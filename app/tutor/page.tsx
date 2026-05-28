@@ -61,11 +61,16 @@ export default function TutorDashboard() {
   const logMeeting = async () => {
     if (!meetingForm.student_id || !meetingForm.meeting_date) return
     setSending(true)
-    await supabase.from('mentor_meetings').insert({student_id: meetingForm.student_id, mentor_id: user.id, meeting_date: meetingForm.meeting_date, duration_minutes: parseInt(meetingForm.duration_minutes), notes: meetingForm.notes, action_items: meetingForm.action_items, next_meeting: meetingForm.next_meeting || null})
-    await supabase.from('notifications').insert({student_id: meetingForm.student_id, title: 'Mentor meeting notes posted', message: meetingForm.action_items ? `Action items: ${meetingForm.action_items.substring(0, 80)}` : 'Your mentor has logged notes from your recent 1-on-1.', type: 'meeting', link: '/dashboard/mentor'})
+    const res = await fetch('/api/tutor/mentor', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...meetingForm, mentor_id: user.id }),
+    })
+    const result = await res.json()
+    setSending(false)
+    if (result.error) { setSuccess('❌ Failed: ' + result.error); setTimeout(() => setSuccess(''), 4000); return }
     setSuccess('Meeting logged and student notified!')
     setMeetingForm({student_id: '', meeting_date: new Date().toISOString().split('T')[0], duration_minutes: '30', notes: '', action_items: '', next_meeting: ''})
-    setSending(false)
     setTimeout(() => setSuccess(''), 3000)
   }
 

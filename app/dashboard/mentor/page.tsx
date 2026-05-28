@@ -18,12 +18,9 @@ export default function MentorMeetings() {
       setUser(user)
       const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single()
       setProfile(profileData)
-      const { data } = await supabase
-        .from('mentor_meetings')
-        .select('*')
-        .eq('student_id', user.id)
-        .order('meeting_date', { ascending: false })
-      setMeetings(data || [])
+      const res = await fetch(`/api/dashboard/mentor?student_id=${user.id}`)
+      const data = await res.json()
+      setMeetings(Array.isArray(data) ? data : [])
       setLoading(false)
     }
     init()
