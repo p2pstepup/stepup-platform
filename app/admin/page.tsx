@@ -691,12 +691,16 @@ function TutorActivityAdmin({ supabase, tutors, students }: any) {
   useEffect(() => { load() }, [])
 
   async function load() {
-    const [{ data: meetings }, { data: reports }, { data: attendance }] = await Promise.all([
-      supabase.from('mentor_meetings').select('mentor_id, student_id, meeting_date, notes, action_items').order('meeting_date', {ascending: false}),
-      supabase.from('accountability_reports').select('tutor_id, student_id, week_number, status, created_at').order('created_at', {ascending: false}),
-      supabase.from('attendance').select('tutor_id, created_at').order('created_at', {ascending: false}),
+    const [meetingsRes, reportsRes, attendanceRes] = await Promise.all([
+      fetch('/api/admin/mentor').then(r => r.json()),
+      fetch('/api/admin/accountability').then(r => r.json()),
+      fetch('/api/admin/attendance').then(r => r.json()),
     ])
-    setData({ meetings: meetings || [], reports: reports || [], attendance: attendance || [] })
+    setData({
+      meetings: Array.isArray(meetingsRes) ? meetingsRes : [],
+      reports: Array.isArray(reportsRes) ? reportsRes : [],
+      attendance: Array.isArray(attendanceRes) ? attendanceRes : [],
+    })
     setLoading(false)
   }
 
